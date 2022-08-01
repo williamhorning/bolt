@@ -1,0 +1,11 @@
+version: "3.1"
+
+services:
+    bolt-node:
+        # restart: always
+        image: node:18
+        volumes:
+          - /home/ubuntu/bolt:/app
+        command: ./run.sh
+        network_mode: host
+        working_dir: /app

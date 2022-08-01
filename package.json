@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "discord.js": "^13.8.1",
+    "dotenv": "^16.0.1",
+    "guilded.js": "^0.13.8",
+    "mongodb": "^4.7.0",
+    "revolt.js": "^6.0.6",
+    "yargs-parser": "^21.0.1"
+  },
+  "type": "module"
+}
