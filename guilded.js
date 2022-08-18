@@ -32,7 +32,9 @@ class guildedClient extends EventEmitter {
 										throw new Error(
 											"You already have a bridge set up."
 										);
-									}
+									} else if (arg.commands[2] == message.channelId) {
+                    throw new Error("Due to a database bug, you can't name a bridge the channel ID.")
+                  }
 									await db.upsert(
 										`bridgev1`,
 										`guilded-${arg.commands[2]}`,
