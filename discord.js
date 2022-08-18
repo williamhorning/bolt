@@ -39,7 +39,9 @@ class discordClient extends EventEmitter {
 								try {
 									if (thisBridge) {
 										throw new Error("You already have a bridge set up.");
-									}
+									} else if (arg.commands[2] == message.channelId) {
+                    throw new Error("Due to a database bug, you can't name a bridge the channel ID.")
+                  }
 									let webhook = await message.channel.createWebhook("bridge");
 									await db.upsert(`bridgev1`, `discord-${arg.commands[2]}`, {
 										id: webhook.id,
