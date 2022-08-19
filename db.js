@@ -5,7 +5,8 @@ class Database {
 	async setup() {
 		this.client = new MongoClient('mongodb://127.0.0.1:27017');
 		await this.client.connect();
-		this.db = this.client.db('bolt');
+    let dbname = process.env.prod ? 'bolt' : 'bolt-canary';
+		this.db = this.client.db(dbname);
 		this.collections = {
 			bridgev1: this.db.collection('bridge'),
 		};

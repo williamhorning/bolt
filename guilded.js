@@ -89,7 +89,7 @@ class guildedClient extends EventEmitter {
 					let crossPlatformMessage = {
 						content: message.content,
 						author: {
-							username: message.author.name,
+							username: message.member.displayName || message.author.name,
 							profile: message.author.avatar,
 						},
 						attachments: [],

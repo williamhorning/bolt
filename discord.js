@@ -101,7 +101,7 @@ class discordClient extends EventEmitter {
 					let crossPlatformMessage = {
 						content: message.cleanContent,
 						author: {
-							username: message.author.username,
+							username: message.member.displayName || message.author.username,
 							profile: `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.webp?size=80`,
 						},
 						attachments: [],
