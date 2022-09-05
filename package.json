@@ -4,7 +4,8 @@
     "dotenv": "^16.0.1",
     "guilded.js": "^0.13.8",
     "mongodb": "^4.7.0",
-    "revolt.js": "^6.0.6",
+    "revolt.js": "^6.0.13",
+    "string-dedent": "^3.0.1",
     "yargs-parser": "^21.0.1"
   },
   "type": "module"
