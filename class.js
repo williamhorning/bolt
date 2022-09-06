@@ -130,7 +130,7 @@ export class client {
 							}
 						} else if (arg.commands[1] === "help") {
 							await msg.reply(
-								"Bridge commands:\n!bolt bridge legacy join <bridgeID>\n!bolt bridge legacy leave"
+								"Bridge commands:\n!bolt bridge legacy join <bridgeID>\n!bolt bridge legacy leave\nLegal:\https://github.com/williamhorning/bolt/blob/main/legalese.md"
 							);
 						} else {
 							throw new Error(
