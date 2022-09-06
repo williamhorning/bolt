@@ -146,7 +146,7 @@ export class client {
 					}
 				} else if (cmd === "help") {
 					await msg.reply(
-						"help: \n!bolt bridge legacy - bridge using the legacy system, not recommended"
+						"help: \n!bolt bridge legacy - bridge using the legacy system, not recommended\nLegal:\https://github.com/williamhorning/bolt/blob/main/legalese.md"
 					);
 				} else {
 					throw new Error("Unknown command, try `!bolt help`");
