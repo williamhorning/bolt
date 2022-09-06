@@ -25,6 +25,8 @@ export function boltError(area, areadesc, prod, e, noStackTrace = false) {
 					error: ${e?.message || e}
 					stack trace:
 					${e?.stack || e}
+					legal:
+					https://github.com/williamhorning/bolt/blob/main/legalese.md
 				\`\`\`
 			`,
 	};
@@ -45,6 +47,8 @@ export function boltError(area, areadesc, prod, e, noStackTrace = false) {
 				error: ${e?.message || e}
 				stack trace:
 				see console
+				legal:
+				https://github.com/williamhorning/bolt/blob/main/legalese.md
 				\`\`\`
 			`;
 		console.log(e?.stack || e);
