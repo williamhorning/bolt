@@ -1,14 +1,15 @@
 import dedent from "string-dedent";
 import { MongoClient } from "mongodb";
 
-export function boltError(area, areadesc, prod, e, noStackTrace = false) {
-	let returnd = {
+export function boltError(area, areadesc, prod, e) {
+	return {
 		author: {
 			username: "Bolt",
 			icon_url:
 				"https://cdn.discordapp.com/avatars/946939274434080849/fdcd9f72ed1f42e9ff99698a0cbf38fb.webp?size=128",
 		},
-		content: dedent`
+		// guilded does NOT like this
+		content: dedent(`
 				bolt ran into an issue.
 				here's some info:
 				\`\`\`md
@@ -28,32 +29,8 @@ export function boltError(area, areadesc, prod, e, noStackTrace = false) {
 					legal:
 					https://github.com/williamhorning/bolt/blob/main/legalese.md
 				\`\`\`
-			`,
+			`),
 	};
-	if (noStackTrace) {
-		returnd.content = dedent`
-			bolt ran into an issue.
-			here's some info:
-				**what you should do**
-				join the support server:
-					- https://discord.gg/eGq7uhtJDx
-					- https://www.guilded.gg/i/kamX0vek
-					or
-					- https://app.revolt.chat/invite/tpGKXcqk
-				**details**
-				area: ${area} - ${areadesc}
-				prod: ${prod}
-				**error**
-				error: ${e?.message || e}
-				stack trace:
-				see console
-				legal:
-				https://github.com/williamhorning/bolt/blob/main/legalese.md
-				\`\`\`
-			`;
-		console.log(e?.stack || e);
-	}
-	return returnd;
 }
 
 // todo: replace with an implementation that's mostly miniflare KV compatible

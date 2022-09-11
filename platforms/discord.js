@@ -68,7 +68,7 @@ class discordClient extends EventEmitter {
 	}
 	async bridgeSend(msg, hookdat) {
 		let hook = new WebhookClient(hookdat);
-		let dscattachments = msg.attachments.map((crossplat) => {
+		let dscattachments = msg.attachments?.map((crossplat) => {
 			return {
 				attachment: crossplat.file,
 				description: crossplat.alt,
@@ -76,28 +76,25 @@ class discordClient extends EventEmitter {
 			};
 		});
 		let dat = {
-			content: `${msg.content} `,
+			content: msg.content || undefined,
 			username: msg.author.username,
 			avatarURL: msg.author.profile,
 			files: dscattachments,
+			embeds: msg.embeds || [],
 		};
-		if (!msg.replyto) {
-			await hook.send(dat);
-		} else {
-			await hook.send({
-				...dat,
-				embeds: [
-					{
-						author: {
-							name: `reply to ${msg.replyto.author.username}`,
-							icon_url: msg.replyto.author.profile,
-						},
-						description: msg.replyto.content,
+		if (msg.replyto) {
+			dat.embeds.push([
+				{
+					author: {
+						name: `reply to ${msg.replyto.author.username}`,
+						icon_url: msg.replyto.author.profile,
 					},
-					...(msg.replyto.embeds || []),
-				],
-			});
+					description: msg.replyto.content,
+				},
+				...(msg.replyto.embeds || []),
+			]);
 		}
+		await hook.send(dat);
 	}
 }
 

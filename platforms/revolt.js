@@ -50,7 +50,7 @@ class revoltClient extends EventEmitter {
 				username: message.member.nickname || message.author.username,
 				profile: message.author.generateAvatarURL(),
 			},
-			embeds: await this.getEmbeds(msg),
+			embeds: msg.embeds,
 		};
 	}
 	async getAttachments(message) {
@@ -107,8 +107,14 @@ class revoltClient extends EventEmitter {
 				},
 			];
 		}
-		message.embeds.push(...msg.embeds)
-		await this.revolt.channels.$get(id).sendMessage(message);
+		if (msg.embeds?.length > 0) {
+			message.embeds = [...msg.embeds, ...(message.embeds || [])];
+		}
+		try {
+			await this.revolt.channels.$get(id).sendMessage(message);
+		} catch (e) {
+			console.log(e.toJSON());
+		}
 	}
 }
 

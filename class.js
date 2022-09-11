@@ -33,8 +33,11 @@ export class client {
 		try {
 			if (
 				msg.platform === "guilded" &&
-				msg.author.id === this.guilded.guilded.user.id &&
-				msg.embeds
+				((msg.author.id === this.guilded.guilded.user.id && msg.embeds) ||
+					(msg["platform.message"].createdByWebhookId &&
+						(await this.db.find("bridgev1", {
+							"value.id": msg["platform.message"].createdByWebhookId,
+						}))))
 			)
 				return;
 			if (
@@ -57,8 +60,7 @@ export class client {
 					"msg event",
 					"returning on bridge msg",
 					process.env.prod,
-					e,
-					msg.platform === "guilded" ? true : false
+					e
 				)
 			);
 			return;
@@ -90,13 +92,7 @@ export class client {
 									`${msg.platform}-${msg.channel}`,
 									arg.commands[2]
 								);
-								if (!msg.platform == "discord") {
-									await this.db.put(
-										`bridgev1`,
-										`${msg.platform}-${arg.commands[2]}`,
-										msg.channel
-									);
-								} else {
+								if (msg.platform == "discord") {
 									let webhook = await msg[
 										"platform.message"
 									].channel.createWebhook("bridge");
@@ -107,6 +103,32 @@ export class client {
 											id: webhook.id,
 											token: webhook.token,
 										}
+									);
+								}
+								if (msg.platform == "guilded") {
+									let { webhook } =
+										await this.guilded.guilded.rest.router.createWebhook(
+											msg.guild,
+											{
+												name: "bridge",
+												channelId: msg.channel,
+											}
+										);
+									await this.db.put(
+										`bridgev1`,
+										`${msg.platform}-${arg.commands[2]}`,
+										{
+											id: webhook.id,
+											token: webhook.token,
+										}
+									);
+									// todo: somehow make a webhook
+								}
+								if (msg.platform == "revolt") {
+									await this.db.put(
+										`bridgev1`,
+										`${msg.platform}-${arg.commands[2]}`,
+										msg.channel
 									);
 								}
 								await msg.reply("Bridge created, hopfully it works");
@@ -130,7 +152,7 @@ export class client {
 							}
 						} else if (arg.commands[1] === "help") {
 							await msg.reply(
-								"Bridge commands:\n!bolt bridge legacy join <bridgeID>\n!bolt bridge legacy leave\nLegal:\https://github.com/williamhorning/bolt/blob/main/legalese.md"
+								"Bridge commands:\n!bolt bridge legacy join <bridgeID>\n!bolt bridge legacy leave\nLegal: https://github.com/williamhorning/bolt/blob/main/legalese.md"
 							);
 						} else {
 							throw new Error(
@@ -146,36 +168,55 @@ export class client {
 					}
 				} else if (cmd === "help") {
 					await msg.reply(
-						"help: \n!bolt bridge legacy - bridge using the legacy system, not recommended\nLegal:\https://github.com/williamhorning/bolt/blob/main/legalese.md"
+						"help: \n!bolt bridge legacy - bridge using the legacy system, not recommended\nLegal: https://github.com/williamhorning/bolt/blob/main/legalese.md"
 					);
 				} else {
 					throw new Error("Unknown command, try `!bolt help`");
 				}
 			} catch (e) {
-				await msg.reply(boltError("command handler", "unified", process.env.prod, e));
+				await msg.reply(
+					boltError("command handler", "unified", process.env.prod, e)
+				);
 			}
 		}
 		if (bridgeIdentifierLegacy) {
 			let platforms = ["discord", "guilded", "revolt"];
 			platforms.splice(platforms.indexOf(msg.platform), 1);
-			msg.author.username = `<${msg.platform}> ${msg.author.username}`;
 			for (let platform of platforms) {
 				let id = await this.db.get(
 					"bridgev1",
 					`${platform}-${bridgeIdentifierLegacy}`
 				);
-				try {
-					await this[platform].bridgeSend(msg, id);
-				} catch (e) {
-					await this[platform].bridgeSend(
-						boltError(
-							"legacy bridge send",
-							"send to other platform",
-							process.env.prod,
-							e
-						),
-						id
-					);
+				if (!id) continue;
+				if (platform !== "guilded" || (platform == "guilded" && id?.token)) {
+					// this is here because guilded webhook migration is a thing
+					try {
+						await this[platform].bridgeSend(msg, id);
+					} catch (e) {
+						await this[platform].bridgeSend(
+							boltError(
+								"legacy bridge send",
+								"send to other platform",
+								process.env.prod,
+								e
+							),
+							id
+						);
+					}
+				} else {
+					try {
+						await this[platform].idSend(msg, id);
+					} catch (e) {
+						await this[platform].idSend(
+							boltError(
+								"legacy bridge send",
+								"send to other platform - guilded webhookless",
+								process.env.prod,
+								e
+							),
+							id
+						);
+					}
 				}
 			}
 		}

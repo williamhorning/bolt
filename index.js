@@ -6,6 +6,14 @@ let thingy = new client();
 
 await thingy.setup();
 
+process.on("uncaughtException", (err) => {
+	console.error(err);
+});
+
+process.on("unhandledRejection", (err) => {
+	console.error(err);
+});
+
 start({
 	prompt: "bolt> ",
 });
