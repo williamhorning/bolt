@@ -83,16 +83,15 @@ class discordClient extends EventEmitter {
 			embeds: msg.embeds || [],
 		};
 		if (msg.replyto) {
-			dat.embeds.push([
+			dat.embeds.push(
 				{
 					author: {
 						name: `reply to ${msg.replyto.author.username}`,
 						icon_url: msg.replyto.author.profile,
 					},
-					description: msg.replyto.content,
-				},
-				...(msg.replyto.embeds || []),
-			]);
+					description: `${msg.replyto.content} ` || "*empty message*",
+				});
+			dat.embeds.push(...(msg.replyto.embeds||[]))
 		}
 		await hook.send(dat);
 	}
