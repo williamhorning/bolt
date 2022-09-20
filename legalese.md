@@ -22,11 +22,11 @@ If you're using Bolt, you must not be underage, you must not hold us liable for 
 
 ### Service Provider
 
-Our services are provided by William Horning and Isaac McFadyen, hearby referred to as the Service Providers. Our services operate under the laws of the following jurisdictions:
+Our services are provided by William Horning and Isaac McFadyen, hereby referred to as the Service Providers. Our services operate under the laws of the following jurisdictions:
 - Harris Township, Centre County, Commonwealth of Pennsylvania, United States of America
 - Toronto, Ontario, Canada
 
-The laws of Toronto, Ontario, Canada hearby supersede the laws of any other jurisdiction for the operation of our services.
+The laws of Toronto, Ontario, Canada hereby supersede the laws of any other jurisdiction for the operation of our services.
 
 ### Age Requirements
 
