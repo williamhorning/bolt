@@ -9,7 +9,7 @@ Bolt is a cross-platform chat bot operated by [William Horning](https://williamh
 We / Us / Our - William Horning and Isaac McFadyen  
 You - the user of Bolt  
 Our services - Bolt  
-Service Providers - William Horning and Isaac McFadyen
+Service Providers - William Horning and Isaac McFadyen  
 Third Party chat plaforms - Discord, Guilded, and Revolt
 
 ## TL;DR
