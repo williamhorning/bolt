@@ -2,7 +2,7 @@
   "dependencies": {
     "discord.js": "^13.8.1",
     "dotenv": "^16.0.1",
-    "guilded.js": "^0.13.8",
+    "guilded.js": "^0.13.15",
     "mongodb": "^4.7.0",
     "revolt.js": "^6.0.13",
     "string-dedent": "^3.0.1",
