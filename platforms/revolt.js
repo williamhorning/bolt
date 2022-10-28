@@ -41,7 +41,9 @@ class revoltClient extends EventEmitter {
 			guild: message.channel.server_id,
 			id: message._id,
 			"platform.message": message,
+      timestamp: message.createdAt,
 			reply: (content) => {
+        if (typeof content != "string") content = this.constructRevoltMessage(content);
 				message.reply(content);
 			},
 			embeds: message.embeds?.filter((embed) => {

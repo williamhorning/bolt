@@ -46,7 +46,9 @@ class discordClient extends EventEmitter {
 			guild: message.guildId,
 			id: message.id,
 			"platform.message": message,
+      timestamp: message.createdTimestamp,
 			reply: (content) => {
+        if (typeof content != "string") content = this.constructDiscordMessage(content)
 				return message.reply(content);
 			},
 			embeds: message.embeds,
@@ -86,15 +88,13 @@ class discordClient extends EventEmitter {
 				name: crossplat.name,
 			};
 		});
-		console.log(dscattachments)
 		let dat = {
 			content,
 			username: msg.author.username,
 			avatarURL: msg.author.profile,
 			files: dscattachments,
-			embeds: msg.embeds,
+			embeds: msg.embeds || [],
 		};
-		console.log(dat)
 		if (msg.replyto) {
 			dat.embeds.push({
 				author: {

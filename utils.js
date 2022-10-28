@@ -1,32 +1,34 @@
-import dedent from "string-dedent";
-
-export function boltError(area, areadesc, prod, e) {
+export function boltError(msg, productname, e) {
+	console.log(`\x1b[41m${productname} Error:\x1b[0m`);
+	console.log(e);
+	if (process.env.ERROR_HOOK) {
+		fetch(process.env.ERROR_HOOK, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				embeds: [
+					{
+						title: `${productname} Error`,
+						description: `Error: ${msg} on ${productname}. \n \`\`\`${e}\`\`\``,
+						color: 16711680,
+					},
+				],
+			}),
+		});
+	}
 	return {
 		author: {
 			username: "Bolt",
 			icon_url:
 				"https://cdn.discordapp.com/avatars/946939274434080849/fdcd9f72ed1f42e9ff99698a0cbf38fb.webp?size=128",
 		},
-		content: dedent`
-			bolt ran into an issue.
-			here's some info:
-			\`\`\`md
-				# what you should do
-				join the support server:
-					- https://discord.gg/eGq7uhtJDx
-					- https://www.guilded.gg/i/kamX0vek
-					or
-					- https://app.revolt.chat/invite/tpGKXcqk
-				# details
-				area: ${area} - ${areadesc}
-				prod: ${prod}
-				# error
-				error: ${e?.message || e}
-				stack trace:
-				${e?.stack || e}
-				legal:
-				https://github.com/williamhorning/bolt/blob/main/legalese.md
-			\`\`\`
-		`,
+		content: `Error: ${msg} on ${productname}. Run \`!bolt help\` to get help.`,
 	};
+}
+
+export function boltErrorButExit(e) {
+  boltError("uncaught exception", "bolt core", e);
+  process.exit(1);
 }

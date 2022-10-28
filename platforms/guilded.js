@@ -45,7 +45,9 @@ class guildedClient extends EventEmitter {
 			guild: message.serverId,
 			id: message.id,
 			"platform.message": message,
+			timestamp: message._createdAt,
 			reply: (content) => {
+				if (typeof content != "string") content = this.constructGuildedMsg(content);
 				return message.reply(content);
 			},
 			embeds: message.raw.embeds,
@@ -65,6 +67,35 @@ class guildedClient extends EventEmitter {
 			},
 			embeds: msg2.raw.embeds,
 		};
+	}
+	constructGuildedMsg(msg) {
+		let dat = {
+			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+			username: msg.author.username,
+			avatar_url: msg.author.profile,
+			embeds: msg.embeds,
+		};
+		dat.content += `${dat.content ? "\n" : ""}${msg.attachments
+			?.map((a) => {
+				return `![${a.alt || a.name}](${a.file})`;
+			})
+			?.join("\n")}`;
+		if (msg.replyto) {
+			dat.embeds.push(
+				...[
+					{
+						author: {
+							name: `reply to ${msg.replyto.author.username}`,
+							icon_url: msg.replyto.author.profile,
+						},
+						description: msg.replyto.content,
+					},
+					...(msg.replyto.embeds || []),
+				]
+			);
+		}
+		if (msg?.embeds?.length < 1) delete dat.embeds;
+		return dat;
 	}
 	async idSend(msg, id) {
 		let channel = await this.guilded.channels.fetch(id);
@@ -97,35 +128,21 @@ class guildedClient extends EventEmitter {
 		await channel.send(senddat);
 	}
 	async bridgeSend(msg, hookdat) {
-		let dat = {
-			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
-			username: msg.author.username,
-			avatar_url: msg.author.profile,
-			embeds: msg.embeds,
-		};
-		dat.content += `${dat.content ? "\n" : ""}${msg.attachments
-			?.map((a) => {
-				return `![${a.alt || a.name}](${a.file})`;
-			})
-			?.join("\n")}`;
-		if (msg.replyto) {
-			dat.embeds.push(
-				...[
-					{
-						author: {
-							name: `reply to ${msg.replyto.author.username}`,
-							icon_url: msg.replyto.author.profile,
-						},
-						description: msg.replyto.content,
-					},
-					...(msg.replyto.embeds || []),
-				]
-			);
-		}
-		if (msg?.embeds?.length < 1) delete dat.embeds;
 		let hook = new WebhookClient(hookdat);
-		let { id: message, channelId: channel } = await hook.send(dat);
+		let { id: message, channelId: channel } = await hook.send(
+			this.constructGuildedMsg(msg)
+		);
 		return { platform: "guilded", message, channel };
+	}
+
+	async bridgeEdit() {
+		throw new Error(
+			"Guilded does not support editing messages sent using webhooks"
+		);
+	}
+
+	async bridgeDelete(msg) {
+		await (await this.guilded.messages.fetch(msg.id)).delete();
 	}
 }
 
