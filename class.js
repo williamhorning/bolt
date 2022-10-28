@@ -36,7 +36,6 @@ export class client {
 				((msg.author.id === this.guilded.guilded.user.id && msg.embeds) ||
 					(msg["platform.message"].createdByWebhookId &&
 						(await this.db.find("bridgev1", {
-					    		_id: `guilded-${msg.channel}`,
 							"value.id": msg["platform.message"].createdByWebhookId,
 						}))))
 			)
