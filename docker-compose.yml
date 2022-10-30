@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
     bolt-node:
-        image: node:18
+        image: node:19
         volumes:
           - /home/ubuntu/bolt:/app
         command: ./run.sh

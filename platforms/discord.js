@@ -51,7 +51,10 @@ class discordClient extends EventEmitter {
         if (typeof content != "string") content = this.constructDiscordMessage(content)
 				return message.reply(content);
 			},
-			embeds: message.embeds,
+			embeds: message.embeds?.map((i) => {
+        i=i.toJSON()
+        return Object.fromEntries(Object.entries(i).filter(([_, v]) => v != null))
+      }),
 		};
 	}
 	async getReply(message) {
@@ -80,7 +83,7 @@ class discordClient extends EventEmitter {
 	}
 	constructDiscordMessage(msg) {
 		let content = msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)")
-		if (content.length == 0) content = null;
+		if (content?.length == 0) content = null;
 		let dscattachments = msg.attachments?.map((crossplat) => {
 			return {
 				attachment: crossplat.file,

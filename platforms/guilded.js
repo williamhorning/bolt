@@ -40,6 +40,7 @@ class guildedClient extends EventEmitter {
 					? await this.getReply(message)
 					: null,
 			attachments: [], // guilded attachments suck and don't have a bot api impl
+			embeds: message.raw.embeds,
 			platform: "guilded",
 			channel: message.channelId,
 			guild: message.serverId,
@@ -47,10 +48,10 @@ class guildedClient extends EventEmitter {
 			"platform.message": message,
 			timestamp: message._createdAt,
 			reply: (content) => {
-				if (typeof content != "string") content = this.constructGuildedMsg(content);
+				if (typeof content != "string")
+					content = this.constructGuildedMsg(content);
 				return message.reply(content);
 			},
-			embeds: message.raw.embeds,
 		};
 	}
 	async getReply(message) {
@@ -75,11 +76,13 @@ class guildedClient extends EventEmitter {
 			avatar_url: msg.author.profile,
 			embeds: msg.embeds,
 		};
-		dat.content += `${dat.content ? "\n" : ""}${msg.attachments
-			?.map((a) => {
-				return `![${a.alt || a.name}](${a.file})`;
-			})
-			?.join("\n")}`;
+		if (msg.attachments?.length > 0) {
+			dat.content += `${dat.content ? "\n" : ""}${msg.attachments
+				?.map((a) => {
+					return `![${a.alt || a.name}](${a.file})`;
+				})
+				?.join("\n")}`;
+		}
 		if (msg.replyto) {
 			dat.embeds.push(
 				...[

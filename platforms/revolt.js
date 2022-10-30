@@ -121,7 +121,15 @@ class revoltClient extends EventEmitter {
 			];
 		}
 		if (msg.embeds?.length > 0) {
-			dat.embeds = [...msg.embeds, ...(dat.embeds || [])];
+			dat.embeds = [...msg.embeds?.map((i)=>{
+        if (i.fields) {
+          for (let field of i.fields) {
+            i.description += `\n**${field.name}**\n${field.value}\n`
+          }
+          delete i.fields
+        }
+        return i;
+      }), ...(dat.embeds || [])];
 		}
 		return dat;
 	}
