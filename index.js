@@ -27,7 +27,7 @@ async function msgCreate(msg) {
 	}
 
 	if (currentID?.bridges.length > 0) {
-		msg.reply("wtf are you testing here? contact william");
+		msg.reply("new bridges aren't avalible, contact william for help.");
 		// bridgeSend(msg, currentID);
 	}
 }
