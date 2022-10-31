@@ -1,5 +1,4 @@
-import { Client as GuildedClient } from "guilded.js";
-import { parseMessage } from "@guildedjs/webhook-client";
+import { Client as GuildedClient, WebhookClient } from "guilded.js";
 import EventEmitter from "events";
 
 class guildedClient extends EventEmitter {
@@ -12,35 +11,48 @@ class guildedClient extends EventEmitter {
 		});
 		this.guilded.on("messageCreated", async (message) => {
 			if (message.type === 1) return;
-			if (!message.createdByWebhookId) {
-				await this.guilded.members.fetch(message.serverId, message.authorId);
-			}
-			let msg = {
-				content: message.content.replace("![]", "[]"),
-				author: {
-					username: message.member?.displayName || message.author?.name,
-					profile: message.author?.avatar,
-					banner: message.author?.banner,
-					id: message.authorId,
-				},
-				replyto:
-					message.replyMessageIds.length > 0
-						? await this.getReply(message)
-						: null,
-				attachments: [], // guilded attachments suck and don't have a bot api impl
-				platform: "guilded",
-				channel: message.channelId,
-				guild: message.serverId,
-				id: message.id,
-				"platform.message": message,
-				reply: (content) => {
-					return message.reply(content);
-				},
-				embeds: message.raw.embeds,
-			};
-			this.emit("msg", msg);
+			this.emit("msgcreate", await this.constructmsg(message));
+		});
+		this.guilded.on("messageUpdated", async (oldmessage, newmessage) => {
+			if (oldmessage.type === 1) return;
+			this.emit("msgedit", await this.constructmsg(newmessage));
+		});
+		this.guilded.on("messageDeleted", async (message) => {
+			if (message.type === 1) return;
+			this.emit("msgdelete", await this.constructmsg(message));
 		});
 		this.guilded.login();
+	}
+	async constructmsg(message) {
+		if (!message.createdByWebhookId) {
+			await this.guilded.members.fetch(message.serverId, message.authorId);
+		}
+		return {
+			content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+			author: {
+				username: message.member?.displayName || message.author?.name,
+				profile: message.author?.avatar,
+				banner: message.author?.banner,
+				id: message.authorId,
+			},
+			replyto:
+				message.replyMessageIds.length > 0
+					? await this.getReply(message)
+					: null,
+			attachments: [], // guilded attachments suck and don't have a bot api impl
+			embeds: message.raw.embeds,
+			platform: "guilded",
+			channel: message.channelId,
+			guild: message.serverId,
+			id: message.id,
+			"platform.message": message,
+			timestamp: message._createdAt,
+			reply: (content) => {
+				if (typeof content != "string")
+					content = this.constructGuildedMsg(content);
+				return message.reply(content);
+			},
+		};
 	}
 	async getReply(message) {
 		let msg2 = await this.guilded.messages.fetch(
@@ -49,13 +61,44 @@ class guildedClient extends EventEmitter {
 		);
 		await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
 		return {
-			content: msg2.content.replace("![]", "[]"),
+			content: msg2.content,
 			author: {
 				username: msg2.author.name,
 				profile: msg2.author.avatar,
 			},
 			embeds: msg2.raw.embeds,
 		};
+	}
+	constructGuildedMsg(msg) {
+		let dat = {
+			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+			username: msg.author.username,
+			avatar_url: msg.author.profile,
+			embeds: msg.embeds,
+		};
+		if (msg.attachments?.length > 0) {
+			dat.content += `${dat.content ? "\n" : ""}${msg.attachments
+				?.map((a) => {
+					return `![${a.alt || a.name}](${a.file})`;
+				})
+				?.join("\n")}`;
+		}
+		if (msg.replyto) {
+			dat.embeds.push(
+				...[
+					{
+						author: {
+							name: `reply to ${msg.replyto.author.username}`,
+							icon_url: msg.replyto.author.profile,
+						},
+						description: msg.replyto.content,
+					},
+					...(msg.replyto.embeds || []),
+				]
+			);
+		}
+		if (msg?.embeds?.length < 1) delete dat.embeds;
+		return dat;
 	}
 	async idSend(msg, id) {
 		let channel = await this.guilded.channels.fetch(id);
@@ -68,8 +111,9 @@ class guildedClient extends EventEmitter {
 					},
 					description: msg.content,
 					footer: {
-						text: "try setting up this bridge again for webhooks"
-					}
+						// TODO: i should probably localize this, but i cant speak other languages
+						text: "try setting up this bridge again for webhooks",
+					},
 				},
 				...(msg.embeds || []),
 			],
@@ -87,43 +131,21 @@ class guildedClient extends EventEmitter {
 		await channel.send(senddat);
 	}
 	async bridgeSend(msg, hookdat) {
-		let dat = {
-			content: msg.content,
-			username: msg.author.username,
-			avatar_url: msg.author.profile,
-		};
-		if (!msg.replyto) {
-			await this._webhooksend(hookdat, dat);
-		} else {
-			await this._webhooksend(hookdat, {
-				...dat,
-				embeds: [
-					{
-						author: {
-							name: `reply to ${msg.replyto.author.username}`,
-							icon_url: msg.replyto.author.profile,
-						},
-						description: msg.replyto.content,
-					},
-					...(msg.replyto.embeds || []),
-				],
-			});
-		}
+		let hook = new WebhookClient(hookdat);
+		let { id: message, channelId: channel } = await hook.send(
+			this.constructGuildedMsg(msg)
+		);
+		return { platform: "guilded", message, channel };
 	}
-	async _webhooksend(hookdat, message) {
-		// i'd much rather use the guilded.js webhook client but it doesn't work how i want it to
-		let data = await (
-			await fetch(
-				`https://media.guilded.gg/webhooks/${hookdat.id}/${hookdat.token}`,
-				{
-					method: "POST",
-					body: JSON.stringify(message),
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
-			)
-		).json();
+
+	async bridgeEdit() {
+		throw new Error(
+			"Guilded does not support editing messages sent using webhooks"
+		);
+	}
+
+	async bridgeDelete(msg) {
+		await (await this.guilded.messages.fetch(msg.id)).delete();
 	}
 }
 

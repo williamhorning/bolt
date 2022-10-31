@@ -1,19 +1,33 @@
-import { start } from "repl";
 import "dotenv/config";
-import { client } from "./class.js";
 
-let thingy = new client();
+import { boltErrorButExit, platforms, getBridges, isbridged } from "./utils.js";
 
-await thingy.setup();
+import { legacyBridgeSend, bridgeSend } from "./bridge/index.js";
 
-process.on("uncaughtException", (err) => {
-	console.error(err);
-});
+import commandhandle from "./commands/index.js";
 
-process.on("unhandledRejection", (err) => {
-	console.error(err);
-});
+process.on("uncaughtException", boltErrorButExit);
+process.on("unhandledRejection", boltErrorButExit);
 
-start({
-	prompt: "bolt> ",
-});
+for (let platform in platforms) {
+	platforms[platform].on("msgcreate", msgCreate);
+}
+
+async function msgCreate(msg) {
+	if (await isbridged(msg)) return;
+
+	let { legacy: legacyID, current: currentID } = await getBridges(msg);
+
+	if (msg.content.startsWith("!bolt")) {
+		commandhandle(msg);
+	}
+
+	if (legacyID) {
+		legacyBridgeSend(msg, legacyID);
+	}
+
+	if (currentID?.bridges.length > 0) {
+		msg.reply("new bridges aren't avalible, contact william for help.");
+		// bridgeSend(msg, currentID);
+	}
+}
