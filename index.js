@@ -1,8 +1,8 @@
 import "dotenv/config";
 
-import { boltErrorButExit, platforms, getBridges, isbridged } from "./utils.js";
+import { boltErrorButExit, platforms, isbridged } from "./utils.js";
 
-import { legacyBridgeSend, bridgeSend } from "./bridge/index.js";
+import { tryBridgeSend } from "./bridge/index.js";
 
 import commandhandle from "./commands/index.js";
 
@@ -16,18 +16,9 @@ for (let platform in platforms) {
 async function msgCreate(msg) {
 	if (await isbridged(msg)) return;
 
-	let { legacy: legacyID, current: currentID } = await getBridges(msg);
-
 	if (msg.content.startsWith("!bolt")) {
 		commandhandle(msg);
 	}
 
-	if (legacyID) {
-		legacyBridgeSend(msg, legacyID);
-	}
-
-	if (currentID?.bridges.length > 0) {
-		msg.reply("new bridges aren't avalible, contact william for help.");
-		// bridgeSend(msg, currentID);
-	}
+	await tryBridgeSend(msg)
 }

@@ -1,8 +1,8 @@
 import argvParse from "@williamhorning/arg-parse";
-import { boltEmbedMsg } from "../utils.js";
+import { boltEmbedMsg, boltError } from "../utils.js";
 
 export default async function commandhandle(msg) {
-	let arg = argvParse(msg.content);
+	let arg = argvParse(msg.content.trim());
 	arg._.shift();
 	let cmd = arg._.shift() || "help";
 	try {

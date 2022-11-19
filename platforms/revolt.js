@@ -29,6 +29,7 @@ class revoltClient extends EventEmitter {
 			content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
 				username: message.member.nickname || message.author.username,
+        rawname: message.author.username,
 				profile: message.author.generateAvatarURL(),
 				banner: null,
 				id: message.author_id,

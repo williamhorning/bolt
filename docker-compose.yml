@@ -5,7 +5,7 @@ services:
         image: node:19
         volumes:
           - /home/ubuntu/bolt:/app
-        command: ./run.sh
+        command: ./index.js
         network_mode: host
         working_dir: /app
         restart: always

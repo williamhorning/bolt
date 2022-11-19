@@ -79,7 +79,7 @@ export default async function bridge(
 			}
 
 			await legacyBridgeDatabase.delete(
-				`${msg.platform}-${bridgeIdentifierLegacy}`
+				`${msg.platform}-${legacyBridgeId}`
 			);
 
 			await legacyBridgeDatabase.delete(`${msg.platform}-${msg.channel}`);

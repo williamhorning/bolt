@@ -21,7 +21,7 @@ Usage:
 ```
 
 Parameters:
-name - The name of the bridge to join, must NOT be a channel ID.
+name - The name of the bridge to join, must ***NOT*** be a channel ID.
 
 This adds the channel to a named bridge with the given name.
 
