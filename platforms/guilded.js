@@ -60,12 +60,14 @@ class guildedClient extends EventEmitter {
 			message.channelId,
 			message.replyMessageIds[0]
 		);
-		await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
+		if (!msg2.createdByWebhookId) {
+			await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
+		}
 		return {
 			content: msg2.content,
 			author: {
-				username: msg2.member?.displayName || msg2.author?.name,
-				profile: msg2.author.avatar,
+				username: msg2.member?.displayName || msg2.author?.name || `user ${msg2.authorId}` || "user",
+				profile: msg2.author?.avatar,
 			},
 			embeds: msg2.raw.embeds,
 		};
