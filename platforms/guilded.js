@@ -76,7 +76,7 @@ class guildedClient extends EventEmitter {
 		if (this.validUsernameCheck(msg.author.username))
 			return msg.author.username;
 		if (this.validUsernameCheck(msg.author.rawname)) return msg.author.rawname;
-		if (this.validUsernameCheck(msg.author.id))
+		if (this.validUsernameCheck(`user ${msg.author.id} on ${msg.platform}`))
 			return `user ${msg.author.id} on ${msg.platform}`;
 		return `user on ${msg.platform}`;
 	}
