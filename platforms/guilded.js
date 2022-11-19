@@ -31,6 +31,7 @@ class guildedClient extends EventEmitter {
 			content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
 				username: message.member?.displayName || message.author?.name,
+				rawname: message?.author?.name,
 				profile: message.author?.avatar,
 				banner: message.author?.banner,
 				id: message.authorId,
@@ -59,20 +60,37 @@ class guildedClient extends EventEmitter {
 			message.channelId,
 			message.replyMessageIds[0]
 		);
-		await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
+		if (!msg2.createdByWebhookId) {
+			await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
+		}
 		return {
 			content: msg2.content,
 			author: {
-				username: msg2.author.name,
-				profile: msg2.author.avatar,
+				username: msg2.member?.displayName || msg2.author?.name || `user ${msg2.authorId}` || "user",
+				profile: msg2.author?.avatar,
 			},
 			embeds: msg2.raw.embeds,
 		};
 	}
+	chooseValidGuildedUsername(msg) {
+		if (this.validUsernameCheck(msg.author.username))
+			return msg.author.username;
+		if (this.validUsernameCheck(msg.author.rawname)) return msg.author.rawname;
+		if (this.validUsernameCheck(msg.author.id))
+			return `user ${msg.author.id} on ${msg.platform}`;
+		return `user on ${msg.platform}`;
+	}
+	validUsernameCheck(username) {
+		return (
+			username.length > 1 &&
+			username.length < 128 &&
+			username.match(/^[a-zA-Z0-9_ ()]*$/gms)
+		);
+	}
 	constructGuildedMsg(msg) {
 		let dat = {
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
-			username: msg.author.username,
+			username: this.chooseValidGuildedUsername(msg),
 			avatar_url: msg.author.profile,
 			embeds: msg.embeds,
 		};
@@ -97,7 +115,16 @@ class guildedClient extends EventEmitter {
 				]
 			);
 		}
-		if (msg?.embeds?.length < 1) delete dat.embeds;
+		if (msg?.embeds?.length < 1) {
+			delete dat.embeds;
+		} else {
+			msg?.embeds?.map((embed) => {
+				for (let i in embed) {
+					let item = embed[i];
+					if (item == null || item == undefined) embed[i] = undefined;
+				}
+			});
+		}
 		return dat;
 	}
 	async idSend(msg, id) {

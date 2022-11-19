@@ -34,6 +34,7 @@ class discordClient extends EventEmitter {
 			content: message.cleanContent?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
 				username: message.member?.displayName || message.author.username,
+        rawname: message.author.username,
 				profile: message.author.displayAvatarURL(),
 				// todo: reimplement banner, this solution breaks if we don't fetch user, but that breaks if the user isnt a user, and is a webhook
 				// banner: message.author.bannerURL(),

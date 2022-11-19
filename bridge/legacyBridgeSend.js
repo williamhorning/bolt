@@ -1,6 +1,6 @@
 import { boltError, platforms, legacyBridgeDatabase } from "../utils.js";
 
-export async function legacyBridgeSend(msg, bridgeIdentifierLegacy) {
+export default async function send(msg, bridgeIdentifierLegacy) {
 	let lsplatforms = Object.keys(platforms).filter((i) => i != msg.platform);
 
 	for (let platform of lsplatforms) {

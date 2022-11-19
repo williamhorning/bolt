@@ -1,4 +1,4 @@
-# bolt docs.
+# bolt
 
 ## invite links
 
@@ -12,36 +12,5 @@ Revolt: https://app.revolt.chat/bot/01G1Y9M6G254VWBF41W3N5DQY5
 
 Bolt should get administrator permissions, so it can create webhooks and masquerade
 
-# commands
-
-## ping
-
-Usage:
-
-```
-!bolt ping
-```
-
-Tells you if the bot is alive and how it takes to respons.
-
-## help
-
-Usage:
-
-```
-!bolt help
-```
-
-Links to this help page
-
-## version
-
-Usage:
-
-```
-!bolt version
-```
-
-Tells you the version of the bot.
-
-## [bridge](bridges.md)
+## [commands](/docs/commands.md)
+## [changelog](/changelog.md)
