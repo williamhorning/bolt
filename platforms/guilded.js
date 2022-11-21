@@ -66,19 +66,23 @@ class guildedClient extends EventEmitter {
 		return {
 			content: msg2.content,
 			author: {
-				username: msg2.member?.displayName || msg2.author?.name || `user ${msg2.authorId}` || "user",
+				username:
+					msg2.member?.displayName ||
+					msg2.author?.name ||
+					"user on guilded, probably",
 				profile: msg2.author?.avatar,
 			},
 			embeds: msg2.raw.embeds,
 		};
 	}
 	chooseValidGuildedUsername(msg) {
-		if (this.validUsernameCheck(msg.author.username))
+		if (this.validUsernameCheck(msg.author.username)) {
 			return msg.author.username;
-		if (this.validUsernameCheck(msg.author.rawname)) return msg.author.rawname;
-		if (this.validUsernameCheck(`user ${msg.author.id} on ${msg.platform}`))
-			return `user ${msg.author.id} on ${msg.platform}`;
-		return `user on ${msg.platform}`;
+		} else if (this.validUsernameCheck(msg.author.rawname)) {
+			return msg.author.rawname;
+		} else {
+			return `user on ${msg.platform}`;
+		}
 	}
 	validUsernameCheck(username) {
 		return (
