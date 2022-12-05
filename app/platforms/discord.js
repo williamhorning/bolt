@@ -27,6 +27,12 @@ class discordClient extends EventEmitter {
 			if (deletedMessage.system) return;
 			this.emit("msgdelete", await this.constructmsg(deletedMessage));
 		});
+		this.discord.on("interactionCreate", async (interaction) => {
+			await interaction.deferReply();
+		  if (!interaction.isCommand()) return;
+			interaction.boltCommand = { type: "discord" };
+			this.emit("command", interaction);
+		});
 		this.discord.login(this.config.token);
 	}
 	async constructmsg(message) {
@@ -34,10 +40,9 @@ class discordClient extends EventEmitter {
 			content: message.cleanContent?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
 				username: message.member?.displayName || message.author.username,
-        rawname: message.author.username,
+				rawname: message.author.username,
 				profile: message.author.displayAvatarURL(),
-				// todo: reimplement banner, this solution breaks if we don't fetch user, but that breaks if the user isnt a user, and is a webhook
-				// banner: message.author.bannerURL(),
+				banner: await this.getBanner(message),
 				id: message.author.id,
 			},
 			replyto: message.reference ? await this.getReply(message) : null,
@@ -47,15 +52,19 @@ class discordClient extends EventEmitter {
 			guild: message.guildId,
 			id: message.id,
 			"platform.message": message,
-      timestamp: message.createdTimestamp,
+			timestamp: message.createdTimestamp,
 			reply: (content) => {
-        if (typeof content != "string") content = this.constructDiscordMessage(content)
+				if (typeof content != "string")
+					content = this.constructDiscordMessage(content);
 				return message.reply(content);
 			},
 			embeds: message.embeds?.map((i) => {
-        i=i.toJSON()
-        return Object.fromEntries(Object.entries(i).filter(([_, v]) => v != null))
-      }),
+				i = i.toJSON();
+				return Object.fromEntries(
+					Object.entries(i).filter(([_, v]) => v != null)
+				);
+			}),
+			boltCommand: {},
 		};
 	}
 	async getReply(message) {
@@ -82,8 +91,13 @@ class discordClient extends EventEmitter {
 			}
 		);
 	}
-	constructDiscordMessage(msg) {
-		let content = msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)")
+	async getBanner(msg) {
+		if (msg.webhookId) return;
+		return (await msg.author.fetch()).bannerURL();
+	}
+	constructDiscordMessage(msgd) {
+    let msg = Object.assign({}, msgd);
+		let content = msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)");
 		if (content?.length == 0) content = null;
 		let dscattachments = msg.attachments?.map((crossplat) => {
 			return {
@@ -109,8 +123,11 @@ class discordClient extends EventEmitter {
 			});
 			dat.embeds.push(...(msg.replyto.embeds || []));
 		}
+    // if dat.content and dat.embeds is just an empty array, set content to empty message
+    if (dat.content == '' && dat.embeds?.length == 0) dat.content = "*empty message*";
 		return dat;
 	}
+
 	async bridgeSend(msg, hookdat) {
 		let hook = new WebhookClient(hookdat);
 		let { id: message, channel_id: channel } = await hook.send(

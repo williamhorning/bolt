@@ -1,14 +1,10 @@
-/*
-This file is home to tons of the core functions that make up bolt that can't be made into a generic utility that could be used in other projects.
-Those would be in @williamhorning/utils
-*/
-
 import dsc from "./platforms/discord.js";
 import gld from "./platforms/guilded.js";
 import rvl from "./platforms/revolt.js";
 import { mongoKV } from "@williamhorning/mongo-kv";
+import { basename, join } from "path/posix";
 
-export * from './bridge/utils.js'
+export * from "./bridge/utils.js";
 
 export const prod = process.env.prod;
 export const displayname = prod ? "Bolt" : "Bolt Canary";
@@ -45,7 +41,7 @@ export const bridgeDatabase = new mongoKV({
 	collection: "bridgev1",
 });
 
-async function webhookSendError(msg, productname, e, extra) {
+async function webhookSendError(msg, name, e, extra) {
 	extra.msg = extra.msg ? "see the console" : null;
 	await fetch(process.env.ERROR_HOOK, {
 		method: "POST",
@@ -55,10 +51,10 @@ async function webhookSendError(msg, productname, e, extra) {
 		body: JSON.stringify({
 			embeds: [
 				{
-					title: `${productname} Error`,
+					title: `${name} Error`,
 					fields: [
 						{
-							name: `Error: ${msg} on ${productname}.`,
+							name: `Error: ${msg} on ${name}.`,
 							value: `\`\`\`${e}\n\`\`\``,
 						},
 						{
@@ -76,17 +72,17 @@ export function boltError(msg, e, extr, usewebhook = true) {
 	let extra = Object.assign({}, extr);
 
 	if (!prod) {
-		console.error(`\x1b[41m${productname} Error:\x1b[0m`);
+		console.error(`\x1b[41m${displayname} Error:\x1b[0m`);
 		console.error(msg);
 		console.error(e);
 		console.log(`\x1b[41mExtra:\x1b[0m`);
 		console.log(extra);
 	}
 	if (process.env.ERROR_HOOK && usewebhook) {
-		webhookSendError(msg, productname, e, extra);
+		webhookSendError(msg, displayname, e, extra);
 	}
 	return boltEmbedMsg(
-		`Error on ${productname}`,
+		`Error on ${displayname}`,
 		`Error: ${msg}. Run \`!bolt help\` to get help.`
 	);
 }
@@ -119,4 +115,8 @@ export function boltEmbedMsg(title, description, fields) {
 			},
 		],
 	};
+}
+
+export function currentdir(importmetaurl, additional = "", thingtosanitize) {
+	return join(new URL(".", importmetaurl).href, additional, basename(thingtosanitize));
 }
