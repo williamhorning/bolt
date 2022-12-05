@@ -29,7 +29,7 @@ class revoltClient extends EventEmitter {
 			content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
 				username: message.member.nickname || message.author.username,
-        rawname: message.author.username,
+				rawname: message.author.username,
 				profile: message.author.generateAvatarURL(),
 				banner: null,
 				id: message.author_id,
@@ -42,14 +42,16 @@ class revoltClient extends EventEmitter {
 			guild: message.channel.server_id,
 			id: message._id,
 			"platform.message": message,
-      timestamp: message.createdAt,
+			timestamp: message.createdAt,
 			reply: (content) => {
-        if (typeof content != "string") content = this.constructRevoltMessage(content);
+				if (typeof content != "string")
+					content = this.constructRevoltMessage(content);
 				message.reply(content);
 			},
 			embeds: message.embeds?.filter((embed) => {
-				if (embed.type !== "Image") return true
+				if (embed.type !== "Image") return true;
 			}),
+			boltCommand: {},
 		};
 		if (bg)
 			msg.author.banner = `https://autumn.revolt.chat/backgrounds/${
@@ -83,7 +85,8 @@ class revoltClient extends EventEmitter {
 			}) || []
 		);
 	}
-	async constructRevoltMessage(msg) {
+	async constructRevoltMessage(msgd) {
+		let msg = Object.assign({}, msgd);
 		let dat = {
 			masquerade: {
 				name: msg.author.username,
@@ -97,7 +100,8 @@ class revoltClient extends EventEmitter {
 				let formdat = new FormData();
 				formdat.append(
 					"file",
-					await fetch(msg.attachments[attachment].file).then((res) => res.blob()
+					await fetch(msg.attachments[attachment].file).then((res) =>
+						res.blob()
 					)
 				);
 				dat.attachments.push(
@@ -122,30 +126,35 @@ class revoltClient extends EventEmitter {
 			];
 		}
 		if (msg.embeds?.length > 0) {
-			dat.embeds = [...msg.embeds?.map((i)=>{
-        if (i.fields) {
-          for (let field of i.fields) {
-            i.description += `\n**${field.name}**\n${field.value}\n`
-          }
-          delete i.fields
-        }
-        return i;
-      }), ...(dat.embeds || [])];
+			dat.embeds = [
+				...msg.embeds?.map((i) => {
+					if (i.fields) {
+						for (let field of i.fields) {
+							i.description += `\n**${field.name}**\n${field.value}\n`;
+						}
+						delete i.fields;
+					}
+					return i;
+				}),
+				...(dat.embeds || []),
+			];
 		}
 		return dat;
 	}
 	async bridgeSend(msg, id) {
 		if (!id) return;
 		let { _id: message, channel_id: channel } = await this.revolt.channels
-			.$get(id)
+			.$get(id.id || id)
 			.sendMessage(await this.constructRevoltMessage(msg));
 		return { platform: "revolt", message, channel };
 	}
-	async bridgeEdit(msgid, msg, _id) {
+	async bridgeEdit(msgid, msg, id) {
 		if (!msgid) return;
-		await this.revolt.messages.$get(msgid).edit(await this.constructRevoltMessage(msg));
+		await this.revolt.messages
+			.$get(msgid)
+			.edit(await this.constructRevoltMessage(msg));
 	}
-	async bridgeDelete(msgid, _id) {
+	async bridgeDelete(msgid, id) {
 		if (!msgid) return;
 		await this.revolt.messages.$get(msgid).delete();
 	}

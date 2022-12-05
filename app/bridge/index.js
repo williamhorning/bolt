@@ -1,6 +1,6 @@
 import legacySend from "./legacyBridgeSend.js";
 import { getBridges } from "./utils.js";
-// import * as bridge from './bridge.js';
+import * as bridge from './bridge.js';
 
 async function typeandid(msg) {
 	let { legacy: legacyID, current: currentID } = await getBridges(msg);
@@ -16,23 +16,20 @@ export async function tryBridgeSend(msg) {
 	if (dat.type == "legacy") {
 		legacySend(msg, dat.data);
 	} else if (dat.type == "current") {
-		msg.reply("no");
-		// bridge.send(msg, dat.data);
+		await bridge.send(msg, dat.data);
 	}
 }
 
 export async function tryBridgeEdit(msg) {
 	let dat = await typeandid(msg);
 	if (dat.type == "current") {
-		msg.reply("no");
-		// bridge.edit(msg, dat.data);
+		await bridge.edit(msg, dat.data);
 	}
 }
 
 export async function tryBridgeDelete(msg) {
 	let dat = await typeandid(msg);
 	if (dat.type == "current") {
-		msg.reply("no");
-		// bridge.delete(msg, dat.data);
+		await bridge.delet(msg, dat.data);
 	}
 }

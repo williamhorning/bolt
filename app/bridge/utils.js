@@ -8,12 +8,8 @@ export async function isbridged(msg) {
 				!msg.replyto) ||
 			(msg["platform.message"].createdByWebhookId &&
 				(await bridgeDatabase.find({
-					bridges: {
-						platform: "guilded",
-						senddata: {
-							id: msg["platform.message"].createdByWebhookId,
-						},
-					},
+					"bridges.platform": "guilded",
+					"bridges.senddata.id": msg["platform.message"].createdByWebhookId,
 				}))) ||
 			(msg["platform.message"].createdByWebhookId &&
 				(await legacyBridgeDatabase.find({
@@ -27,10 +23,9 @@ export async function isbridged(msg) {
 					id: msg["platform.message"].webhookId,
 				}))) ||
 			(await bridgeDatabase.find({
-				bridges: {
-					platform: "discord",
-					senddata: { id: msg["platform.message"].webhookId },
-				},
+				"bridges.platform": "discord",
+				"bridges.channel": msg.channel,
+				"bridges.senddata.id": msg["platform.message"].webhookId,
 			}))
 		);
 	} else if (msg.platform === "revolt") {
@@ -45,10 +40,37 @@ export async function getBridges(msg) {
 	return {
 		legacy: await legacyBridgeDatabase.get(`${msg.platform}-${msg.channel}`),
 		current: await bridgeDatabase.find({
-			bridges: {
-				platform: msg.platform,
-				channel: msg.channel,
-			},
+			"bridges.platform": msg.platform,
+			"bridges.channel": msg.channel,
 		}),
 	};
+}
+
+export async function joinLegacy(name, channelId, platform, createWebhook) {
+	let id;
+	if (platform === "discord") {
+		let a = await createWebhook("bridge");
+		id = {
+			id: a.id,
+			token: a.token,
+		};
+	} else if (platform === "guilded") {
+		let a = await createWebhook(channelId, {
+			channelId,
+			name: "bridge",
+		});
+		id = {
+			id: a.id,
+			token: a.token,
+		};
+	} else if (platform === "revolt") {
+		id = channelId;
+	}
+	await legacyBridgeDatabase.put(`${platform}-${name}`, id);
+	await legacyBridgeDatabase.put(`${platform}-${channelId}`, name);
+}
+
+export async function leaveLegacy(name, channelId, platform) {
+	await legacyBridgeDatabase.delete(`${platform}-${name}`);
+	await legacyBridgeDatabase.delete(`${platform}-${channelId}`);
 }

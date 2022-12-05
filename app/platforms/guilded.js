@@ -53,6 +53,7 @@ class guildedClient extends EventEmitter {
 					content = this.constructGuildedMsg(content);
 				return message.reply(content);
 			},
+			boltCommand: {},
 		};
 	}
 	async getReply(message) {
@@ -91,7 +92,8 @@ class guildedClient extends EventEmitter {
 			username.match(/^[a-zA-Z0-9_ ()]*$/gms)
 		);
 	}
-	constructGuildedMsg(msg) {
+	constructGuildedMsg(msgd) {
+    let msg = Object.assign({}, msgd);
 		let dat = {
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			username: this.chooseValidGuildedUsername(msg),
@@ -129,6 +131,7 @@ class guildedClient extends EventEmitter {
 				}
 			});
 		}
+    if (dat.content == '' && dat.embeds?.length == 0) dat.content = "*empty message*";
 		return dat;
 	}
 	async idSend(msg, id) {
