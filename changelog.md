@@ -1,4 +1,8 @@
 # changelog
+## 0.4.1
+- fix bug
+## 0.4.0
+- slash commands
 ## 0.3.1
 - Move bridge-specific stuff out of `/index.js`
 - Rename `/bridge/legacyBridge.js` to `/bridge/legacyBridgeSend.js`
