@@ -46,16 +46,16 @@ export async function getBridges(msg) {
 	};
 }
 
-export async function joinLegacy(name, channelId, platform, createWebhook) {
+export async function joinLegacy(name, channelId, platform, channel) {
 	let id;
 	if (platform === "discord") {
-		let a = await createWebhook("bridge");
+		let a = await channel.createWebhook("bridge");
 		id = {
 			id: a.id,
 			token: a.token,
 		};
 	} else if (platform === "guilded") {
-		let a = await createWebhook(channelId, {
+		let a = await platforms.guilded.guilded.rest.router.createWebhook(channelId, {
 			channelId,
 			name: "bridge",
 		});

@@ -9,7 +9,7 @@ export * from "./bridge/utils.js";
 export const prod = process.env.prod;
 export const displayname = prod ? "Bolt" : "Bolt Canary";
 export const productname = prod ? "bolt" : "bolt-canary";
-export const version = "0.4.0";
+export const version = "0.4.1";
 export const iconURL = prod
 	? "https://cdn.discordapp.com/avatars/946939274434080849/fdcd9f72ed1f42e9ff99698a0cbf38fb.webp?size=128"
 	: "https://cdn.discordapp.com/avatars/1009834424780726414/2445088aa4e68bc9dbd34f32e361e4da.webp?size=128";

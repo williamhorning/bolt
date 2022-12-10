@@ -55,13 +55,6 @@ export default {
 };
 
 function handleJoin(channel, platform, legacyBridgeId, cmdchannel, opts) {
-	let createWebhook;
-	if (platform === "discord") {
-		createWebhook = cmdchannel.createWebhook;
-	} else if (platform === "guilded") {
-		createWebhook = platforms.guilded.guilded.rest.router.createWebhook;
-	}
-
 	if (opts.bridge === channel) {
 		return boltEmbedMsg(
 			"Bolt Bridges (legacy)",
@@ -73,7 +66,7 @@ function handleJoin(channel, platform, legacyBridgeId, cmdchannel, opts) {
 	}
 
 	try {
-		joinLegacy(opts.bridge, channel, platform, createWebhook);
+		joinLegacy(opts.bridge, channel, platform, cmdchannel);
 		return boltEmbedMsg("Bolt Bridges (legacy)", "Joined bridge!");
 	} catch (e) {
 		return boltError("", e, {
