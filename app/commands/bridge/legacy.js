@@ -8,11 +8,8 @@ import {
 } from "../../utils.js";
 
 export default {
-	execute: async (channel, platform, cmdchannel, opts) => {
-		let { legacy: legacyBridgeId, current: thisbridge } = await getBridges({
-			channel,
-			platform,
-		});
+	execute: async (_channel, platform, _cmdchannel, opts, msg) => {
+		let { legacy: legacyBridgeId, current: thisbridge } = await getBridges(msg);
 
 		// sanity check
 		if (thisbridge) {
@@ -24,9 +21,9 @@ export default {
 
 		if (!opts.action) opts.action = "help";
 		if (opts.action === "join")
-			return handleJoin(channel, platform, legacyBridgeId, cmdchannel, opts);
+			return handleJoin(msg.channel, platform, legacyBridgeId, msg["platform.message"]?.channel, msg.guild, opts);
 		if (opts.action === "leave")
-			return handleLeave(channel, platform, legacyBridgeId, opts);
+			return handleLeave(msg.channel, platform, legacyBridgeId, opts);
 		if (opts.action === "help")
 			return boltEmbedMsg(
 				"Bolt Bridges (legacy)",
@@ -54,7 +51,7 @@ export default {
 	},
 };
 
-function handleJoin(channel, platform, legacyBridgeId, cmdchannel, opts) {
+function handleJoin(channel, platform, legacyBridgeId, cmdchannel, guild, opts) {
 	if (opts.bridge === channel) {
 		return boltEmbedMsg(
 			"Bolt Bridges (legacy)",
@@ -66,7 +63,8 @@ function handleJoin(channel, platform, legacyBridgeId, cmdchannel, opts) {
 	}
 
 	try {
-		joinLegacy(opts.bridge, channel, platform, cmdchannel);
+		console.log(channel, platform, legacyBridgeId, guild, opts.bridge);
+		joinLegacy(opts.bridge, channel, platform, cmdchannel, guild);
 		return boltEmbedMsg("Bolt Bridges (legacy)", "Joined bridge!");
 	} catch (e) {
 		return boltError("", e, {

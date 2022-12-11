@@ -46,7 +46,8 @@ export async function getBridges(msg) {
 	};
 }
 
-export async function joinLegacy(name, channelId, platform, channel) {
+export async function joinLegacy(name, channelId, platform, channel, guild) {
+  console.log(name, channelId, platform, channel)
 	let id;
 	if (platform === "discord") {
 		let a = await channel.createWebhook("bridge");
@@ -55,7 +56,7 @@ export async function joinLegacy(name, channelId, platform, channel) {
 			token: a.token,
 		};
 	} else if (platform === "guilded") {
-    let a = await platforms.guilded.guilded.webhooks.createWebhook(channel.serverId, {
+    let a = await platforms.guilded.guilded.webhooks.createWebhook(guild, {
 			channelId,
 			name: "bridge",
 		});
