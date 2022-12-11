@@ -55,7 +55,7 @@ export async function joinLegacy(name, channelId, platform, channel) {
 			token: a.token,
 		};
 	} else if (platform === "guilded") {
-		let a = await platforms.guilded.guilded.rest.router.createWebhook(channelId, {
+    let a = await platforms.guilded.guilded.webhooks.createWebhook(channelId, {
 			channelId,
 			name: "bridge",
 		});
