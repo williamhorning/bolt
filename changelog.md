@@ -1,4 +1,6 @@
 # changelog
+## 0.4.2
+- try new webhook creation method for guilded
 ## 0.4.1
 - fix bug
 ## 0.4.0
