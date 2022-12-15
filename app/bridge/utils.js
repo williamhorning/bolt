@@ -39,10 +39,10 @@ export async function isbridged(msg) {
 export async function getBridges(msg) {
 	return {
 		legacy: await legacyBridgeDatabase.get(`${msg.platform}-${msg.channel}`),
-		current: await bridgeDatabase.find({
+		current: (await bridgeDatabase.findWithMeta({
 			"bridges.platform": msg.platform,
 			"bridges.channel": msg.channel,
-		}),
+		}))?._id,
 	};
 }
 

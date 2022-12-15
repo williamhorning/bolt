@@ -27,11 +27,11 @@ export default {
 		if (opts.action === "help")
 			return boltEmbedMsg(
 				"Bolt Bridges (legacy)",
-				"This is the bridge system from the old Bridge Bot. If you figure it out without help you'd be the first. Take a look at the [docs](https://github.com/williamhorning/bolt/blob/main/docs/bridges.md#legacy) if you want to figure it out."
+				"This is the bridge system from the old Bridge Bot. If you figure it out without help you'd be the first. Take a look at the [docs](https://github.com/williamhorning/bolt/tree/main/docs) if you want to figure it out."
 			);
 		return boltEmbedMsg(
 			"Bolt Bridges (legacy)",
-			"unknown option, take a look at the [docs](https://github.com/williamhorning/bolt/blob/main/docs/bridges.md#legacy)"
+			"unknown option, take a look at the [docs](https://github.com/williamhorning/bolt/tree/main/docs)"
 		);
 	},
 	metadata: {

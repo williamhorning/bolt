@@ -14,6 +14,7 @@ async function wrapFunc(msg, thisbridge, func, errorfunc) {
 		}
 		results.push(result);
 	}
+  return results;
 }
 
 export async function send(msg, thisbridge) {

@@ -1,4 +1,8 @@
 # changelog
+## 0.4.4
+- fix `!bolt bridge status` command DB lookup
+- fix beta bridge system edit support
+- docs changes
 ## 0.4.3
 - actualy fix webhook issue
 ## 0.4.2
