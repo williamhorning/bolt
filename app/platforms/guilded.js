@@ -24,6 +24,7 @@ class guildedClient extends EventEmitter {
 		this.guilded.login();
 	}
 	async constructmsg(message) {
+    if (!message) return;
 		if (!message.createdByWebhookId) {
 			await this.guilded.members.fetch(message.serverId, message.authorId);
 		}
