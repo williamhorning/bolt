@@ -12,7 +12,7 @@ export default {
 		let { legacy: legacyBridgeId, current: thisbridge } = await getBridges(msg);
 
 		// sanity check
-		if (thisbridge) {
+		if (thisbridge._id) {
 			return boltEmbedMsg(
 				"Bolt Bridges",
 				"Please use the API or dash to configure non-legacy bridges."

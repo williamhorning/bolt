@@ -1,4 +1,6 @@
 # changelog
+## 0.4.5
+- fix DB handling that broke beta bridges... and caused discord to decide to reset our token in prod, oops
 ## 0.4.4
 - fix `!bolt bridge status` command DB lookup
 - fix beta bridge system edit support

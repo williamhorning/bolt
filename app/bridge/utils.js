@@ -42,7 +42,7 @@ export async function getBridges(msg) {
 		current: (await bridgeDatabase.findWithMeta({
 			"bridges.platform": msg.platform,
 			"bridges.channel": msg.channel,
-		}))?._id,
+		})),
 	};
 }
 

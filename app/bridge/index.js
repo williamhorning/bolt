@@ -7,7 +7,7 @@ async function typeandid(msg) {
 	if (!legacyID && !currentID) return { type: "none", id: null };
 	return {
 		type: legacyID ? "legacy" : "current",
-		data: legacyID ? legacyID : currentID,
+		data: legacyID ? legacyID : currentID.value,
 	};
 }
 
