@@ -61,6 +61,7 @@ class guildedClient extends EventEmitter {
 			message.channelId,
 			message.replyMessageIds[0]
 		);
+    if (!msg2) return undefined;
 		if (!msg2.createdByWebhookId) {
 			await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
 		}
