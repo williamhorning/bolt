@@ -1,4 +1,8 @@
 # changelog
+## 0.4.7
+- actually fix DB issues
+## 0.4.6
+- try fixing DB issues
 ## 0.4.5
 - fix DB handling that broke beta bridges... and caused discord to decide to reset our token in prod, oops
 ## 0.4.4
