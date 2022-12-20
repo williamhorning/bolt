@@ -4,12 +4,10 @@ import rvl from "./platforms/revolt.js";
 import { mongoKV } from "@williamhorning/mongo-kv";
 import { basename, join } from "path/posix";
 
-export * from "./bridge/utils.js";
-
 export const prod = process.env.prod;
 export const displayname = prod ? "Bolt" : "Bolt Canary";
 export const productname = prod ? "bolt" : "bolt-canary";
-export const version = "0.4.5";
+export const version = "0.4.6";
 export const iconURL = prod
 	? "https://cdn.discordapp.com/avatars/946939274434080849/fdcd9f72ed1f42e9ff99698a0cbf38fb.webp?size=128"
 	: "https://cdn.discordapp.com/avatars/1009834424780726414/2445088aa4e68bc9dbd34f32e361e4da.webp?size=128";
@@ -29,17 +27,6 @@ export const platforms = {
 	}),
 };
 
-export const legacyBridgeDatabase = new mongoKV({
-	url: "mongodb://localhost:27017",
-	db: productname,
-	collection: "bridge",
-});
-
-export const bridgeDatabase = new mongoKV({
-	url: "mongodb://localhost:27017",
-	db: productname,
-	collection: "bridgev1",
-});
 
 async function webhookSendError(msg, name, e, extra) {
 	extra.msg = extra.msg ? "see the console" : null;
@@ -90,9 +77,7 @@ export function boltError(msg, e, extr, usewebhook = true) {
 export function boltErrorButExit(e) {
 	console.error(`\x1b[41mCORE ERROR:\x1b[0m`);
 	console.error(e);
-	if (process.env.ERROR_HOOK) {
-		webhookSendError("CORE ERROR", "CORE", e);
-	}
+	webhookSendError("CORE ERROR", "CORE", e);
 	process.exit(1);
 }
 

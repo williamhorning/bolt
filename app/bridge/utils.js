@@ -1,4 +1,17 @@
-import { platforms, legacyBridgeDatabase, bridgeDatabase } from "../utils.js";
+import { mongoKV } from "@williamhorning/mongo-kv";
+import { platforms } from "../utils.js";
+
+export const legacyBridgeDatabase = new mongoKV({
+	url: "mongodb://localhost:27017",
+	db: productname,
+	collection: "bridge",
+});
+
+export const bridgeDatabase = new mongoKV({
+	url: "mongodb://localhost:27017",
+	db: productname,
+	collection: "bridgev1",
+});
 
 export async function isbridged(msg) {
 	if (msg.platform === "guilded") {
@@ -45,6 +58,16 @@ export async function getBridges(msg) {
 		})),
 	};
 }
+
+export async function typeandid(msg) {
+	let { legacy: legacyID, current: currentID } = await getBridges(msg);
+	if (!legacyID && !currentID) return { type: "none", id: null };
+	return {
+		type: legacyID ? "legacy" : "current",
+		data: legacyID ? legacyID : currentID.value,
+	};
+}
+
 
 export async function joinLegacy(name, channelId, platform, channel, guild) {
   console.log(name, channelId, platform, channel)

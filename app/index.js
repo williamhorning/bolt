@@ -1,8 +1,8 @@
 import "dotenv/config";
 
-import { boltErrorButExit, platforms, isbridged } from "./utils.js";
+import { boltErrorButExit, platforms } from "./utils.js";
 
-import { tryBridgeSend } from "./bridge/index.js";
+import { tryBridgeSend, isbridged } from "./bridge/index.js";
 
 import { commandhandle } from "./commands/index.js";
 

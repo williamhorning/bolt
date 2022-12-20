@@ -25,7 +25,10 @@ class guildedClient extends EventEmitter {
 	}
 	async constructmsg(message) {
     if (!message) return;
-		if (!message.createdByWebhookId) {
+    if (!message.authorId) {
+      console.log(`message with no authorId:\n${message}`)
+    }
+		if (!message.createdByWebhookId && message.authorId) {
 			await this.guilded.members.fetch(message.serverId, message.authorId);
 		}
 		return {
@@ -38,9 +41,9 @@ class guildedClient extends EventEmitter {
 				id: message.authorId,
 			},
 			replyto:
-				message.replyMessageIds.length > 0
+				message.replyMessageIds[0]
 					? await this.getReply(message)
-					: null,
+					: undefined,
 			attachments: [], // guilded attachments suck and don't have a bot api impl
 			embeds: message.raw.embeds,
 			platform: "guilded",

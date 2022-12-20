@@ -1,18 +1,20 @@
 import {
 	boltEmbedMsg,
-	getBridges,
-	joinLegacy,
-	leaveLegacy,
-	platforms,
 	boltError,
 } from "../../utils.js";
+import {
+  typeandid,
+	joinLegacy,
+	leaveLegacy,
+} from "../../bridge/utils.js";
 
 export default {
 	execute: async (_channel, platform, _cmdchannel, opts, msg) => {
-		let { legacy: legacyBridgeId, current: thisbridge } = await getBridges(msg);
+    let dat, {data: legacyBridgeId} = await typeandid(msg)
+
 
 		// sanity check
-		if (thisbridge._id) {
+		if (dat.type === "current") {
 			return boltEmbedMsg(
 				"Bolt Bridges",
 				"Please use the API or dash to configure non-legacy bridges."

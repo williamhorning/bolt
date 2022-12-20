@@ -1,4 +1,5 @@
-import { boltError, platforms, legacyBridgeDatabase } from "../utils.js";
+import { boltError, platforms } from "../utils.js";
+import { legacyBridgeDatabase } from "./utils.js";
 
 export default async function send(msg, bridgeIdentifierLegacy) {
 	let lsplatforms = Object.keys(platforms).filter((i) => i != msg.platform);

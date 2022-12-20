@@ -45,7 +45,7 @@ class discordClient extends EventEmitter {
 				banner: await this.getBanner(message),
 				id: message.author.id,
 			},
-			replyto: message.reference ? await this.getReply(message) : null,
+			replyto: message.reference ? await this.getReply(message) : undefined,
 			attachments: await this.getAttachments(message),
 			platform: "discord",
 			channel: message.channelId,

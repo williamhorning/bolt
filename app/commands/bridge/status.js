@@ -1,4 +1,5 @@
-import { getBridges, boltEmbedMsg } from "../../utils.js";
+import { boltEmbedMsg } from "../../utils.js";
+import { getBridges } from "../../bridge/utils.js";
 
 export default {
 	execute: async (channel, platform) => {

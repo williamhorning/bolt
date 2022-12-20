@@ -35,7 +35,7 @@ class revoltClient extends EventEmitter {
 				id: message.author_id,
 			},
 			replyto:
-				message.reply_ids?.length > 0 ? await this.getReply(message) : null,
+				message.reply_ids?.length > 0 ? await this.getReply(message) : undefined,
 			attachments: await this.getAttachments(message),
 			platform: "revolt",
 			channel: message.channel_id,

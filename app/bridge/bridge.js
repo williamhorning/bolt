@@ -1,4 +1,5 @@
-import { boltError, platforms, bridgeDatabase } from "../utils.js";
+import { boltError, platforms } from "../utils.js";
+import { bridgeDatabase } from './utils.js';
 
 async function wrapFunc(msg, thisbridge, func, errorfunc) {
 	let bridges = thisbridge.bridges.filter((i) => {
