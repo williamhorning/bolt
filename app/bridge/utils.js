@@ -1,5 +1,5 @@
 import { mongoKV } from "@williamhorning/mongo-kv";
-import { platforms } from "../utils.js";
+import { platforms, productname } from "../utils.js";
 
 export const legacyBridgeDatabase = new mongoKV({
   url: "mongodb://localhost:27017",
