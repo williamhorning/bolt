@@ -1,7 +1,6 @@
 import dsc from "./platforms/discord.js";
 import gld from "./platforms/guilded.js";
 import rvl from "./platforms/revolt.js";
-import { mongoKV } from "@williamhorning/mongo-kv";
 import { basename, join } from "path/posix";
 
 export const prod = process.env.prod;
