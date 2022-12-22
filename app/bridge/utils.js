@@ -62,7 +62,6 @@ export async function getBridges(msg) {
 
 export async function typeandid(msg) {
   let { legacy: legacyID, current: currentID } = await getBridges(msg);
-  console.log(legacyID, currentID)
   if (!legacyID && (!currentID?._id || currentID._id === "undefined")) return { type: "none", id: null };
   return {
     type: legacyID ? "legacy" : "current",

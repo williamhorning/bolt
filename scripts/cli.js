@@ -15,6 +15,10 @@ switch (cmd) {
     runScript("scripts/registerSlashCommands.js")
     break;
   }
+  case "runDBMigration": {
+    runScript("dbmigration/donotuse.js")
+    break;
+  }
   default: {
     console.log("bolt cli:")
     console.log("path/to/cli run - runs bolt")

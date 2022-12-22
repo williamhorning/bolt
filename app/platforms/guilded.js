@@ -167,9 +167,13 @@ class guildedClient extends EventEmitter {
 				})
 				.join("\n")}`;
 		}
-		await channel.send(senddat);
+		return await channel.send(senddat);
 	}
 	async bridgeSend(msg, hookdat) {
+    if (!hookdat.id) {
+      let sent = await this.idSend(msg, hookdat);
+      return { platform: "guilded", message: sent.id, channel: sent.channelId };
+    }
 		let hook = new WebhookClient(hookdat);
 		let { id: message, channelId: channel } = await hook.send(
 			this.constructGuildedMsg(msg)

@@ -9,14 +9,10 @@ export default async function send(msg, bridgeIdentifierLegacy) {
 			`${platform}-${bridgeIdentifierLegacy}`
 		);
 		if (!id) continue;
-		let fnname =
-			platform != "guilded" || (platform == "guilded" && id?.token)
-				? "bridgeSend"
-				: "idSend";
 		try {
-			await platforms[platform][fnname](msg, id);
+			await platforms[platform].bridgeSend(msg, id);
 		} catch (e) {
-			await platforms[platform][fnname](
+			await platforms[platform].bridgeSend(
 				boltError(`legacy message via bridge to ${platform}`, e, {
 					msg,
 					platform,

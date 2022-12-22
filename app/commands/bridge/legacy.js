@@ -10,11 +10,11 @@ import {
 
 export default {
 	execute: async (_channel, platform, _cmdchannel, opts, msg) => {
-    let dat, {data: legacyBridgeId} = await typeandid(msg)
+    let {data: legacyBridgeId, type} = await typeandid(msg)
 
 
 		// sanity check
-		if (dat.type === "current") {
+		if (type === "current") {
 			return boltEmbedMsg(
 				"Bolt Bridges",
 				"Please use the API or dash to configure non-legacy bridges."
