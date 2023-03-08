@@ -71,7 +71,6 @@ export async function typeandid(msg) {
 
 
 export async function joinLegacy(name, channelId, platform, channel, guild) {
-  console.log(name, channelId, platform, channel)
   let id;
   if (platform === "discord") {
     let a = await channel.createWebhook("bridge");

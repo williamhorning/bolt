@@ -1,4 +1,6 @@
 # changelog
+## 0.4.8
+- fix Revolt replies
 ## 0.4.7
 - actually fix DB issues
 ## 0.4.6

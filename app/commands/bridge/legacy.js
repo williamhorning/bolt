@@ -65,7 +65,6 @@ function handleJoin(channel, platform, legacyBridgeId, cmdchannel, guild, opts) 
 	}
 
 	try {
-		console.log(channel, platform, legacyBridgeId, guild, opts.bridge);
 		joinLegacy(opts.bridge, channel, platform, cmdchannel, guild);
 		return boltEmbedMsg("Bolt Bridges (legacy)", "Joined bridge!");
 	} catch (e) {

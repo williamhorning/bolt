@@ -34,7 +34,6 @@ export async function commandhandle(msg) {
 }
 
 function textCommandArgParse(msg) {
-  console.log(msg)
 	let opts = argvParse(msg.content.trim());
 	opts._.shift();
 	return {

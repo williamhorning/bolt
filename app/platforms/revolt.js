@@ -35,7 +35,9 @@ class revoltClient extends EventEmitter {
 				id: message.author_id,
 			},
 			replyto:
-				message.reply_ids?.length > 0 ? await this.getReply(message) : undefined,
+				message.reply_ids?.length > 0
+					? await this.getReply(message)
+					: undefined,
 			attachments: await this.getAttachments(message),
 			platform: "revolt",
 			channel: message.channel_id,
@@ -43,9 +45,9 @@ class revoltClient extends EventEmitter {
 			id: message._id,
 			"platform.message": message,
 			timestamp: message.createdAt,
-			reply: (content) => {
+			reply: async (content) => {
 				if (typeof content != "string")
-					content = this.constructRevoltMessage(content);
+					content = await this.constructRevoltMessage(content);
 				message.reply(content);
 			},
 			embeds: message.embeds?.filter((embed) => {
@@ -138,6 +140,8 @@ class revoltClient extends EventEmitter {
 				}),
 				...(dat.embeds || []),
 			];
+		} else if (msg.content == "" || !msg.content) {
+			dat.content = "*empty message*";
 		}
 		return dat;
 	}

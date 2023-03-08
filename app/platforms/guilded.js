@@ -14,7 +14,7 @@ class guildedClient extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.guilded.on("messageUpdated", async (oldmessage, newmessage) => {
-			if (oldmessage.type === 1) return;
+			if (newmessage.type === 1) return;
 			this.emit("msgedit", await this.constructmsg(newmessage));
 		});
 		this.guilded.on("messageDeleted", async (message) => {
@@ -24,10 +24,10 @@ class guildedClient extends EventEmitter {
 		this.guilded.login();
 	}
 	async constructmsg(message) {
-    if (!message) return;
-    if (!message.authorId) {
-      console.log(`message with no authorId:\n${message}`)
-    }
+		if (!message) return;
+		if (!message.authorId) {
+			console.log(`message with no authorId:\n${message}`);
+		}
 		if (!message.createdByWebhookId && message.authorId) {
 			await this.guilded.members.fetch(message.serverId, message.authorId);
 		}
@@ -40,10 +40,9 @@ class guildedClient extends EventEmitter {
 				banner: message.author?.banner,
 				id: message.authorId,
 			},
-			replyto:
-				message.replyMessageIds[0]
-					? await this.getReply(message)
-					: undefined,
+			replyto: message.replyMessageIds[0]
+				? await this.getReply(message)
+				: undefined,
 			attachments: [], // guilded attachments suck and don't have a bot api impl
 			embeds: message.raw.embeds,
 			platform: "guilded",
@@ -65,7 +64,7 @@ class guildedClient extends EventEmitter {
 			message.channelId,
 			message.replyMessageIds[0]
 		);
-    if (!msg2) return undefined;
+		if (!msg2) return;
 		if (!msg2.createdByWebhookId) {
 			await this.guilded.members.fetch(msg2.serverId, msg2.authorId);
 		}
@@ -98,12 +97,12 @@ class guildedClient extends EventEmitter {
 		);
 	}
 	constructGuildedMsg(msgd) {
-    let msg = Object.assign({}, msgd);
+		let msg = Object.assign({}, msgd);
 		let dat = {
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			username: this.chooseValidGuildedUsername(msg),
 			avatar_url: msg.author.profile,
-			embeds: msg.embeds,
+			embeds: [...(msg.embeds || [])],
 		};
 		if (msg.attachments?.length > 0) {
 			dat.content += `${dat.content ? "\n" : ""}${msg.attachments
@@ -122,21 +121,22 @@ class guildedClient extends EventEmitter {
 						},
 						description: msg.replyto.content,
 					},
-					...(msg.replyto.embeds || []),
+					...msg.replyto.embeds,
 				]
 			);
 		}
 		if (msg?.embeds?.length < 1) {
 			delete dat.embeds;
 		} else {
-			msg?.embeds?.map((embed) => {
+			dat?.embeds?.map((embed) => {
 				for (let i in embed) {
 					let item = embed[i];
 					if (item == null || item == undefined) embed[i] = undefined;
 				}
 			});
 		}
-    if (dat.content == '' && dat.embeds?.length == 0) dat.content = "*empty message*";
+		if (dat.content?.length == 0 && dat.embeds?.length == 0)
+			dat.content = "*empty message*";
 		return dat;
 	}
 	async idSend(msg, id) {
@@ -170,10 +170,10 @@ class guildedClient extends EventEmitter {
 		return await channel.send(senddat);
 	}
 	async bridgeSend(msg, hookdat) {
-    if (!hookdat.id) {
-      let sent = await this.idSend(msg, hookdat);
-      return { platform: "guilded", message: sent.id, channel: sent.channelId };
-    }
+		if (!hookdat.id) {
+			let sent = await this.idSend(msg, hookdat);
+			return { platform: "guilded", message: sent.id, channel: sent.channelId };
+		}
 		let hook = new WebhookClient(hookdat);
 		let { id: message, channelId: channel } = await hook.send(
 			this.constructGuildedMsg(msg)

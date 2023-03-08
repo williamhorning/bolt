@@ -29,7 +29,7 @@ class discordClient extends EventEmitter {
 		});
 		this.discord.on("interactionCreate", async (interaction) => {
 			await interaction.deferReply();
-		  if (!interaction.isCommand()) return;
+			if (!interaction.isCommand()) return;
 			interaction.boltCommand = { type: "discord" };
 			this.emit("command", interaction);
 		});
@@ -69,6 +69,7 @@ class discordClient extends EventEmitter {
 	}
 	async getReply(message) {
 		let msg = await message.fetchReference();
+    if (!msg) return;
 		return {
 			content: msg.cleanContent,
 			author: {
@@ -96,7 +97,7 @@ class discordClient extends EventEmitter {
 		return (await msg.author.fetch()).bannerURL();
 	}
 	constructDiscordMessage(msgd) {
-    let msg = Object.assign({}, msgd);
+		let msg = Object.assign({}, msgd);
 		let content = msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)");
 		if (content?.length == 0) content = null;
 		let dscattachments = msg.attachments?.map((crossplat) => {
@@ -111,7 +112,7 @@ class discordClient extends EventEmitter {
 			username: msg.author.username,
 			avatarURL: msg.author.profile,
 			files: dscattachments,
-			embeds: msg.embeds || [],
+      embeds: [...(msg.embeds || [])],
 		};
 		if (msg.replyto) {
 			dat.embeds.push({
@@ -123,8 +124,9 @@ class discordClient extends EventEmitter {
 			});
 			dat.embeds.push(...(msg.replyto.embeds || []));
 		}
-    // if dat.content and dat.embeds is just an empty array, set content to empty message
-    if (dat.content == '' && dat.embeds?.length == 0) dat.content = "*empty message*";
+		// if dat.content and dat.embeds is just an empty array, set content to empty message
+		if (dat.content == "" && dat.embeds?.length == 0)
+			dat.content = "*empty message*";
 		return dat;
 	}
 

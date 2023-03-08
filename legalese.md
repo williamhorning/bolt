@@ -42,7 +42,7 @@ While we may provide support and try to fix bugs and keep our services operating
 
 Bolt, one of Our services, is a hosted version of the open-source Bolt project. The codebase is avalible under the following license at [williamhorning/bolt](https://github.com/williamhirning/bolt) on GitHub:
 
-> Copyright 2022 William Horning <hello@williamhorning.dev>
+> Copyright 2023 William Horning <hello@williamhorning.dev>
 >
 > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 >

@@ -16,6 +16,7 @@ for await (let file of await readdir("app/commands")) {
 	// import metadata and make builder
 	let meta = await (await import(`../app/commands/${file}`)).default.metadata;
 	let cmd = new SlashCommandBuilder();
+  if (meta.hidden === true) continue;
 	cmd.setName(meta.command).setDescription(meta.description);
 
 	// handle more metadata, including subcommands
