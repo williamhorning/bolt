@@ -148,7 +148,7 @@ class revoltClient extends EventEmitter {
 	async bridgeSend(msg, id) {
 		if (!id) return;
 		let { _id: message, channel_id: channel } = await this.revolt.channels
-			.$get(id.id || id)
+			.fetch(id?.id || id)
 			.sendMessage(await this.constructRevoltMessage(msg));
 		return { platform: "revolt", message, channel };
 	}
