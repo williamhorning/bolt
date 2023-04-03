@@ -36,14 +36,14 @@ export async function send(msg, thisbridge) {
 			);
 		}
 	);
-	bridgeDatabase.put(`message-${msg.id}`, {
-		message: {
-			platform: msg.platform,
-			channel: msg.channel,
-			message: msg.id,
-		},
-		sent_to: sentmsgs,
-	});
+	// bridgeDatabase.put(`message-${msg.id}`, {
+	// 	message: {
+	// 		platform: msg.platform,
+	// 		channel: msg.channel,
+	// 		message: msg.id,
+	// 	},
+	// 	sent_to: sentmsgs,
+	// });
 }
 
 export async function edit(msg, thisbridge) {

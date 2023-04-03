@@ -9,17 +9,17 @@ export async function tryBridgeSend(msg) {
 }
 
 export async function tryBridgeEdit(msg) {
-	let dat = await getBridge(msg);
-	if (dat?._id) {
-		await bridge.edit(msg, dat);
-	}
+	// let dat = await getBridge(msg);
+	// if (dat?._id) {
+	// 	await bridge.edit(msg, dat);
+	// }
 }
 
 export async function tryBridgeDelete(msg) {
-	let dat = await getBridge(msg);
-	if (dat?._id) {
-		await bridge.delet(msg, dat);
-	}
+	// let dat = await getBridge(msg);
+	// if (dat?._id) {
+	// 	await bridge.delet(msg, dat);
+	// }
 }
 
 export * from "./utils.js";
