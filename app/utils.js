@@ -26,47 +26,38 @@ export const platforms = {
 	}),
 };
 
-
 async function webhookSendError(msg, name, e, extra) {
-	extra.msg = extra.msg ? "see the console" : null;
-	await fetch(process.env.ERROR_HOOK, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-			embeds: [
-				{
-					title: `${name} Error`,
-					fields: [
-						{
-							name: `Error: ${msg} on ${name}.`,
-							value: `\`\`\`${e}\n\`\`\``,
-						},
-						{
-							name: "Extra context",
-							value: `\`\`\`json\n${JSON.stringify(extra, null, 2)}\`\`\``,
-						},
-					],
-				},
-			],
-		}),
-	});
+	if (process.env.ERROR_HOOK) {
+		extra.msg = extra.msg ? "see the console" : null;
+		await fetch(process.env.ERROR_HOOK, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				embeds: [
+					{
+						title: `${name} Error`,
+						fields: [
+							{
+								name: `Error: ${msg} on ${name}.`,
+								value: `\`\`\`${e}\n\`\`\``,
+							},
+							{
+								name: "Extra context",
+								value: `\`\`\`json\n${JSON.stringify(extra, null, 2)}\`\`\``,
+							},
+						],
+					},
+				],
+			}),
+		});
+	}
 }
 
-export function boltError(msg, e, extr, usewebhook = true) {
+export function boltError(msg, e, extr) {
 	let extra = Object.assign({}, extr);
-
-	if (!prod) {
-		console.error(`\x1b[41m${displayname} Error:\x1b[0m`);
-		console.error(msg);
-		console.error(e);
-		console.log(`\x1b[41mExtra:\x1b[0m`);
-		console.log(extra);
-	}
-	if (process.env.ERROR_HOOK && usewebhook) {
-		webhookSendError(msg, displayname, e, extra);
-	}
+	logEvent("error", { e, msg, extra });
 	return boltEmbedMsg(
 		`Error on ${displayname}`,
 		`Error: ${msg}. Run \`!bolt help\` to get help.`
@@ -74,9 +65,12 @@ export function boltError(msg, e, extr, usewebhook = true) {
 }
 
 export function boltErrorButExit(e) {
-	console.error(`\x1b[41mCORE ERROR:\x1b[0m`);
-	console.error(e);
-	webhookSendError("CORE ERROR", "CORE", e);
+	boltError(`core error: ${e.message || e}`, e, {
+		environment: process.env,
+		version,
+		displayname,
+		productname,
+	});
 	process.exit(1);
 }
 
@@ -102,5 +96,35 @@ export function boltEmbedMsg(title, description, fields) {
 }
 
 export function currentdir(importmetaurl, additional = "", thingtosanitize) {
-	return join(new URL(".", importmetaurl).href, additional, basename(thingtosanitize));
+	return join(
+		new URL(".", importmetaurl).href,
+		additional,
+		basename(thingtosanitize)
+	);
+}
+
+export function logEvent(eventtype, eventdata) {
+	if (eventtype === "error" || eventtype === "criticalerror") {
+		webhookSendError(eventdata.msg, displayname, eventdata.e, eventdata.extra);
+		console.error(`\x1b[41m${displayname} Error:\x1b[0m`);
+		console.error(eventdata);
+	} else if (!prod) {
+		console.log(`\x1b[42m${displayname} ${eventtype}:\x1b[0m`);
+		console.log(eventdata);
+	}
+}
+
+export async function fetchmessage(platform, channel, id) {
+	let rawplat = platforms[platform][platform];
+	let fetch2;
+	if (bridge.platform == "discord") {
+		fetch2 = async (id, channel) => {
+			await rawplat.channels.fetch(channel).messages.fetch(id);
+		};
+	} else {
+		fetch2 = async (id) => {
+			await rawplat.messages.fetch(id);
+		};
+	}
+  return await fetch2(id, channel);
 }

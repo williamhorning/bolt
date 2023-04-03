@@ -69,7 +69,7 @@ class discordClient extends EventEmitter {
 	}
 	async getReply(message) {
 		let msg = await message.fetchReference();
-    if (!msg) return;
+		if (!msg) return;
 		return {
 			content: msg.cleanContent,
 			author: {
@@ -112,7 +112,7 @@ class discordClient extends EventEmitter {
 			username: msg.author.username,
 			avatarURL: msg.author.profile,
 			files: dscattachments,
-      embeds: [...(msg.embeds || [])],
+			embeds: [...(msg.embeds || [])],
 		};
 		if (msg.replyto) {
 			dat.embeds.push({

@@ -1,8 +1,8 @@
-import { boltError, platforms } from "../utils.js";
-import { bridgeDatabase } from './utils.js';
+import { boltError, platforms, fetchmessage } from "../utils.js";
+import { bridgeDatabase } from "./utils.js";
 
 async function wrapFunc(msg, thisbridge, func, errorfunc) {
-	let bridges = thisbridge.bridges.filter((i) => {
+	let bridges = thisbridge?.bridges?.filter((i) => {
 		return !(i.platform == msg.platform && i.channel == msg.channel);
 	});
 	let results = [];
@@ -15,7 +15,7 @@ async function wrapFunc(msg, thisbridge, func, errorfunc) {
 		}
 		results.push(result);
 	}
-  return results;
+	return results;
 }
 
 export async function send(msg, thisbridge) {
@@ -47,52 +47,39 @@ export async function send(msg, thisbridge) {
 }
 
 export async function edit(msg, thisbridge) {
+	let { sent_to } = await bridgeDatabase.get(`message-${msg.id}`);
 	await wrapFunc(
 		msg,
 		thisbridge,
-		async (msg, bridge) => {
-			return await platforms[bridge.platformm].bridgeEdit(
-				msg.id,
+		async (msg, bridge, bridges) => {
+			return await platforms[bridge.platform].bridgeEdit(
+				sent_to[bridges.indexOf(bridge)].message,
 				msg,
-				bridge.sendData
+				bridge.senddata
 			);
 		},
 		async (e, msg, bridge, bridges) => {
-			if (msg.platform !== "guilded") {
-				return await msg.reply(
-					boltError("editing this message failed", e, {
-						e,
-						msg,
-						bridge,
-						bridges,
-						thisbridge,
-					})
-				);
-			}
+      // TODO: replace with proper error handling
+			(await fetchmessage(bridge.platform, bridges[bridges.indexOf(bridge)].channel, sent_to[bridges.indexOf(bridge)].message)).reply("editing this message failed")
 		}
 	);
 }
 
 export async function delet(msg, thisbridge) {
+	let { sent_to } = await bridgeDatabase.get(`message-${msg.id}`);
 	await wrapFunc(
 		msg,
 		thisbridge,
-		async (msg, bridge) => {
-			return await platforms[bridge.platformm].bridgeDelete(
-				msg.id,
-				bridge.sendData
+		async (msg, bridge, bridges) => {
+			return await platforms[bridge.platform].bridgeDelete(
+				sent_to[bridges.indexOf(bridge)].message,
+				bridge.senddata,
+				sent_to[bridges.indexOf(bridge)].channel // because guilded is stupid and requires almost every single fucking method to include either a fucking channel or guild ID, literally no other platform does this
 			);
 		},
 		async (e, msg, bridge, bridges) => {
-			return await msg.reply(
-				boltError("deleting this message failed", e, {
-					e,
-					msg,
-					bridge,
-					bridges,
-					thisbridge,
-				})
-			);
+      // TODO: replace with proper error handling
+			(await fetchmessage(bridge.platform, bridges[bridges.indexOf(bridge)].channel, sent_to[bridges.indexOf(bridge)].message)).reply("deleting this message failed")
 		}
 	);
 }

@@ -13,7 +13,7 @@ class guildedClient extends EventEmitter {
 			if (message.type === 1) return;
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
-		this.guilded.on("messageUpdated", async (oldmessage, newmessage) => {
+		this.guilded.on("messageUpdated", async (newmessage) => {
 			if (newmessage.type === 1) return;
 			this.emit("msgedit", await this.constructmsg(newmessage));
 		});
@@ -125,7 +125,7 @@ class guildedClient extends EventEmitter {
 				]
 			);
 		}
-		if (msg?.embeds?.length < 1) {
+		if (dat?.embeds?.length == 0) {
 			delete dat.embeds;
 		} else {
 			dat?.embeds?.map((embed) => {
@@ -187,8 +187,8 @@ class guildedClient extends EventEmitter {
 		);
 	}
 
-	async bridgeDelete(msg) {
-		await (await this.guilded.messages.fetch(msg.id)).delete();
+	async bridgeDelete(id, senddata, channel) {
+		await (await this.guilded.messages.fetch(channel, id)).delete();
 	}
 }
 

@@ -3,7 +3,7 @@ import { getBridges } from "../../bridge/utils.js";
 
 export default {
 	execute: async (channel, platform) => {
-		let { legacy: legacyBridgeId, current: thisbridge } = await getBridges({
+		let bridge = await getBridges({
 			channel,
 			platform,
 		});
@@ -13,8 +13,12 @@ export default {
 			[
 				{
 					name: "bridge IDs",
-					value: `The bridge ID is \`${legacyBridgeId}\` and the beta bridge ID is \`${thisbridge?._id}\``,
+					value: `The bridge ID is \`${bridge?._id}\``,
 				},
+        {
+          name: "places bridged to",
+          value: `This bridge is bridged to ${bridge?.bridges?.length - 1} other places`
+        }
 			]
 		);
 	},

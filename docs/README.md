@@ -2,7 +2,7 @@
 
 ## invite links
 
-Guilded: https://www.guilded.gg/b/9fc1c387-fda8-47cd-b5ec-2de50c03cd64
+Guilded: https://www.guilded.gg/b/8811f701-a86d-483a-8a85-b22f4f12a075
 
 Discord: https://canary.discord.com/api/oauth2/authorize?client_id=946939274434080849&permissions=8&scope=bot
 
