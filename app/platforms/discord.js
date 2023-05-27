@@ -60,6 +60,11 @@ class discordClient extends EventEmitter {
 			},
 			embeds: message.embeds?.map((i) => {
 				i = i.toJSON();
+				if (i.fields) {
+					for (let field of (i.fields||[])) {
+						field.name = field.name || "*"
+					}
+				}
 				return Object.fromEntries(
 					Object.entries(i).filter(([_, v]) => v != null)
 				);

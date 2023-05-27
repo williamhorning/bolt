@@ -18,7 +18,7 @@ for (let platform in platforms) {
 async function msgCreate(msg) {
 	if (await isbridged(msg)) return;
 
-	if (msg.content.startsWith("!bolt")) {
+	if (msg.content?.startsWith("!bolt")) {
 		msg.boltCommand.type = "text";
 		commandhandle(msg);
 	}
