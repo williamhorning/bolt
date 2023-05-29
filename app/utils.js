@@ -98,6 +98,7 @@ export function boltEmbedMsg(title, description, fields) {
 				footer: { icon: iconURL, text: `Sent by ${displayname} ${version}` },
 			},
 		],
+    boltError: true,
 	};
 }
 

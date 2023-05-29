@@ -32,7 +32,7 @@ class guildedClient extends EventEmitter {
 			await this.guilded.members.fetch(message.serverId, message.authorId);
 		}
 		return {
-			content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+			content: message.content?.replace(/\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
 				username: message.member?.displayName || message.author?.name,
 				rawname: message?.author?.name,
@@ -40,7 +40,7 @@ class guildedClient extends EventEmitter {
 				banner: message.author?.banner,
 				id: message.authorId,
 			},
-			replyto: message.replyMessageIds[0]
+			replyto: (message.replyMessageIds||[])[0]
 				? await this.getReply(message)
 				: undefined,
 			attachments: [], // guilded attachments suck and don't have a bot api impl
@@ -99,7 +99,7 @@ class guildedClient extends EventEmitter {
 	constructGuildedMsg(msgd) {
 		let msg = Object.assign({}, msgd);
 		let dat = {
-			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)") || "*empty message*",
 			username: this.chooseValidGuildedUsername(msg),
 			avatar_url: msg.author.profile,
 			embeds: [...(msg.embeds || [])],
@@ -135,8 +135,6 @@ class guildedClient extends EventEmitter {
 				}
 			});
 		}
-		if (dat.content?.length == 0 && dat.embeds?.length == 0)
-			dat.content = "*empty message*";
 		return dat;
 	}
 	async idSend(msg, id) {

@@ -6,6 +6,8 @@ import { tryBridgeSend, isbridged } from "./bridge/index.js";
 
 import { commandhandle } from "./commands/index.js";
 
+BigInt.prototype.toJSON = function() { return this.toString() }
+
 process.on("uncaughtException", boltErrorButExit);
 process.on("unhandledRejection", boltErrorButExit);
 

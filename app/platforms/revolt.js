@@ -90,12 +90,14 @@ class revoltClient extends EventEmitter {
 	async constructRevoltMessage(msgd) {
 		let msg = Object.assign({}, msgd);
 		let dat = {
-			masquerade: {
-				name: msg.author.username,
-				avatar: msg.author.profile,
-			},
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 		};
+    if (!msgd.bolterror) {
+      dat.masquerade = {
+				name: msg.author.username,
+				avatar: msg.author.profile,
+			}
+    }
 		if (msg.attachments?.length > 0) {
 			dat.attachments = [];
 			for (let attachment in msg.attachments) {

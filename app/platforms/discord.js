@@ -73,6 +73,8 @@ class discordClient extends EventEmitter {
 		};
 	}
 	async getReply(message) {
+    if (!(message?.reference?.guildId === message?.guildId)) return;
+    try {
 		let msg = await message.fetchReference();
     if (!msg) return;
 		return {
@@ -83,6 +85,9 @@ class discordClient extends EventEmitter {
 			},
 			embeds: msg.embeds,
 		};
+    } catch {
+      return;
+    }
 	}
 	async getAttachments(message) {
 		if (message.attachments.length < 0) return null;
