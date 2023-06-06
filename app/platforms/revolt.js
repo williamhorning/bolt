@@ -10,15 +10,15 @@ class revoltClient extends EventEmitter {
 			this.emit("ready");
 		});
 		this.revolt.on("message", async (message) => {
-			if (message.system) return;
+			if (!message || message.system) return;
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.revolt.on("message/update", async (message) => {
-			if (message.system) return;
+			if (!message || message.system) return;
 			this.emit("msgedit", await this.constructmsg(message));
 		});
 		this.revolt.on("message/delete", async (id, message) => {
-			if (message.system) return;
+			if (!message || message.system) return;
 			this.emit("msgdelete", await this.constructmsg(message));
 		});
 		this.revolt.loginBot(this.config.token);
@@ -28,7 +28,7 @@ class revoltClient extends EventEmitter {
 		let msg = {
 			content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
-				username: message.member.nickname || message.author.username,
+				username: message.member?.nickname || message.author.username,
 				rawname: message.author.username,
 				profile: message.author.generateAvatarURL(),
 				banner: null,
