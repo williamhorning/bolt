@@ -3,6 +3,7 @@ import gld from "./platforms/guilded.js";
 import rvl from "./platforms/revolt.js";
 import { basename, join } from "path/posix";
 
+console.log(process.env.prod)
 export const prod = process.env.prod;
 export const displayname = prod ? "Bolt" : "Bolt Canary";
 export const productname = prod ? "bolt" : "bolt-canary";

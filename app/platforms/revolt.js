@@ -7,9 +7,11 @@ class revoltClient extends EventEmitter {
 		this.config = config;
 		this.revolt = new RevoltClient();
 		this.revolt.on("ready", () => {
+			console.log("rvlt");
 			this.emit("ready");
 		});
 		this.revolt.on("message", async (message) => {
+			console.log(message)
 			if (!message || message.system) return;
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
@@ -149,20 +151,20 @@ class revoltClient extends EventEmitter {
 	}
 	async bridgeSend(msg, id) {
 		if (!id) return;
-		let { _id: message, channel_id: channel } = await this.revolt.channels
-			.$get(id?.id || id)
+		let { _id: message, channel_id: channel } = await (await this.revolt.channels
+			.fetch(id?.id || id))
 			.sendMessage(await this.constructRevoltMessage(msg));
 		return { platform: "revolt", message, channel };
 	}
 	async bridgeEdit(msgid, msg, id) {
 		if (!msgid) return;
-		await this.revolt.messages
-			.$get(msgid)
+		(await this.revolt.messages
+			.fetch(msgid))
 			.edit(await this.constructRevoltMessage(msg));
 	}
 	async bridgeDelete(msgid, id) {
 		if (!msgid) return;
-		await this.revolt.messages.$get(msgid).delete();
+		(await this.revolt.messages.fetch(msgid)).delete();
 	}
 }
 
