@@ -1,27 +1,52 @@
-import legacySend from "./legacyBridgeSend.js";
-import { typeandid } from "./utils.js";
-import * as bridge from './bridge.js';
+import { platforms as BoltPlatforms, boltError } from "../utils.js";
+import { getBridges, legacyBridgeDatabase } from "./utils.js";
 
 export async function tryBridgeSend(msg) {
-	let dat = await typeandid(msg);
-	if (dat.type == "legacy") {
-		legacySend(msg, dat.data);
-	} else if (dat.type == "current") {
-		await bridge.send(msg, dat.data);
-	}
-}
-
-export async function tryBridgeEdit(msg) {
-	let dat = await typeandid(msg);
-	if (dat.type == "current") {
-		await bridge.edit(msg, dat.data);
-	}
-}
-
-export async function tryBridgeDelete(msg) {
-	let dat = await typeandid(msg);
-	if (dat.type == "current") {
-		await bridge.delet(msg, dat.data);
+	const { legacy, current } = await getBridges(msg);
+	const platforms = legacy
+		? await Promise.all(
+				Object.keys(legacy)
+					.filter((i) => i !== msg.platform)
+					.map(async (i) => {
+						const bridgeIdentifierLegacy = await legacyBridgeDatabase.get(
+							`${i}-${msg.channel}`
+						);
+						return {
+							platform: i,
+							senddata: await legacyBridgeDatabase.get(
+								`${i}-${bridgeIdentifierLegacy}`
+							),
+						};
+					})
+		  )
+		: current.bridges.filter((i) => {
+				return !(i.platform == msg.platform && i.channel == msg.channel);
+		  });
+	for (const platform of platforms) {
+		if (!platform?.id || !platform?.senddata) continue;
+		try {
+			await BoltPlatforms[platform.platform].bridgeSend(msg, platform.senddata);
+		} catch (e) {
+			try {
+				await BoltPlatforms[platform.platform].bridgeSend(
+					boltError(`sending a message here failed:\n${e.message || e}`, e, {
+						msg,
+						platform,
+						platforms,
+					}),
+					platform.senddata
+				);
+			} catch (e2) {
+				boltError(`sending an error failed`, e2, {
+					msg,
+					platform,
+					platforms,
+					e,
+					e2,
+				});
+				continue;
+			}
+		}
 	}
 }
 

@@ -4,6 +4,7 @@ import {
 	WebhookClient,
 } from "discord.js";
 import EventEmitter from "events";
+import { commandhandle } from "../commands/index.js";
 
 class discordClient extends EventEmitter {
 	constructor(config) {
@@ -31,18 +32,39 @@ class discordClient extends EventEmitter {
 			await interaction.deferReply();
 			if (!interaction.isCommand()) return;
 			interaction.boltCommand = { type: "discord" };
-			this.emit("command", interaction);
+			let opts = {};
+			for (let item of interaction.options?.data[0]?.options || []) {
+				opts[item.name] = item.value;
+			}
+			commandhandle({
+				cmd: interaction.commandName,
+				subcmd: interaction.options.getSubcommand(false),
+				channel: interaction.channelId,
+				platform: "discord",
+				guild: interaction.guildId,
+				opts,
+				replyfn: (msg) => {
+					setTimeout(() => {
+						interaction.editReply(this.constructDiscordMessage(msg));
+					}, 1000);
+				},
+				timestamp: interaction.createdTimestamp,
+			});
 		});
 		this.discord.login(this.config.token);
 	}
 	async constructmsg(message) {
 		return {
-			content: message.cleanContent?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+			content: message.flags.has("LOADING")
+				? "loading..."
+				: message.cleanContent?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
-				username: message.member?.displayName || message.author.username,
-				rawname: message.author.username,
+				username:
+					message.member?.nickname ||
+					message.member?.displayName ||
+					message.author.username,
+				rawname: message.member?.displayName || message.author.username,
 				profile: message.author.displayAvatarURL(),
-				banner: await this.getBanner(message),
 				id: message.author.id,
 			},
 			replyto: message.reference ? await this.getReply(message) : undefined,
@@ -61,8 +83,8 @@ class discordClient extends EventEmitter {
 			embeds: message.embeds?.map((i) => {
 				i = i.toJSON();
 				if (i.fields) {
-					for (let field of (i.fields||[])) {
-						field.name = field.name || "*"
+					for (let field of i.fields || []) {
+						field.name = field.name || "*";
 					}
 				}
 				return Object.fromEntries(
@@ -73,21 +95,21 @@ class discordClient extends EventEmitter {
 		};
 	}
 	async getReply(message) {
-    if (!(message?.reference?.guildId === message?.guildId)) return;
-    try {
-		let msg = await message.fetchReference();
-    if (!msg) return;
-		return {
-			content: msg.cleanContent,
-			author: {
-				username: msg.member?.displayName || msg.author.username,
-				profile: `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.webp?size=80`,
-			},
-			embeds: msg.embeds,
-		};
-    } catch {
-      return;
-    }
+		if (!(message?.reference?.guildId === message?.guildId)) return;
+		try {
+			let msg = await message.fetchReference();
+			if (!msg) return;
+			return {
+				content: msg.cleanContent,
+				author: {
+					username: msg.member?.displayName || msg.author.username,
+					profile: `https://cdn.discordapp.com/avatars/${msg.author.id}/${msg.author.avatar}.webp?size=80`,
+				},
+				embeds: msg.embeds,
+			};
+		} catch {
+			return;
+		}
 	}
 	async getAttachments(message) {
 		if (message.attachments.length < 0) return null;
@@ -101,10 +123,6 @@ class discordClient extends EventEmitter {
 				};
 			}
 		);
-	}
-	async getBanner(msg) {
-		if (msg.webhookId) return;
-		return (await msg.author.fetch()).bannerURL();
 	}
 	constructDiscordMessage(msgd) {
 		let msg = Object.assign({}, msgd);
@@ -122,7 +140,7 @@ class discordClient extends EventEmitter {
 			username: msg.author.username,
 			avatarURL: msg.author.profile,
 			files: dscattachments,
-      embeds: [...(msg.embeds || [])],
+			embeds: [...(msg.embeds || [])],
 		};
 		if (msg.replyto) {
 			dat.embeds.push({
@@ -146,14 +164,6 @@ class discordClient extends EventEmitter {
 			this.constructDiscordMessage(msg)
 		);
 		return { platform: "discord", message, channel };
-	}
-	async bridgeEdit(id, msg, hookdat) {
-		let hook = new WebhookClient(hookdat);
-		await hook.editMessage(id, this.constructDiscordMessage(msg));
-	}
-	async bridgeDelete(id, hookdat) {
-		let hook = new WebhookClient(hookdat);
-		await hook.deleteMessage(id);
 	}
 }
 

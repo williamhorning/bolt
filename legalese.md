@@ -23,6 +23,7 @@ If you're using Bolt, you must not be underage, you must not hold us liable for 
 ### Service Provider
 
 Our services are provided by William Horning and Isaac McFadyen, hereby referred to as the Service Providers. Our services operate under the laws of the following jurisdictions:
+
 - Harris Township, Centre County, Commonwealth of Pennsylvania, United States of America
 - Toronto, Ontario, Canada
 
@@ -59,6 +60,7 @@ You agree to not hold us liable for any action taken as a result of using our se
 ### Information we collect
 
 To provide our services, we need to collect information about you. The amount of information we collect may include the following:
+
 - Information provided to us by Third Party chat platforms
 - Information you provide to us
 - Channel information

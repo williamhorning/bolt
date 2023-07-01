@@ -1,5 +1,5 @@
-import { Client as RevoltClient } from "revolt.js";
 import EventEmitter from "events";
+import { Client as RevoltClient } from "revolt.js";
 
 class revoltClient extends EventEmitter {
 	constructor(config) {
@@ -11,7 +11,7 @@ class revoltClient extends EventEmitter {
 			this.emit("ready");
 		});
 		this.revolt.on("message", async (message) => {
-			console.log(message)
+			console.log(message);
 			if (!message || message.system) return;
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
@@ -94,12 +94,12 @@ class revoltClient extends EventEmitter {
 		let dat = {
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 		};
-    if (!msgd.bolterror) {
-      dat.masquerade = {
+		if (!msgd.bolterror) {
+			dat.masquerade = {
 				name: msg.author.username,
 				avatar: msg.author.profile,
-			}
-    }
+			};
+		}
 		if (msg.attachments?.length > 0) {
 			dat.attachments = [];
 			for (let attachment in msg.attachments) {
@@ -151,20 +151,16 @@ class revoltClient extends EventEmitter {
 	}
 	async bridgeSend(msg, id) {
 		if (!id) return;
-		let { _id: message, channel_id: channel } = await (await this.revolt.channels
-			.fetch(id?.id || id))
-			.sendMessage(await this.constructRevoltMessage(msg));
+		let rvlchannel;
+		try {
+			rvlchannel = await this.revolt.channels.fetch(id?.id || id);
+		} catch {
+			return;
+		}
+		let { _id: message, channel_id: channel } = await rvlchannel.sendMessage(
+			await this.constructRevoltMessage(msg)
+		);
 		return { platform: "revolt", message, channel };
-	}
-	async bridgeEdit(msgid, msg, id) {
-		if (!msgid) return;
-		(await this.revolt.messages
-			.fetch(msgid))
-			.edit(await this.constructRevoltMessage(msg));
-	}
-	async bridgeDelete(msgid, id) {
-		if (!msgid) return;
-		(await this.revolt.messages.fetch(msgid)).delete();
 	}
 }
 

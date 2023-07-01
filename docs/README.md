@@ -1,12 +1,18 @@
 # bolt
 
-## invite links
+## bot invite links
 
-Guilded: https://www.guilded.gg/b/9fc1c387-fda8-47cd-b5ec-2de50c03cd64
+- [Discord](https://discord.com/api/oauth2/authorize?client_id=946939274434080849&permissions=8&scope=bot)
+- [Guilded](https://www.guilded.gg/b/9fc1c387-fda8-47cd-b5ec-2de50c03cd64)
+- [Revolt](https://app.revolt.chat/bot/01G1Y9M6G254VWBF41W3N5DQY5)
 
-Discord: https://canary.discord.com/api/oauth2/authorize?client_id=946939274434080849&permissions=8&scope=bot
+## support servers
 
-Revolt: https://app.revolt.chat/bot/01G1Y9M6G254VWBF41W3N5DQY5
+- [Discord](https://discord.gg/eGq7uhtJDx)
+- [Guilded](https://www.guilded.gg/i/kamX0vek)
+- [Revolt](https://app.revolt.chat/invite/tpGKXcqk)
+
+## [changelog](/changelog.md)
 
 ## permissions
 
@@ -26,26 +32,18 @@ Pings the bot and returns the latency
 
 Returns the version of the codebase that the bot is running
 
-### `!bolt bridge`
-
-#### `!bolt bridge help`
-
-Links to the bridge documentation
-
-#### `!bolt bridge status`
+### `!bolt bridge status`
 
 Shows the status of the bridges in the current channel
 
-#### `!bolt bridge legacy`
+### `!bolt bridge legacy`
 
 The current bridge system in Bolt, will eventually be migrated to a new system, hence the name
 
-##### `!bolt bridge legacy --action=join --bridge=<name>`
+#### `!bolt bridge legacy --action=join --bridge=<name>`
 
 Connects the current channel to a bridge named `<name>`
 
-##### `!bolt bridge legacy --action=leave`
+#### `!bolt bridge legacy --action=leave`
 
 Leaves the current bridge
-
-## [changelog](/changelog.md)

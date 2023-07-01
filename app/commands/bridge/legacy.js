@@ -1,40 +1,29 @@
-import {
-	boltEmbedMsg,
-	boltError,
-} from "../../utils.js";
-import {
-  typeandid,
-	joinLegacy,
-	leaveLegacy,
-} from "../../bridge/utils.js";
+import { getBridges, joinLegacy, leaveLegacy } from "../../bridge/utils.js";
+import { boltEmbedMsg, boltError } from "../../utils.js";
 
 export default {
-	execute: async (_channel, platform, _cmdchannel, opts, msg) => {
-    let {data: legacyBridgeId, type} = await typeandid(msg)
+	execute: async ({ channel, platform, opts, guild }) => {
+		let { current, legacy: legacyBridgeId } = await getBridges({
+			platform,
+			channel,
+		});
 
-
-		// sanity check
-		if (type === "current") {
+		if (current) {
 			return boltEmbedMsg(
 				"Bolt Bridges",
 				"Please use the API or dash to configure non-legacy bridges."
 			);
 		}
 
-		if (!opts.action) opts.action = "help";
 		if (opts.action === "join")
-			return handleJoin(msg.channel, platform, legacyBridgeId, msg["platform.message"]?.channel, msg.guild, opts);
-		if (opts.action === "leave")
-			return handleLeave(msg.channel, platform, legacyBridgeId, opts);
-		if (opts.action === "help")
+			return handleJoin(channel, platform, legacyBridgeId, guild, opts);
+		else if (opts.action === "leave")
+			return handleLeave(channel, platform, legacyBridgeId);
+		else
 			return boltEmbedMsg(
 				"Bolt Bridges (legacy)",
-				"This is the bridge system from the old Bridge Bot. If you figure it out without help you'd be the first. Take a look at the [docs](https://github.com/williamhorning/bolt/tree/main/docs) if you want to figure it out."
+				"Bridges are a cool part of bolt that let you bridge messages between platforms. To get started, take a look at the [docs](https://github.com/williamhorning/bolt/tree/main/docs)"
 			);
-		return boltEmbedMsg(
-			"Bolt Bridges (legacy)",
-			"unknown option, take a look at the [docs](https://github.com/williamhorning/bolt/tree/main/docs)"
-		);
 	},
 	metadata: {
 		command: "legacy",
@@ -53,7 +42,7 @@ export default {
 	},
 };
 
-function handleJoin(channel, platform, legacyBridgeId, cmdchannel, guild, opts) {
+function handleJoin(channel, platform, legacyBridgeId, guild, opts) {
 	if (opts.bridge === channel) {
 		return boltEmbedMsg(
 			"Bolt Bridges (legacy)",
@@ -65,7 +54,7 @@ function handleJoin(channel, platform, legacyBridgeId, cmdchannel, guild, opts) 
 	}
 
 	try {
-		joinLegacy(opts.bridge, channel, platform, cmdchannel, guild);
+		joinLegacy(opts.bridge, channel, platform, guild);
 		return boltEmbedMsg("Bolt Bridges (legacy)", "Joined bridge!");
 	} catch (e) {
 		return boltError("", e, {
@@ -87,7 +76,6 @@ function handleLeave(channel, platform, legacyBridgeId) {
 		return boltError("", e, {
 			channel,
 			platform,
-			opts,
 		});
 	}
 }
