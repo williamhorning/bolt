@@ -13,14 +13,6 @@ class guildedClient extends EventEmitter {
 			if (message.type === 1) return;
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
-		this.guilded.on("messageUpdated", async (oldmessage, newmessage) => {
-			if (newmessage.type === 1) return;
-			this.emit("msgedit", await this.constructmsg(newmessage));
-		});
-		this.guilded.on("messageDeleted", async (message) => {
-			if (message.type === 1) return;
-			this.emit("msgdelete", await this.constructmsg(message));
-		});
 		this.guilded.login();
 	}
 	async constructmsg(message) {
@@ -56,7 +48,6 @@ class guildedClient extends EventEmitter {
 					content = this.constructGuildedMsg(content);
 				return message.reply(content);
 			},
-			boltCommand: {},
 		};
 	}
 	async getReply(message) {
@@ -90,6 +81,7 @@ class guildedClient extends EventEmitter {
 		}
 	}
 	validUsernameCheck(username) {
+		if (!username) return false;
 		return (
 			username.length > 1 &&
 			username.length < 32 &&

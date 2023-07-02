@@ -3,13 +3,14 @@ import { getBridges, legacyBridgeDatabase } from "./utils.js";
 
 export async function tryBridgeSend(msg) {
 	const { legacy, current } = await getBridges(msg);
+	if (!legacy && !current) return;
 	const platforms = legacy
 		? await Promise.all(
-				Object.keys(legacy)
+				Object.keys(BoltPlatforms)
 					.filter((i) => i !== msg.platform)
 					.map(async (i) => {
 						const bridgeIdentifierLegacy = await legacyBridgeDatabase.get(
-							`${i}-${msg.channel}`
+							`${msg.platform}-${msg.channel}`
 						);
 						return {
 							platform: i,
@@ -23,24 +24,30 @@ export async function tryBridgeSend(msg) {
 				return !(i.platform == msg.platform && i.channel == msg.channel);
 		  });
 	for (const platform of platforms) {
-		if (!platform?.id || !platform?.senddata) continue;
+		if (!platform?.platform || !platform?.senddata) continue;
 		try {
 			await BoltPlatforms[platform.platform].bridgeSend(msg, platform.senddata);
 		} catch (e) {
 			try {
 				await BoltPlatforms[platform.platform].bridgeSend(
-					boltError(`sending a message here failed:\n${e.message || e}`, e, {
+					boltError(`sending a message failed:`, e, {
 						msg,
 						platform,
 						platforms,
+						legacy,
+						current,
+						e,
 					}),
-					platform.senddata
+					platform.senddata,
+					false
 				);
 			} catch (e2) {
 				boltError(`sending an error failed`, e2, {
 					msg,
 					platform,
 					platforms,
+					legacy,
+					current,
 					e,
 					e2,
 				});

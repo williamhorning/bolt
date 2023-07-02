@@ -67,24 +67,31 @@ export function boltError(msg, e, extr, usewebhook = true) {
 		webhookSendError(msg, displayname, e, extra);
 	}
 	return boltEmbedMsg(
-		`Error on ${displayname}`,
-		`Error: ${msg}. Run \`!bolt help\` to get help.`
+		`Error: ${msg}`,
+		`Try running \`!bolt help\` to get help.\n\`\`\`\n${
+			e.message || e
+		}\n\`\`\``,
+		undefined,
+		false
 	);
 }
 
 export async function boltErrorButExit(e) {
 	console.error(`\x1b[41mCORE ERROR:\x1b[0m`);
 	console.error(e);
-	await webhookSendError("CORE ERROR", "CORE", e);
+	webhookSendError("CORE ERROR", "CORE", e, {});
 	process.exit(1);
 }
 
-export function boltEmbedMsg(title, description, fields) {
+export function boltEmbedMsg(title, description, fields, masq = true) {
+	const author = masq
+		? {
+				username: displayname,
+				profile: iconURL,
+		  }
+		: {};
 	return {
-		author: {
-			username: displayname,
-			profile: iconURL,
-		},
+		author,
 		embeds: [
 			{
 				author: {

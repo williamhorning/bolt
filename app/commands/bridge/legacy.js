@@ -57,7 +57,7 @@ function handleJoin(channel, platform, legacyBridgeId, guild, opts) {
 		joinLegacy(opts.bridge, channel, platform, guild);
 		return boltEmbedMsg("Bolt Bridges (legacy)", "Joined bridge!");
 	} catch (e) {
-		return boltError("", e, {
+		return boltError("Something went wrong trying to join your bridge", e, {
 			channel,
 			platform,
 			opts,
@@ -68,12 +68,9 @@ function handleJoin(channel, platform, legacyBridgeId, guild, opts) {
 function handleLeave(channel, platform, legacyBridgeId) {
 	try {
 		leaveLegacy(legacyBridgeId, channel, platform);
-		return boltEmbedMsg(
-			"Bolt Bridges (legacy)",
-			"Left bridge. If you have any feedback, join one of the support servers:\n - [discord](https://discord.gg/eGq7uhtJDx)\n- [guilded](https://www.guilded.gg/i/kamX0vek)\n - [revolt](https://app.revolt.chat/invite/tpGKXcqk)"
-		);
+		return boltEmbedMsg("Bolt Bridges (legacy)", "Left bridge.");
 	} catch (e) {
-		return boltError("", e, {
+		return boltError("Something went wrong trying to leave your bridge", e, {
 			channel,
 			platform,
 		});

@@ -51,7 +51,7 @@ export async function commandhandle({
 			guild,
 		});
 	} catch (e) {
-		reply = boltError(e.message || e, e, {
+		reply = boltError("Something went wrong trying to run that command", e, {
 			e,
 			cmd,
 			subcmd,
@@ -63,5 +63,5 @@ export async function commandhandle({
 			replyfn,
 		});
 	}
-	await replyfn(reply);
+	await replyfn(reply, false);
 }

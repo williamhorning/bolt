@@ -56,7 +56,8 @@ export async function getBridges({ platform, channel }) {
 	});
 	return {
 		legacy: await legacyBridgeDatabase.get(`${platform}-${channel}`),
-		current: { _id: fwm._id, ...fwm.value },
+		current:
+			fwm?._id != "undefined" ? { _id: fwm._id, ...fwm.value } : undefined,
 	};
 }
 
@@ -82,6 +83,9 @@ export async function joinLegacy(name, channelId, platform, guild) {
 			token: a.token,
 		};
 	} else if (platform === "revolt") {
+		const channel = await platforms.revolt.revolt.channels.fetch(channelId);
+		if (!channel.havePermission("Masquerade"))
+			throw new Error("Please enable masquerade permssions in this channel");
 		id = channelId;
 	}
 	await legacyBridgeDatabase.put(`${platform}-${name}`, id, {});

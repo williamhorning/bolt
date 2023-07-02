@@ -10,7 +10,6 @@ process.on("unhandledRejection", boltErrorButExit);
 for (const platform in platforms) {
 	let plat = platforms[platform];
 	plat.on("msgcreate", msgCreate);
-	plat.on("command", commandhandle);
 }
 
 async function msgCreate(msg) {

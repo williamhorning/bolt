@@ -20,18 +20,9 @@ class discordClient extends EventEmitter {
 			if (message.system) return;
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
-		this.discord.on("messageUpdate", async (oldMessage, newMessage) => {
-			if (oldMessage.system) return;
-			this.emit("msgedit", await this.constructmsg(newMessage));
-		});
-		this.discord.on("messageDelete", async (deletedMessage) => {
-			if (deletedMessage.system) return;
-			this.emit("msgdelete", await this.constructmsg(deletedMessage));
-		});
 		this.discord.on("interactionCreate", async (interaction) => {
-			await interaction.deferReply();
 			if (!interaction.isCommand()) return;
-			interaction.boltCommand = { type: "discord" };
+			await interaction.deferReply();
 			let opts = {};
 			for (let item of interaction.options?.data[0]?.options || []) {
 				opts[item.name] = item.value;
@@ -43,10 +34,8 @@ class discordClient extends EventEmitter {
 				platform: "discord",
 				guild: interaction.guildId,
 				opts,
-				replyfn: (msg) => {
-					setTimeout(() => {
-						interaction.editReply(this.constructDiscordMessage(msg));
-					}, 1000);
+				replyfn: async (msg) => {
+					await interaction.editReply(this.constructDiscordMessage(msg));
 				},
 				timestamp: interaction.createdTimestamp,
 			});
@@ -63,7 +52,7 @@ class discordClient extends EventEmitter {
 					message.member?.nickname ||
 					message.member?.displayName ||
 					message.author.username,
-				rawname: message.member?.displayName || message.author.username,
+				rawname: message.author.username,
 				profile: message.author.displayAvatarURL(),
 				id: message.author.id,
 			},
@@ -91,7 +80,6 @@ class discordClient extends EventEmitter {
 					Object.entries(i).filter(([_, v]) => v != null)
 				);
 			}),
-			boltCommand: {},
 		};
 	}
 	async getReply(message) {
