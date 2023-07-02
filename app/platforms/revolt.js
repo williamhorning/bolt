@@ -1,5 +1,5 @@
-import { Client as RevoltClient } from "revolt.js";
 import EventEmitter from "events";
+import { Client as RevoltClient } from "revolt.js";
 
 class revoltClient extends EventEmitter {
 	constructor(config) {
@@ -7,21 +7,11 @@ class revoltClient extends EventEmitter {
 		this.config = config;
 		this.revolt = new RevoltClient();
 		this.revolt.on("ready", () => {
-			console.log("rvlt");
 			this.emit("ready");
 		});
 		this.revolt.on("message", async (message) => {
-			console.log(message)
 			if (!message || message.system) return;
 			this.emit("msgcreate", await this.constructmsg(message));
-		});
-		this.revolt.on("message/update", async (message) => {
-			if (!message || message.system) return;
-			this.emit("msgedit", await this.constructmsg(message));
-		});
-		this.revolt.on("message/delete", async (id, message) => {
-			if (!message || message.system) return;
-			this.emit("msgdelete", await this.constructmsg(message));
 		});
 		this.revolt.loginBot(this.config.token);
 	}
@@ -47,15 +37,14 @@ class revoltClient extends EventEmitter {
 			id: message._id,
 			"platform.message": message,
 			timestamp: message.createdAt,
-			reply: async (content) => {
+			reply: async (content, masq) => {
 				if (typeof content != "string")
-					content = await this.constructRevoltMessage(content);
+					content = await this.constructRevoltMessage(content, masq);
 				message.reply(content);
 			},
 			embeds: message.embeds?.filter((embed) => {
 				if (embed.type !== "Image") return true;
 			}),
-			boltCommand: {},
 		};
 		if (bg)
 			msg.author.banner = `https://autumn.revolt.chat/backgrounds/${
@@ -69,7 +58,7 @@ class revoltClient extends EventEmitter {
 		return {
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 			author: {
-				username: message.member.nickname || message.author.username,
+				username: message.member?.nickname || message.author.username,
 				profile: message.author.generateAvatarURL(),
 			},
 			embeds: msg.embeds,
@@ -89,17 +78,17 @@ class revoltClient extends EventEmitter {
 			}) || []
 		);
 	}
-	async constructRevoltMessage(msgd) {
+	async constructRevoltMessage(msgd, masq = true) {
 		let msg = Object.assign({}, msgd);
 		let dat = {
 			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
 		};
-    if (!msgd.bolterror) {
-      dat.masquerade = {
+		if (masq) {
+			dat.masquerade = {
 				name: msg.author.username,
 				avatar: msg.author.profile,
-			}
-    }
+			};
+		}
 		if (msg.attachments?.length > 0) {
 			dat.attachments = [];
 			for (let attachment in msg.attachments) {
@@ -149,22 +138,26 @@ class revoltClient extends EventEmitter {
 		}
 		return dat;
 	}
-	async bridgeSend(msg, id) {
+	async bridgeSend(msg, id, masq) {
 		if (!id) return;
-		let { _id: message, channel_id: channel } = await (await this.revolt.channels
-			.fetch(id?.id || id))
-			.sendMessage(await this.constructRevoltMessage(msg));
-		return { platform: "revolt", message, channel };
-	}
-	async bridgeEdit(msgid, msg, id) {
-		if (!msgid) return;
-		(await this.revolt.messages
-			.fetch(msgid))
-			.edit(await this.constructRevoltMessage(msg));
-	}
-	async bridgeDelete(msgid, id) {
-		if (!msgid) return;
-		(await this.revolt.messages.fetch(msgid)).delete();
+		let rvlchannel;
+		try {
+			rvlchannel = await this.revolt.channels.fetch(id?.id || id);
+		} catch {
+			return;
+		}
+		let msgd = await this.constructRevoltMessage(msg, masq);
+		try {
+			let { _id: message, channel_id: channel } = await rvlchannel.sendMessage(
+				msgd
+			);
+			return { platform: "revolt", message, channel };
+		} catch (e) {
+			if (e.toJSON().status === 403) {
+				throw new Error("please enable masquerade permissions in this channel");
+			}
+			throw e;
+		}
 	}
 }
 

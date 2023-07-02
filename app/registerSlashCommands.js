@@ -1,11 +1,11 @@
-import "dotenv/config";
-import { REST } from "@discordjs/rest";
 import {
 	SlashCommandBuilder,
-	SlashCommandSubcommandBuilder,
 	SlashCommandStringOption,
+	SlashCommandSubcommandBuilder,
 } from "@discordjs/builders";
+import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
+import "dotenv/config";
 import { readdir } from "fs/promises";
 
 let cmds = [];
@@ -16,7 +16,7 @@ for await (let file of await readdir("app/commands")) {
 	// import metadata and make builder
 	let meta = await (await import(`../app/commands/${file}`)).default.metadata;
 	let cmd = new SlashCommandBuilder();
-  if (meta.hidden === true) continue;
+	if (meta.hidden === true) continue;
 	cmd.setName(meta.command).setDescription(meta.description);
 
 	// handle more metadata, including subcommands
@@ -66,7 +66,10 @@ function handleOpts(meta, cmd) {
 			};
 		});
 		let opt = new SlashCommandStringOption();
-		opt.setName(item).setDescription(i.description || 'option').setRequired(i.required || false);
+		opt
+			.setName(item)
+			.setDescription(i.description || "option")
+			.setRequired(i.required || false);
 		if (choices) {
 			opt.setChoices(...choices);
 		}
@@ -75,11 +78,11 @@ function handleOpts(meta, cmd) {
 }
 
 let rest = new REST({
-  version: '9',
-}).setToken(process.env.DISCORD_TOKEN)
+	version: "9",
+}).setToken(process.env.DISCORD_TOKEN);
 
 await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENTID), {
 	body: cmds,
 });
 
-console.log("registered commands")
+console.log("registered commands");

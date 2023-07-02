@@ -1,5 +1,5 @@
-import { Client as GuildedClient, WebhookClient } from "guilded.js";
 import EventEmitter from "events";
+import { Client as GuildedClient, WebhookClient } from "guilded.js";
 
 class guildedClient extends EventEmitter {
 	constructor(config) {
@@ -12,14 +12,6 @@ class guildedClient extends EventEmitter {
 		this.guilded.on("messageCreated", async (message) => {
 			if (message.type === 1) return;
 			this.emit("msgcreate", await this.constructmsg(message));
-		});
-		this.guilded.on("messageUpdated", async (oldmessage, newmessage) => {
-			if (newmessage.type === 1) return;
-			this.emit("msgedit", await this.constructmsg(newmessage));
-		});
-		this.guilded.on("messageDeleted", async (message) => {
-			if (message.type === 1) return;
-			this.emit("msgdelete", await this.constructmsg(message));
 		});
 		this.guilded.login();
 	}
@@ -40,7 +32,7 @@ class guildedClient extends EventEmitter {
 				banner: message.author?.banner,
 				id: message.authorId,
 			},
-			replyto: (message.replyMessageIds||[])[0]
+			replyto: (message.replyMessageIds || [])[0]
 				? await this.getReply(message)
 				: undefined,
 			attachments: [], // guilded attachments suck and don't have a bot api impl
@@ -56,7 +48,6 @@ class guildedClient extends EventEmitter {
 					content = this.constructGuildedMsg(content);
 				return message.reply(content);
 			},
-			boltCommand: {},
 		};
 	}
 	async getReply(message) {
@@ -90,16 +81,19 @@ class guildedClient extends EventEmitter {
 		}
 	}
 	validUsernameCheck(username) {
+		if (!username) return false;
 		return (
 			username.length > 1 &&
-			username.length < 128 &&
+			username.length < 32 &&
 			username.match(/^[a-zA-Z0-9_ ()]*$/gms)
 		);
 	}
 	constructGuildedMsg(msgd) {
 		let msg = Object.assign({}, msgd);
 		let dat = {
-			content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)") || "*empty message*",
+			content:
+				msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)") ||
+				"*empty message*",
 			username: this.chooseValidGuildedUsername(msg),
 			avatar_url: msg.author.profile,
 			embeds: [...(msg.embeds || [])],
@@ -148,7 +142,6 @@ class guildedClient extends EventEmitter {
 					},
 					description: msg.content,
 					footer: {
-						// TODO: i should probably localize this, but i cant speak other languages
 						text: "try setting up this bridge again for webhooks",
 					},
 				},
@@ -177,16 +170,6 @@ class guildedClient extends EventEmitter {
 			this.constructGuildedMsg(msg)
 		);
 		return { platform: "guilded", message, channel };
-	}
-
-	async bridgeEdit() {
-		throw new Error(
-			"Guilded does not support editing messages sent using webhooks"
-		);
-	}
-
-	async bridgeDelete(msg) {
-		await (await this.guilded.messages.fetch(msg.id)).delete();
 	}
 }
 

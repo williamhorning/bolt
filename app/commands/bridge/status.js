@@ -1,8 +1,8 @@
-import { boltEmbedMsg } from "../../utils.js";
 import { getBridges } from "../../bridge/utils.js";
+import { boltEmbedMsg } from "../../utils.js";
 
 export default {
-	execute: async (channel, platform) => {
+	execute: async ({ channel, platform }) => {
 		let { legacy: legacyBridgeId, current: thisbridge } = await getBridges({
 			channel,
 			platform,
