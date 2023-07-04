@@ -42,7 +42,7 @@ The current bridge system in Bolt, will eventually be migrated to a new system, 
 
 #### `!bolt bridge legacy --action=join --bridge=<name>`
 
-Connects the current channel to a bridge named `<name>`
+Connects the current channel to a bridge named `<name>`. Do NOT use spaces in the name, try using dashes instead.
 
 #### `!bolt bridge legacy --action=leave`
 
