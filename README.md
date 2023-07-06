@@ -1,22 +1,30 @@
-# bolt
-## docs
-looking for bolt docs? check out [the docs](/docs/README.md), this readme is for the bolt codebase itself.
-## setup
-### pre-requisites
-- Node.js 19 or higher
-- NPM 8 or higher
-- MongoDB on localhost:27017
-- A Discord, Revolt, and Guilded bot with the token and client ID accessible
-### steps
-1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Setup `.env` to contain the following:
-```sh
-DISCORD_TOKEN = "token.goes.here"
-DISCORD_CLIENTID = "clientid.goes.here"
-GUILDED_TOKEN = "token.goes.here"
-REVOLT_TOKEN = "token.goes.here"
-ERROR_HOOK = "webhook.goes.here"
-```
-4. Run `node scripts/cli.js registerSlashCommands` to register the slash commands
-5. Run `node scripts/cli.js run` to start the bot
+# Bolt 0.5.0-beta
+
+<img src="./branding/banner.png" height="50%">
+
+---
+
+## How to run this
+
+**You don't,** if you want to have sanity by the end of the day. If you're fine
+with losing your sanity, here's all the things you'll need:
+
+- Deno 1.34.3 or higher with the unstable flag
+- MongoDB 4 or higher
+- Redis
+
+Then, if you haven't died trying to figure all of that out, you'll need to
+figure out which plugins you want to use.
+
+## Platform feature support feature matrix thingy
+
+Key: ✓ = supported, ~ = supported w/limitations, I = incomplete, T = todo, E =
+eventually, X = not supported
+
+|              | text | threads | forums |
+| ------------ | ---- | ------- | ------ |
+| bolt-bridge  | ✓    | ✓       | E      |
+| bolt-discord | ✓    | ✓       | ✓      |
+| bolt-guilded | ~    | T       | E      |
+| bolt-matrix  | ~    | E       | X      |
+| bolt-revolt  | ✓    | X       | X      |

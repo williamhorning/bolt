@@ -1,0 +1,5 @@
+{
+	"imports": {
+		"core": "./packages/bolt/mod.ts"
+	}
+}
