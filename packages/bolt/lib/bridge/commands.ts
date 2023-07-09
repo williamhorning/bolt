@@ -1,5 +1,6 @@
 import { Bolt } from '../bolt.ts';
-import { BoltCommand, createBoltMessage } from '../commands/mod.ts';
+import { BoltCommand } from '../commands/mod.ts';
+import { createBoltMessage, logBoltError } from '../utils.ts';
 import { BoltBridgePlatform } from './types.ts';
 import { getBoltBridge, updateBoltBridge } from './utils.ts';
 
@@ -11,14 +12,30 @@ async function joinBoltBridge(
 ) {
 	const current = await getBoltBridge(bolt, { channel });
 	if (current?._id) {
-		return "To run this command you can't be in a bridge. To learn more, run `!bolt help`.";
+		return {
+			message: createBoltMessage({
+				content:
+					"To run this command you can't be in a bridge. To learn more, run `!bolt help`."
+			}),
+			code: 'InBridge'
+		};
 	}
 	if (!name) {
-		return 'Please provide a name for your bridge. To learn more, run `!bolt help`.';
+		return {
+			message: createBoltMessage({
+				content:
+					'Please provide a name for your bridge. To learn more, run `!bolt help`.'
+			}),
+			code: 'MissingParameter'
+		};
 	}
 	const plugin = bolt.getPlugin(platform);
 	if (!plugin?.createSenddata) {
-		return `Error joining a bridge: can't find plugin ${platform}. Run \`!bolt help\` to get help.`;
+		return logBoltError(bolt, {
+			e: new Error(`Can't find plugin while creating bridge`),
+			code: 'BridgeCreationNoPlugin',
+			extra: { plugin, channel, platform, name, current }
+		});
 	}
 	const bridge = (await getBoltBridge(bolt, { _id: name })) || {
 		_id: `bridge-${name}`,
@@ -39,15 +56,31 @@ async function joinBoltBridge(
 			]
 		});
 	} catch (e) {
-		return `Can't join that bridge due to an error: Join the Bolt support server and share the following information:\n\`\`\`\n${e}\`\`\``;
+		return logBoltError(bolt, {
+			e,
+			code: 'BridgeCreationCreateUpdateFailed',
+			extra: { plugin, channel, platform, name, current }
+		});
 	}
-	return 'Joined a bridge!';
+	return {
+		message: createBoltMessage({
+			content: 'Joined a bridge!'
+		}),
+		code: 'Ok'
+	};
 }
 
 async function leaveBoltBridge(bolt: Bolt, channel: string, platform: string) {
 	const current = await getBoltBridge(bolt, { channel });
 	if (!current?._id) {
-		return 'To run this command you need to be in a bridge. To learn more, run `!bolt help`.';
+		return {
+			message: createBoltMessage({
+				content:
+					'To run this command you need to be in a bridge. To learn more, run `!bolt help`.'
+			}),
+			code: 'NotInBridge',
+			e: false
+		};
 	}
 	try {
 		await updateBoltBridge(bolt, {
@@ -58,30 +91,48 @@ async function leaveBoltBridge(bolt: Bolt, channel: string, platform: string) {
 			)
 		});
 	} catch (e) {
-		return `Can't leave that bridge due to an error: Join the Bolt support server and share the following information:\n\`\`\`\n${e}\`\`\``;
+		return logBoltError(bolt, {
+			e,
+			code: 'BridgeCreationLeaveFailed',
+			extra: { channel, platform, current }
+		});
 	}
-	return 'Left a bridge!';
+	return {
+		message: createBoltMessage({ content: 'Left a bridge!' }),
+		code: 'Ok',
+		e: false
+	};
 }
 
 export const BoltBridgeCommands = [
 	{
-		name: 'joinbridge',
-		description: 'connect this channel to another',
-		hasOptions: true,
-		execute: async ({ bolt, channel, platform, arg: name }) => {
-			return createBoltMessage({
-				content: await joinBoltBridge(bolt, channel, platform, name)
-			});
+		name: 'getbridge',
+		description: 'gets information about the current bridge',
+		execute: async ({ bolt, channel }) => {
+			const data = await getBoltBridge(bolt, { channel });
+			if (data?._id) {
+				return createBoltMessage({
+					content: `This channel is connected to \`${data._id}\``
+				});
+			} else {
+				return createBoltMessage({
+					content: "You're not in any bridges right now."
+				});
+			}
 		}
 	},
 	{
+		name: 'joinbridge',
+		description: 'connect this channel to another',
+		hasOptions: true,
+		execute: async ({ bolt, channel, platform, arg: name }) =>
+			(await joinBoltBridge(bolt, channel, platform, name)).message
+	},
+	{
 		name: 'leavebridge',
-		description: "leave's the bridge this channel is connected to",
-		execute: async ({ bolt, channel, platform }) => {
-			return createBoltMessage({
-				content: await leaveBoltBridge(bolt, channel, platform)
-			});
-		}
+		description: 'leaves the bridge this channel is connected to',
+		execute: async ({ bolt, channel, platform }) =>
+			(await leaveBoltBridge(bolt, channel, platform)).message
 	},
 	{
 		name: 'resetbridge',
@@ -91,12 +142,15 @@ export const BoltBridgeCommands = [
 			const current = await getBoltBridge(bolt, { channel });
 			if (current?._id) {
 				const result = await leaveBoltBridge(bolt, channel, platform);
-				if (result !== 'Left a bridge!')
-					return createBoltMessage({ content: result });
+				if (result.code !== 'Ok') return result.message;
 			}
-			const result = await joinBoltBridge(bolt, channel, platform, name);
-			if (result !== 'Joined a bridge!')
-				return createBoltMessage({ content: result });
+			const result = await joinBoltBridge(
+				bolt,
+				channel,
+				platform,
+				name || current?._id.substring(6)
+			);
+			if (result.code !== 'Ok') return result.message;
 			return createBoltMessage({ content: 'Reset this bridge!' });
 		}
 	}

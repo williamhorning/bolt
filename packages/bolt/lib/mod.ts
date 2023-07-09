@@ -17,4 +17,4 @@ export {
 	type BoltPluginEvents,
 	type BoltThread
 } from './types.ts';
-export { BoltPlugin, defineBoltConfig } from './utils.ts';
+export { BoltPlugin, defineBoltConfig, logBoltError } from './utils.ts';

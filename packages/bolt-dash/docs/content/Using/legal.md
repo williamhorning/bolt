@@ -3,12 +3,12 @@
 ## Introduction
 
 Bolt is a cross-platform chat bot operated by
-[William Horning](https://williamhorning.dev) and Isaac McFadyen. This document,
-which contains the Privacy Policy and Terms of Service for Bolt, is a legal
-agreement between you, William Horning, and Isaac McFadyen. William Horning and
-Isaac McFadyen are not lawyers and would really like it if you don't use Bolt
-for any illegal purposes or try to sue us for anything related to the use of
-Bolt.
+[William Horning](https://williamhorning.dev) and
+[Isaac McFadyen](https://www.imcf.me/). This document, which contains the
+Privacy Policy and Terms of Service for Bolt, is a legal agreement between you,
+William Horning, and Isaac McFadyen. William Horning and Isaac McFadyen are not
+lawyers and would really like it if you don't use Bolt for any illegal purposes
+or try to sue us for anything related to the use of Bolt.
 
 ## Definitions
 

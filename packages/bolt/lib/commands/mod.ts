@@ -1,10 +1,6 @@
 import { Bolt } from '../bolt.ts';
-import { BoltEmbed, BoltMessage } from '../types.ts';
-
-type CreateBoltMessageOptions = {
-	content?: string;
-	embeds?: [BoltEmbed, ...BoltEmbed[]];
-};
+import { BoltMessage } from '../types.ts';
+import { logBoltError } from '../utils.ts';
 
 type BoltCommandOptions = {
 	bolt: Bolt;
@@ -33,34 +29,16 @@ export async function handleBoltCommand(opts: BoltCommandOptions) {
 		const result = await command.execute(opts);
 		await opts.reply(result);
 	} catch (e) {
-		opts.bolt.emit('error', e);
 		await opts.reply(
-			createBoltMessage({
-				content: `Something went wrong trying to run that command! Join the Bolt support server and share the following information:\n\`\`\`\n${e}\`\`\``
-			})
+			(
+				await logBoltError(opts.bolt, {
+					e: new Error(`Running that command failed:\n${e.message || e}`),
+					extra: opts,
+					code: 'CommandFailed'
+				})
+			).message
 		);
 	}
-}
-
-export function createBoltMessage(
-	opts: CreateBoltMessageOptions
-): BoltMessage<CreateBoltMessageOptions> {
-	return {
-		author: {
-			rawname: 'Bolt',
-			username: 'Bolt',
-			id: 'bolt'
-		},
-		...opts,
-		channel: '',
-		id: '',
-		reply: async () => {},
-		timestamp: Date.now(),
-		platform: {
-			name: 'bolt',
-			message: opts
-		}
-	};
 }
 
 export * from './info.ts';

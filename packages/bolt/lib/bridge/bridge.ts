@@ -1,5 +1,6 @@
 import { Bolt } from '../bolt.ts';
 import { BoltMessage, BoltThread } from '../types.ts';
+import { logBoltError } from '../utils.ts';
 import { BoltBridgePlatform, BoltBridgeSentPlatform } from './types.ts';
 import { getBoltBridge, getBoltBridgedMessage } from './utils.ts';
 
@@ -11,11 +12,15 @@ export async function bridgeBoltMessage(
 		| 'messageUpdate'
 		| 'threadMessageUpdate'
 		| 'messageDelete',
-	message: BoltMessage<unknown>
+	message: BoltMessage<unknown>,
+	system = false
 ) {
 	const data = [];
 	const bridge = await getBoltBridge(bolt, { channel: message.channel });
 	if (!bridge) return;
+	if (system) {
+		message.channel = '';
+	}
 	const platforms: (BoltBridgePlatform | BoltBridgeSentPlatform)[] | false =
 		event === 'messageCreate' || event === 'threadMessageCreate'
 			? bridge.platforms.filter(i => i.channel !== message.channel)
@@ -46,20 +51,56 @@ export async function bridgeBoltMessage(
 		}
 
 		const replyto = await getBoltBridgedMessage(bolt, message.replyto?.id);
+		const bridgedata = {
+			...platform,
+			threadId,
+			replytoId: replyto
+				? replyto.find(i => i.channel === platform.channel)?.id
+				: undefined,
+			bridgePlatform: platform
+		};
+		let handledat;
 
-		const handledat = await plugin.bridgeMessage({
-			data: {
-				...message,
-				...platform,
-				threadId,
-				replytoId: replyto
-					? replyto.find(i => i.channel === platform.channel)?.id
-					: undefined,
-				bridgePlatform: platform
-			},
-			event
-		});
-		data.push(handledat);
+		try {
+			handledat = await plugin.bridgeMessage({
+				data: { ...message, ...bridgedata },
+				event
+			});
+		} catch (e) {
+			const errordata = {
+				e,
+				event,
+				replyto,
+				message: { ...message, platform: undefined },
+				data,
+				bridge,
+				platforms,
+				platform,
+				plugin: plugin.name
+			};
+			try {
+				handledat = await plugin.bridgeMessage({
+					data: {
+						...(
+							await logBoltError(bolt, {
+								e,
+								extra: errordata,
+								code: 'BridgeFailed'
+							})
+						).message,
+						...bridgedata
+					},
+					event
+				});
+			} catch (e2) {
+				await logBoltError(bolt, {
+					e: e2,
+					extra: { ...errordata, e2 },
+					code: 'BridgeErrorFailed'
+				});
+			}
+		}
+		if (handledat) data.push(handledat);
 	}
 	if (event !== 'messageDelete') {
 		for (const i of data) {
@@ -92,15 +133,35 @@ export async function bridgeBoltThread(
 			!plugin?.bridgeThread
 		)
 			continue;
-		const handledat = await plugin.bridgeThread({
-			event,
-			data: {
-				...thread,
-				...platform,
-				bridgePlatform: platform
-			}
-		});
-		data.push(handledat);
+		try {
+			const handledat = await plugin.bridgeThread({
+				event,
+				data: {
+					...thread,
+					...platform,
+					bridgePlatform: platform
+				}
+			});
+			data.push(handledat);
+		} catch (e) {
+			bridgeBoltMessage(
+				bolt,
+				'messageCreate',
+				{
+					...(
+						await logBoltError(bolt, {
+							e,
+							extra: { bridge, e, event },
+							code: `${
+								event === 'threadCreate' ? 'ThreadCreate' : 'ThreadDelete'
+							}Failed`
+						})
+					).message,
+					channel: thread.parent
+				},
+				true
+			);
+		}
 	}
 	if (event !== 'threadDelete') {
 		for (const i of data) {

@@ -9,7 +9,7 @@
 **You don't,** if you want to have sanity by the end of the day. If you're fine
 with losing your sanity, here's all the things you'll need:
 
-- Deno 1.34.3 or higher with the unstable flag
+- Deno 1.35 or higher with the unstable flag
 - MongoDB 4 or higher
 - Redis
 

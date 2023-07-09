@@ -39,7 +39,7 @@ export default class RevoltPlugin extends BoltPlugin {
 	async createSenddata(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
 		if (!ch.havePermission('Masquerade'))
-			throw new Error('No masquerade permissions!');
+			throw new Error('Please enable masquerade permissions!');
 		return ch.id;
 	}
 	async bridgeMessage(data: BoltBridgeMessageArgs) {

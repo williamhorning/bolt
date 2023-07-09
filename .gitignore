@@ -5,3 +5,4 @@
 /config.ts
 dist
 output
+docker-compose.yml

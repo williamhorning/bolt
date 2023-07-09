@@ -1,4 +1,5 @@
-import { BoltCommand, createBoltMessage } from './mod.ts';
+import { createBoltMessage } from '../utils.ts';
+import { BoltCommand } from './mod.ts';
 
 export const BoltInfoCommands = [
 	{
@@ -6,7 +7,7 @@ export const BoltInfoCommands = [
 		description: 'get help with bolt',
 		execute: ({ bolt }) => {
 			return createBoltMessage({
-				content: `Looking for help with Bolt? Take a look at ${bolt.config.http.dashUrl}/docs`
+				content: `Looking for help with Bolt? Take a look at ${bolt.config.http.dashURL}/docs`
 			});
 		}
 	},
@@ -23,18 +24,17 @@ export const BoltInfoCommands = [
 		name: 'ping',
 		description: 'pong',
 		execute({ timestamp }) {
-			console.log(timestamp);
 			return createBoltMessage({
 				content: `Pong! 🏓 ${Date.now() - timestamp}ms`
 			});
 		}
 	},
 	{
-		name: 'dash',
-		description: 'links to the bolt dashboard',
+		name: 'site',
+		description: 'links to the bolt site',
 		execute: ({ bolt }) => {
 			return createBoltMessage({
-				content: `You can find the Bolt dashboard at ${bolt.config.http.dashUrl}`
+				content: `You can find the Bolt site at ${bolt.config.http.dashURL}`
 			});
 		}
 	}

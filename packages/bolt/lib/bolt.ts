@@ -7,7 +7,7 @@ import {
 import { BoltInfoCommands, handleBoltCommand } from './commands/mod.ts';
 import { EventEmitter, MongoClient, connect } from './deps.ts';
 import { BoltMessage, BoltPluginEvents, BoltThread } from './types.ts';
-import { BoltConfig, BoltPlugin } from './utils.ts';
+import { BoltConfig, BoltPlugin, logBoltError } from './utils.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {
 	config: BoltConfig;
@@ -27,55 +27,23 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	}
 	async load(plugins: BoltPlugin[]) {
 		for (const plugin of plugins) {
+			if (plugin.boltversion !== '1') {
+				throw (
+					await logBoltError(this, {
+						e: new Error(
+							"this plugin isn't supported by this version of bolt."
+						),
+						extra: { plugin: plugin.name },
+						code: 'PluginNotCompatible'
+					})
+				).e;
+			}
 			this.plugins.push(plugin);
 			await plugin.start(this);
 			if (plugin?.commands) {
 				this.commands.push(...plugin.commands);
 			}
-			for await (const event of plugin) {
-				console.log(event);
-				this.emit(event.name, ...event.value);
-				if (
-					event.name.startsWith('message') ||
-					event.name.startsWith('threadMessage')
-				) {
-					const msg = event.value[0] as BoltMessage<unknown>;
-					if (await getBoltBridgedMessage(this, msg.id)) return;
-
-					if (
-						msg.content?.startsWith('!bolt') &&
-						(event.name === 'messageCreate' ||
-							event.name === 'threadMessageCreate')
-					) {
-						handleBoltCommand({
-							bolt: this,
-							name: msg.content.split(' ')[1],
-							reply: msg.reply,
-							channel: msg.channel,
-							platform: msg.platform.name,
-							arg: msg.content.split(' ')[2],
-							timestamp: msg.timestamp
-						});
-					}
-
-					bridgeBoltMessage(
-						this,
-						event.name as
-							| 'messageCreate'
-							| 'threadMessageCreate'
-							| 'messageUpdate'
-							| 'threadMessageUpdate'
-							| 'messageDelete',
-						msg
-					);
-				} else if (event.name.startsWith('thread')) {
-					bridgeBoltThread(
-						this,
-						event.name as 'threadCreate' | 'threadDelete',
-						event.value[0] as BoltThread
-					);
-				}
-			}
+			this.registerPluginEvents(plugin);
 		}
 	}
 	async unload(plugins: BoltPlugin[]) {
@@ -92,7 +60,13 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		try {
 			await this.mongo.connect(this.config.database.mongo);
 		} catch (e) {
-			throw new Error(`Can't connect to MongoDB: ${e.message}`);
+			throw (
+				await logBoltError(this, {
+					e: new Error(`Can't connect to MongoDB: ${e.message}`, { cause: e }),
+					extra: {},
+					code: 'MongoDBConnectFailed'
+				})
+			).e;
 		}
 		try {
 			if (this.config.database.redis) {
@@ -106,13 +80,57 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		} catch (e) {
 			this.emit(
 				'error',
-				new Error(
-					`Can't connect to Redis: ${
-						e.message || e
-					}. We won't use Redis from here on out.`
-				)
+				await logBoltError(this, {
+					e: new Error(`Can't connect to Redis: ${e.message}`, { cause: e }),
+					extra: {},
+					code: 'RedisConnectFailed'
+				})
 			);
 			this.redis = undefined;
+		}
+	}
+	private async registerPluginEvents(plugin: BoltPlugin) {
+		for await (const event of plugin) {
+			this.emit(event.name, ...event.value);
+			if (
+				event.name.startsWith('message') ||
+				event.name.startsWith('threadMessage')
+			) {
+				const msg = event.value[0] as BoltMessage<unknown>;
+				if (await getBoltBridgedMessage(this, msg.id)) return;
+				if (
+					msg.content?.startsWith('!bolt') &&
+					(event.name === 'messageCreate' ||
+						event.name === 'threadMessageCreate')
+				) {
+					handleBoltCommand({
+						bolt: this,
+						name: msg.content.split(' ')[1],
+						reply: msg.reply,
+						channel: msg.channel,
+						platform: msg.platform.name,
+						arg: msg.content.split(' ')[2],
+						timestamp: msg.timestamp
+					});
+				}
+
+				bridgeBoltMessage(
+					this,
+					event.name as
+						| 'messageCreate'
+						| 'threadMessageCreate'
+						| 'messageUpdate'
+						| 'threadMessageUpdate'
+						| 'messageDelete',
+					msg
+				);
+			} else if (event.name.startsWith('thread')) {
+				bridgeBoltThread(
+					this,
+					event.name as 'threadCreate' | 'threadDelete',
+					event.value[0] as BoltThread
+				);
+			}
 		}
 	}
 }

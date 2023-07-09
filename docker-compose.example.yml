@@ -5,7 +5,7 @@ services:
     volumes:
       - ./config:/config
     restart: always
-  mogno:
+  mongo:
     image: mongo:6-jammy
     ports:
       - 27017:27017
