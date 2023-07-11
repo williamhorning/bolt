@@ -17,7 +17,7 @@ to the one below:
 version: '2'
 services:
   bolt:
-    image: # TODO: add final path
+    image: williamfromnj/bolt:latest
     volumes:
       - ./config:/config
     restart: always

@@ -10,9 +10,8 @@ default export and allows you to use a helper function.
 ## Example
 
 ```ts
-// TODO: add final paths
-import { defineBoltConfig } from '';
-import bolt_discord from '';
+import { defineBoltConfig } from 'https://bolt.williamhorning.dev/x/bolt/0.5.0/mod.ts';
+import bolt_discord from 'https://bolt.williamhorning.dev/x/bolt-discord/0.5.0/mod.ts';
 
 export default defineBoltConfig({
 	plugins: [

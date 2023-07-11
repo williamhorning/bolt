@@ -16,7 +16,7 @@ using [Docker](./docker.md) or a VM in a production environment.
 Install the Bolt CLI using the following:
 
 ```sh
-deno install -A --unstable # TODO: add final path
+deno install -A --unstable https://bolt.williamhorning.dev/x/bolt/0.5.0/mod.ts
 ```
 
 After that, you should [configure your bolt instance](./configure.md) and

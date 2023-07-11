@@ -1,6 +1,0 @@
-{
-	// TODO: remove this and replace all occurances with final path
-	"imports": {
-		"core": "./packages/bolt/mod.ts"
-	}
-}

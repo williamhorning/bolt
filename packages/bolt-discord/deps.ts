@@ -7,7 +7,7 @@ export {
 	type BoltBridgeThreadArgs,
 	type BoltMessage,
 	type BoltThread
-} from 'core';
+} from 'https://bolt.williamhorning.dev/x/bolt/0.5.0/mod.ts';
 export { Buffer } from 'node:buffer';
 export {
 	API,

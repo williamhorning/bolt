@@ -4,7 +4,7 @@ export {
 	type BoltBridgeMessageArgs,
 	type BoltBridgeThreadArgs,
 	type BoltMessage
-} from 'core';
+} from 'https://bolt.williamhorning.dev/x/bolt/0.5.0/mod.ts';
 export {
 	API,
 	ChannelEditSystemMessage,

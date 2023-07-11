@@ -224,6 +224,7 @@
       "@discordjs/core@0.6.0": "@discordjs/core@0.6.0",
       "@discordjs/rest@1.7.1": "@discordjs/rest@1.7.1",
       "@discordjs/ws@0.8.3": "@discordjs/ws@0.8.3",
+      "@types/node": "@types/node@18.16.18",
       "discord-api-types": "discord-api-types@0.37.46",
       "guilded-api-typings": "guilded-api-typings@0.13.2",
       "guilded.js@0.23.3": "guilded.js@0.23.3",
@@ -442,6 +443,10 @@
       },
       "@types/mime@3.0.1": {
         "integrity": "sha512-Y4XFY5VJAuw0FgAqPNd6NNoV44jbq9Bz2L7Rh/J6jLTiHBSBJa9fxqQIvkIld4GsoDOcCbvzOUAbLPsSKKg+uA==",
+        "dependencies": {}
+      },
+      "@types/node@18.16.18": {
+        "integrity": "sha512-/aNaQZD0+iSBAGnvvN2Cx92HqE5sZCPZtx2TsK+4nvV23fFe09jVDvpArXr2j9DnYlzuU9WuoykDDc6wqvpNcw==",
         "dependencies": {}
       },
       "@types/node@20.3.2": {

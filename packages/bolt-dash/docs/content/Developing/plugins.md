@@ -7,7 +7,11 @@ an implementation of the `BoltPlugin` class.
 ## Example:
 
 ```ts
-import { createBoltMessage, BoltPlugin, Bolt } from ''; // TODO: add final path
+import {
+	createBoltMessage,
+	BoltPlugin,
+	Bolt
+} from 'https://bolt.williamhorning.dev/x/bolt/0.5.0/mod.ts'; // TODO: add final path
 
 export default class ExamplePlugin extends BoltPlugin {
 	name = 'example';

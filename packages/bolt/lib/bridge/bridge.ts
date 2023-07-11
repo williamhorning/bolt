@@ -144,7 +144,7 @@ export async function bridgeBoltThread(
 			});
 			data.push(handledat);
 		} catch (e) {
-			bridgeBoltMessage(
+			await bridgeBoltMessage(
 				bolt,
 				'messageCreate',
 				{

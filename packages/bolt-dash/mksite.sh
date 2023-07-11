@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-mkdir output
+mkdir ./output
 
-# build dashboard site first
-# TODO: dash
+cp ./site/* ./output
 
 cd docs
 pip install -r requirements.txt
