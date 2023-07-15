@@ -1,5 +1,5 @@
 import { platforms as BoltPlatforms, boltError } from "../utils.js";
-import { getBridges, legacyBridgeDatabase } from "./utils.js";
+import { getBridges, mongo } from "./utils.js";
 
 export async function tryBridgeSend(msg) {
 	const { legacy, current } = await getBridges(msg);
@@ -9,14 +9,13 @@ export async function tryBridgeSend(msg) {
 				Object.keys(BoltPlatforms)
 					.filter((i) => i !== msg.platform)
 					.map(async (i) => {
-						const bridgeIdentifierLegacy = await legacyBridgeDatabase.get(
-							`${msg.platform}-${msg.channel}`
-						);
 						return {
 							platform: i,
-							senddata: await legacyBridgeDatabase.get(
-								`${i}-${bridgeIdentifierLegacy}`
-							),
+							senddata: (
+								await mongo
+									.collection("bridge")
+									.findOne({ _id: `${i}-${legacy.value}` })
+							).value,
 						};
 					})
 		  )

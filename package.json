@@ -3,15 +3,10 @@
 	"bin": "./scripts/cli.js",
 	"dependencies": {
 		"@discordjs/rest": "^1.4.0",
-		"@williamhorning/arg-parse": "^0.0.5",
-		"@williamhorning/mongo-kv": "^0.0.1",
 		"discord.js": "^13.8.1",
 		"dotenv": "^16.0.1",
 		"guilded.js": "^0.13.15",
-		"json-stringify-safe": "^5.0.1",
-		"revolt.js": "^6.0.20",
-		"string-dedent": "^3.0.1",
-		"yargs-parser": "^21.0.1"
+		"revolt.js": "^6.0.20"
 	},
 	"type": "module"
 }
