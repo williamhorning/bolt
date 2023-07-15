@@ -1,5 +1,5 @@
-import argvParse from "@williamhorning/arg-parse";
 import "dotenv/config";
+import { parseArgs } from "node:util";
 import { isbridged, tryBridgeSend } from "./bridge/index.js";
 import { commandhandle } from "./commands/index.js";
 import { boltErrorButExit, platforms } from "./utils.js";
@@ -16,14 +16,17 @@ async function msgCreate(msg) {
 	if (await isbridged(msg)) return;
 
 	if (msg.content?.startsWith("!bolt")) {
-		let opts = argvParse(msg.content.trim());
-		opts._.shift();
+		let opts = parseArgs({
+			args: msg.content.split(" "),
+			strict: false,
+		});
+		opts.positionals.shift();
 		commandhandle({
 			channel: msg.channel,
-			cmd: opts._.shift(),
-			subcmd: opts._.shift(),
+			cmd: opts.positionals.shift(),
+			subcmd: opts.positionals.shift(),
 			guild: msg.guild,
-			opts,
+			opts: opts.values,
 			platform: msg.platform,
 			timestamp: msg.timestamp,
 			replyfn: msg.reply,
