@@ -33,12 +33,10 @@ export async function joinLegacy(name, channelId, platform, guild) {
 }
 
 export async function leaveLegacy(name, channelId, platform) {
-	await legacycollection.deleteMany([
-		{
-			_id: `${platform}-${name}`,
-		},
-		{
-			_id: `${platform}-${channelId}`,
-		},
-	]);
+	await legacycollection.deleteOne({
+		_id: `${platform}-${name}`,
+	});
+	await legacycollection.deleteOne({
+		_id: `${platform}-${channelId}`,
+	});
 }
