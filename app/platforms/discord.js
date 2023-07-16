@@ -4,8 +4,8 @@ import {
 	WebhookClient,
 } from "discord.js";
 import EventEmitter from "node:events";
-import { currentcollection, legacycollection } from "../bridge/utils.js";
 import { commandhandle } from "../commands/index.js";
+import { currentcollection, legacycollection } from "../utils.js";
 
 export default class dscd extends EventEmitter {
 	constructor(config) {
@@ -42,7 +42,9 @@ export default class dscd extends EventEmitter {
 			});
 		});
 		this.discord.login(this.config.token);
-		this.userId = this.discord.user.id;
+	}
+	get userId() {
+		return this.discord.user?.id;
 	}
 	async constructmsg(message) {
 		return {

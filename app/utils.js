@@ -1,9 +1,13 @@
+import { MongoClient } from "mongodb";
 import dsc from "./platforms/discord.js";
 import gld from "./platforms/guilded.js";
 import rvl from "./platforms/revolt.js";
 
 export const prod = process.env.prod;
 export const productname = prod ? "bolt" : "bolt-canary";
+export const mongo = new MongoClient("mongodb://localhost:27017").db(
+	productname
+);
 export const version = "0.4.10";
 export const platforms = {
 	discord: new dsc({
@@ -19,6 +23,8 @@ export const platforms = {
 		token: process.env.REVOLT_TOKEN,
 	}),
 };
+export const currentcollection = mongo.collection("bridgev1");
+export const legacycollection = mongo.collection("bridge");
 
 async function webhookSendError(msg, e, extra, usewebhook = true) {
 	if (!process.env.ERROR_HOOK && !usewebhook) return;

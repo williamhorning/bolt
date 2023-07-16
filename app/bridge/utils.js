@@ -1,10 +1,9 @@
-import { MongoClient } from "mongodb";
-import { platforms, productname } from "../utils.js";
-
-const mongo = new MongoClient("mongodb://localhost:27017").db(productname);
-
-export const currentcollection = mongo.collection("bridgev1");
-export const legacycollection = mongo.collection("bridge");
+import {
+	currentcollection,
+	legacycollection,
+	mongo,
+	platforms,
+} from "../utils.js";
 
 export async function getBridges({ platform, channel }) {
 	const currentbridge = await currentcollection.findOne({
