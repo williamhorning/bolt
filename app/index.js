@@ -13,7 +13,8 @@ for (const platform in platforms) {
 }
 
 async function msgCreate(msg) {
-	if (platforms[msg.platform].isBridged(msg)) return;
+	console.log(msg);
+	if (await platforms[msg.platform].isBridged(msg)) return;
 
 	if (msg.content?.startsWith("!bolt")) {
 		let opts = parseArgs({

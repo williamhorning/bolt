@@ -1,5 +1,5 @@
-import { boltError, platforms } from "../utils.js";
-import { getBridges, legacycollection } from "./utils.js";
+import { boltError, legacycollection, platforms } from "../utils.js";
+import { getBridges } from "./utils.js";
 
 export async function tryBridgeSend(msg) {
 	const { legacy, current } = await getBridges(msg);

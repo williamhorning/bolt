@@ -1,6 +1,6 @@
 import { Client as GuildedClient, WebhookClient } from "guilded.js";
 import EventEmitter from "node:events";
-import { currentcollection, legacycollection } from "../bridge/utils.js";
+import { currentcollection, legacycollection } from "../utils.js";
 
 export default class gldd extends EventEmitter {
 	constructor(config) {
@@ -15,7 +15,9 @@ export default class gldd extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.guilded.login();
-		this.userId = this.guilded.user.id;
+	}
+	get userId() {
+		return this.guilded.user?.id;
 	}
 	async constructmsg(message) {
 		if (!message) return;

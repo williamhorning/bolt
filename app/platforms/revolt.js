@@ -14,7 +14,9 @@ export default class rvlt extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.revolt.loginBot(this.config.token);
-		this.userId = this.revolt.user._id;
+	}
+	get userId() {
+		return this.revolt.user?._id;
 	}
 	async constructmsg(message) {
 		let bg = (await message.author.fetchProfile()).background;
