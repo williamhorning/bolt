@@ -28,4 +28,4 @@ ERROR_HOOK = "webhook.goes.here"
 ```
 
 4. Run `node app/registerSlashCommands.js` to register the slash commands
-5. Run `node app/index.js` or `docker-compose up` to start the bot
+5. Run `node app/index.js` or `docker compose up` to start the bot

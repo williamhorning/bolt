@@ -3,10 +3,11 @@ import {
 	Intents as DiscordIntents,
 	WebhookClient,
 } from "discord.js";
-import EventEmitter from "events";
+import EventEmitter from "node:events";
+import { currentcollection, legacycollection } from "../bridge/utils.js";
 import { commandhandle } from "../commands/index.js";
 
-class discordClient extends EventEmitter {
+export default class dscd extends EventEmitter {
 	constructor(config) {
 		super();
 		this.config = config;
@@ -41,6 +42,7 @@ class discordClient extends EventEmitter {
 			});
 		});
 		this.discord.login(this.config.token);
+		this.userId = this.discord.user.id;
 	}
 	async constructmsg(message) {
 		return {
@@ -80,6 +82,7 @@ class discordClient extends EventEmitter {
 					Object.entries(i).filter(([_, v]) => v != null)
 				);
 			}),
+			webhookid: message.webhookId,
 		};
 	}
 	async getReply(message) {
@@ -153,6 +156,30 @@ class discordClient extends EventEmitter {
 		);
 		return { platform: "discord", message, channel };
 	}
+	async createSenddata(channelid) {
+		{
+			const channel = await this.discord.channels.fetch(channelid);
+			if (channel.type !== "GUILD_TEXT") {
+				throw new Error("Can't create a bridge here");
+			}
+			const a = await channel.createWebhook("bridge");
+			return {
+				id: a.id,
+				token: a.token,
+			};
+		}
+	}
+	async isBridged(msg) {
+		return (
+			(msg.webhookid &&
+				(await legacycollection.findOne({
+					"value.id": msg.webhookid,
+				}))) ||
+			(await currentcollection.findOne({
+				"value.bridges.platform": "discord",
+				"value.bridges.channel": msg.channel,
+				"value.bridges.senddata.id": msg.webhookid,
+			}))
+		);
+	}
 }
-
-export default discordClient;
