@@ -52,7 +52,6 @@ function handleJoin(channel, platform, legacyBridgeId, guild, opts) {
 	if (legacyBridgeId) {
 		return boltEmbedMsg("Bolt Bridges (legacy)", "You're already in a bridge!");
 	}
-
 	try {
 		joinLegacy(opts.bridge, channel, platform, guild);
 		return boltEmbedMsg("Bolt Bridges (legacy)", "Joined bridge!");

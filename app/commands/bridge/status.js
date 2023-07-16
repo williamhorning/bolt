@@ -13,7 +13,7 @@ export default {
 			[
 				{
 					name: "bridge IDs",
-					value: `The bridge ID is \`${legacyBridgeId}\` and the beta bridge ID is \`${thisbridge?._id}\``,
+					value: `The bridge ID is \`${legacyBridgeId.value}\` and the beta bridge ID is \`${thisbridge?._id}\``,
 				},
 			]
 		);

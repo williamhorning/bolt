@@ -1,7 +1,8 @@
-import EventEmitter from "events";
 import { Client as GuildedClient, WebhookClient } from "guilded.js";
+import EventEmitter from "node:events";
+import { currentcollection, legacycollection } from "../bridge/utils.js";
 
-class guildedClient extends EventEmitter {
+export default class gldd extends EventEmitter {
 	constructor(config) {
 		super();
 		this.config = config;
@@ -14,6 +15,7 @@ class guildedClient extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.guilded.login();
+		this.userId = this.guilded.user.id;
 	}
 	async constructmsg(message) {
 		if (!message) return;
@@ -48,6 +50,7 @@ class guildedClient extends EventEmitter {
 					content = this.constructGuildedMsg(content);
 				return message.reply(content);
 			},
+			webhookid: message.createdByWebhookId,
 		};
 	}
 	async getReply(message) {
@@ -171,6 +174,26 @@ class guildedClient extends EventEmitter {
 		);
 		return { platform: "guilded", message, channel };
 	}
+	async createSenddata(channelId, guild) {
+		const a = await this.guilded.webhooks.createWebhook(guild, {
+			channelId,
+			name: "bridge",
+		});
+		return {
+			id: a.id,
+			token: a.token,
+		};
+	}
+	async isBridged(msg) {
+		return (
+			(msg.author.id === this.userId && msg.embeds && !msg.replyto) ||
+			(msg.webhookid &&
+				(await currentcollection.findOne({
+					"value.bridges.platform": "guilded",
+					"value.bridges.senddata.id": msg.webhookid,
+				}))) ||
+			(msg.webhookid &&
+				(await legacycollection.findOne({ "value.id": msg.webhookid })))
+		);
+	}
 }
-
-export default guildedClient;

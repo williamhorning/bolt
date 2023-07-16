@@ -1,5 +1,16 @@
 # changelog
 
+## 0.4.10
+
+- remove /utils dependencies
+- make it easier to add more plugins
+- use `docker compose` in docs instead of `docker-compose`
+- clean up other things
+
+## 0.4.9
+
+- backport various fixes
+
 ## 0.4.8
 
 - fix Revolt replies

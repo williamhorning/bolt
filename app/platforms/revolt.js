@@ -1,7 +1,7 @@
-import EventEmitter from "events";
+import EventEmitter from "node:events";
 import { Client as RevoltClient } from "revolt.js";
 
-class revoltClient extends EventEmitter {
+export default class rvlt extends EventEmitter {
 	constructor(config) {
 		super();
 		this.config = config;
@@ -14,6 +14,7 @@ class revoltClient extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.revolt.loginBot(this.config.token);
+		this.userId = this.revolt.user._id;
 	}
 	async constructmsg(message) {
 		let bg = (await message.author.fetchProfile()).background;
@@ -45,6 +46,7 @@ class revoltClient extends EventEmitter {
 			embeds: message.embeds?.filter((embed) => {
 				if (embed.type !== "Image") return true;
 			}),
+			masquerade: message.masquerade,
 		};
 		if (bg)
 			msg.author.banner = `https://autumn.revolt.chat/backgrounds/${
@@ -159,6 +161,14 @@ class revoltClient extends EventEmitter {
 			throw e;
 		}
 	}
+	async createSenddata(channelId) {
+		const channel = await this.revolt.channels.fetch(channelId);
+		if (!channel.havePermission("Masquerade")) {
+			throw new Error("Please enable masquerade permssions in this channel");
+		}
+		return channelId;
+	}
+	async isBridged(msg) {
+		return msg.author.id == this.userId && msg.masquerade;
+	}
 }
-
-export default revoltClient;

@@ -4,7 +4,6 @@ import {
 	SlashCommandSubcommandBuilder,
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
-import { Routes } from "discord-api-types/v9";
 import "dotenv/config";
 import { readdir } from "fs/promises";
 
@@ -27,10 +26,8 @@ for await (let file of await readdir("app/commands")) {
 }
 
 async function handleMetadata(meta, cmd) {
-	// deal with subcommands
 	if (meta.hasSubcommands) {
 		for await (let file of await readdir(`app/commands/${meta.command}/`)) {
-			// sanity check
 			if (!file.endsWith(".js")) continue;
 
 			// import metadata and make builder
@@ -81,7 +78,7 @@ let rest = new REST({
 	version: "9",
 }).setToken(process.env.DISCORD_TOKEN);
 
-await rest.put(Routes.applicationCommands(process.env.DISCORD_CLIENTID), {
+await rest.put(`/applications/${process.env.DISCORD_CLIENTID}/commands`, {
 	body: cmds,
 });
 

@@ -1,4 +1,5 @@
-import { boltEmbedMsg, boltError, currentdir } from "../utils.js";
+import { basename, join } from "path/posix";
+import { boltEmbedMsg, boltError } from "../utils.js";
 
 export default {
 	execute: () => {
@@ -64,4 +65,12 @@ export async function commandhandle({
 		});
 	}
 	await replyfn(reply, false);
+}
+
+function currentdir(importmetaurl, additional = "", thingtosanitize) {
+	return join(
+		new URL(".", importmetaurl).href,
+		additional,
+		basename(thingtosanitize)
+	);
 }
