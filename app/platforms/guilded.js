@@ -120,7 +120,7 @@ export default class gldd extends EventEmitter {
 						},
 						description: msg.replyto.content,
 					},
-					...msg.replyto.embeds,
+					...(msg.replyto.embeds || []),
 				]
 			);
 		}
