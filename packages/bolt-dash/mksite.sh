@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 mkdir ./output
 
-cp ./site/* ./output
+cp -r ./site/* ./output
 
 cd docs
 pip install -r requirements.txt
 python -m mkdocs build
-cp output ../output/docs
+cp -r output ../output/docs
