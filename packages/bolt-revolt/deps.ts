@@ -8,7 +8,7 @@ export {
 	TextSystemMessage,
 	User,
 	UserSystemMessage
-} from 'npm:@williamhorning/revolt.js@7.0.0-beta.9/lib/esm/index.js';
+} from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
 export {
 	BoltPlugin,
 	type BoltBridgeMessage,

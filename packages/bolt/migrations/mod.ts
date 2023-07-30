@@ -20,13 +20,11 @@ export function getBoltMigrations(versionFrom: string, versionTo: string) {
 	return BoltMigrationsList.slice(indexoffrom, indexofto + 1);
 }
 
-export async function applyBoltMigrations(
+export function applyBoltMigrations(
 	migrations: typeof BoltMigrationsList,
 	data: Document[]
 ) {
-	let moddata = data;
-	for (const migration of migrations) {
-		moddata = await migration.translate(data);
-	}
-	return moddata;
+	return migrations.reduce((acc, migration) => {
+		return migration.translate(acc);
+	}, data);
 }

@@ -83,7 +83,8 @@ export async function bridgeBoltMessage(
 					data: {
 						...(
 							await logBoltError(bolt, {
-								e,
+								message: `Bridging that message failed`,
+								cause: e,
 								extra: errordata,
 								code: 'BridgeFailed'
 							})
@@ -94,7 +95,8 @@ export async function bridgeBoltMessage(
 				});
 			} catch (e2) {
 				await logBoltError(bolt, {
-					e: e2,
+					message: `Can't log bridge error`,
+					cause: e2,
 					extra: { ...errordata, e2 },
 					code: 'BridgeErrorFailed'
 				});
@@ -150,7 +152,8 @@ export async function bridgeBoltThread(
 				{
 					...(
 						await logBoltError(bolt, {
-							e,
+							message: `Can't bridge thread events`,
+							cause: e,
 							extra: { bridge, e, event },
 							code: `${
 								event === 'threadCreate' ? 'ThreadCreate' : 'ThreadDelete'

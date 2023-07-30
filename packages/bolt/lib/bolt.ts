@@ -30,9 +30,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			if (plugin.boltversion !== '1') {
 				throw (
 					await logBoltError(this, {
-						e: new Error(
-							"this plugin isn't supported by this version of bolt."
-						),
+						message: `This plugin isn't supported by this version of Bolt.`,
 						extra: { plugin: plugin.name },
 						code: 'PluginNotCompatible'
 					})
@@ -62,7 +60,8 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		} catch (e) {
 			throw (
 				await logBoltError(this, {
-					e: new Error(`Can't connect to MongoDB: ${e.message}`, { cause: e }),
+					message: `Can't connect to MongoDB`,
+					cause: e,
 					extra: {},
 					code: 'MongoDBConnectFailed'
 				})
@@ -78,14 +77,12 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 				);
 			}
 		} catch (e) {
-			this.emit(
-				'error',
-				await logBoltError(this, {
-					e: new Error(`Can't connect to Redis: ${e.message}`, { cause: e }),
-					extra: {},
-					code: 'RedisConnectFailed'
-				})
-			);
+			await logBoltError(this, {
+				message: `Can't connect to Redis`,
+				cause: e,
+				extra: {},
+				code: 'RedisConnectFailed'
+			});
 			this.redis = undefined;
 		}
 	}

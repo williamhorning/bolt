@@ -5,7 +5,7 @@ import {
 } from '../migrations/mod.ts';
 import { Input, MongoClient, Select, Toggle, colors, prompt } from './deps.ts';
 
-export default async function () {
+export default async function migrations() {
 	const sharedversionprompt = {
 		type: Select,
 		options: Object.values(BoltMigrationVersions)
@@ -45,15 +45,18 @@ export default async function () {
 	await mongo.connect(promptdata.mongo);
 	const database = mongo.database(promptdata.prod ? 'bolt' : 'bolt-canary');
 
-	console.log(colors.blue(`Migrating your data...`));
+	console.log(colors.blue(`Downloading your data...`));
 
-	const data = await applyBoltMigrations(
-		migrationlist,
-		await database
-			.collection(migrationlist[0].collectionNames.fromDB)
-			.find()
-			.toArray()
+	const dumped = await database
+		.collection(migrationlist[0].collectionNames.fromDB)
+		.find()
+		.toArray();
+
+	console.log(
+		colors.blue(`Downloaded data from the DB! Migrating your data...`)
 	);
+
+	const data = applyBoltMigrations(migrationlist, dumped);
 
 	const filepath = Deno.makeTempFileSync({ suffix: 'bolt-db-migration' });
 	Deno.writeTextFileSync(filepath, JSON.stringify(data));
@@ -64,15 +67,15 @@ export default async function () {
 
 	if (!writeconfirm) Deno.exit();
 
-	await database
-		.collection(migrationlist.slice(-1)[0].collectionNames.toDB)
-		.updateMany(
-			data.map(i => {
-				return { _id: i._id };
-			}),
-			data,
-			{ upsert: true }
-		);
+	const tocollection = database.collection(
+		migrationlist.slice(-1)[0].collectionNames.toDB
+	);
+
+	await Promise.all(
+		data.map(i => {
+			return tocollection.replaceOne({ _id: i._id }, i, { upsert: true });
+		})
+	);
 
 	console.log(colors.green('Wrote data to the DB'));
 }

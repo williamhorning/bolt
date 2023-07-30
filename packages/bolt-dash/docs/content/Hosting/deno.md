@@ -6,7 +6,7 @@ using [Docker](./docker.md) or a VM in a production environment.
 
 ## Prerequisites
 
-- [Deno >=1.35](https://deno.land)
+- [Deno >=1.35.3](https://deno.land)
 - [Git (when running from source)](https://git-scm.com)
 - [MongoDB >=4](https://www.mongodb.com/docs/manual/installation/)
 - [Redis (optional)](https://redis.io/docs/getting-started/installation/)

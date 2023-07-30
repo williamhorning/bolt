@@ -32,7 +32,7 @@ async function joinBoltBridge(
 	const plugin = bolt.getPlugin(platform);
 	if (!plugin?.createSenddata) {
 		return logBoltError(bolt, {
-			e: new Error(`Can't find plugin while creating bridge`),
+			message: `Can't find plugin while creating bridge`,
 			code: 'BridgeCreationNoPlugin',
 			extra: { plugin, channel, platform, name, current }
 		});
@@ -57,7 +57,8 @@ async function joinBoltBridge(
 		});
 	} catch (e) {
 		return logBoltError(bolt, {
-			e,
+			message: `Can't update this bridge`,
+			cause: e,
 			code: 'BridgeCreationCreateUpdateFailed',
 			extra: { plugin, channel, platform, name, current }
 		});
@@ -92,7 +93,8 @@ async function leaveBoltBridge(bolt: Bolt, channel: string, platform: string) {
 		});
 	} catch (e) {
 		return logBoltError(bolt, {
-			e,
+			cause: e,
+			message: `Can't leave that bridge`,
 			code: 'BridgeCreationLeaveFailed',
 			extra: { channel, platform, current }
 		});

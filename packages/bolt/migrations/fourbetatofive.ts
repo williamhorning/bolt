@@ -1,11 +1,5 @@
 import { Document } from './deps.ts';
-
-function mapPlugins(pluginname: string): string {
-	if (pluginname === 'discord') return 'bolt-discord';
-	if (pluginname === 'guilded') return 'bolt-guilded';
-	if (pluginname === 'revolt') return 'bolt-revolt';
-	return 'unknown';
-}
+import { mapPlugins } from './utils.ts';
 
 export default {
 	versionfrom: '0.4-beta',
@@ -14,8 +8,7 @@ export default {
 		fromDB: 'bridgev1',
 		toDB: 'bridges'
 	},
-	// deno-lint-ignore require-await
-	translate: async (
+	translate: (
 		itemslist: (
 			| Document
 			| {
@@ -38,7 +31,7 @@ export default {
 								plugin: mapPlugins(i.platform),
 								channel: i.channel,
 								senddata: i.senddata,
-								name: _id
+								name: `${i.channel} on ${i.platform}`
 							};
 						}
 					)

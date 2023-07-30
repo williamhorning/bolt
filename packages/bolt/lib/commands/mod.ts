@@ -32,7 +32,8 @@ export async function handleBoltCommand(opts: BoltCommandOptions) {
 		await opts.reply(
 			(
 				await logBoltError(opts.bolt, {
-					e: new Error(`Running that command failed:\n${e.message || e}`),
+					cause: e,
+					message: `Running that command failed:\n${e.message || e}`,
 					extra: opts,
 					code: 'CommandFailed'
 				})

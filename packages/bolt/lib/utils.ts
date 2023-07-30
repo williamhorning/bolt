@@ -89,17 +89,51 @@ export function createBoltMessage(
 	};
 }
 
+class BoltError extends Error {
+	id: string;
+	extra: Record<string, unknown>;
+	code: string;
+	constructor(
+		message: string,
+		options: {
+			id: string;
+			extra: Record<string, unknown>;
+			code: string;
+		} & ErrorOptions
+	) {
+		super(message, options);
+		this.code = options.code;
+		this.extra = options.extra;
+		this.id = options.id;
+	}
+}
+
 export async function logBoltError(
 	bolt: Bolt,
-	{ e, extra, code }: { e: Error; extra: Record<string, unknown>; code: string }
+	{
+		message,
+		cause,
+		extra,
+		code
+	}: {
+		message: string;
+		cause?: Error;
+		extra: Record<string, unknown>;
+		code: string;
+	}
 ) {
 	const id = crypto.randomUUID();
-	e.cause = { e, id, extra, code };
+	const e = new BoltError(message, {
+		cause,
+		id,
+		extra,
+		code
+	});
 	const msg = `Bolt Error:\n${bolt.plugins.length} plugins - ${
 		Deno.build.target
-	} - ${id} - ${code}\n\`\`\`json\n${JSON.stringify(
-		e
-	)}\n\`\`\`\n\`\`\`json\n${extra}\n\`\`\``;
+	} - ${id} - ${code}\n${message}\n${
+		cause ? `\`\`\`json\n${JSON.stringify(cause)}\n\`\`\`\n` : ''
+	}\`\`\`json\n${extra}\n\`\`\``;
 	if (bolt.config.http.errorURL) {
 		try {
 			await fetch(bolt.config.http.errorURL, {
@@ -113,7 +147,7 @@ export async function logBoltError(
 	const boltError = {
 		e,
 		message: createBoltMessage({
-			content: `Something went wrong: ${code}! Join the Bolt support server and share the following: \`\`\`\n${e.message}\n${id}\`\`\``
+			content: `Something went wrong: ${code}! Join the Bolt support server and share the following: \`\`\`\n${message}\n${id}\`\`\``
 		}),
 		code
 	};

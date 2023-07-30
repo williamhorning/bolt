@@ -7,15 +7,15 @@ export default async function ({ config }: { config?: string }) {
 	try {
 		cfg = (await import(path))?.default;
 	} catch (e) {
-		console.error(colors.red(`Can't load ${path}, exiting...`), e);
+		console.error(colors.red(`Can't load ${path}, exiting...\n`), e);
 		Deno.exit(1);
 	}
 	const bolt = new Bolt(defineBoltConfig(cfg));
 	bolt.on('error', msg => {
-		console.error(colors.red((msg as Error).message), msg);
+		console.error(msg);
 	});
 	bolt.on('warning', msg => {
-		console.warn(colors.yellow(msg as string));
+		console.warn(colors.yellow(msg));
 	});
 	await bolt.setup();
 }
