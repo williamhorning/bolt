@@ -24,5 +24,5 @@ jobs:
           context: .
           push: true
           tags:
-            williamfromnj/bolt:latest,williamfromnj/bolt:${{ github.event.release.name }}
+            williamfromnj/bolt:latest,williamfromnj/bolt:${{ github.ref_name }}
           platforms: linux/arm64,linux/amd64
