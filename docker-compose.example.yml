@@ -1,9 +1,9 @@
-version: "2"
+version: '2'
 services:
   bolt:
     build: .
     volumes:
-      - ./config:/config
+      - ./config:/data
     restart: always
   mongo:
     image: mongo:6-jammy

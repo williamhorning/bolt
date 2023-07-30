@@ -19,7 +19,7 @@ services:
   bolt:
     image: williamfromnj/bolt:latest
     volumes:
-      - ./config:/config
+      - ./config:/data
     restart: always
   mongo:
     image: mongo:6-jammy
