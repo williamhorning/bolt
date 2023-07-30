@@ -1,2 +1,8 @@
+!.env.example
+.DS_Store
 .env
-node_modules
+.env.*
+/config.ts
+dist
+output
+docker-compose.yml
