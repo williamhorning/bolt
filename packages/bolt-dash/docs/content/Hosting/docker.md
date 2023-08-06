@@ -19,7 +19,7 @@ services:
   bolt:
     image: williamfromnj/bolt:0.5.0
     volumes:
-      - ./config:/data
+      - ./config:/app/data
     restart: always
   mongo:
     image: mongo:6-jammy
