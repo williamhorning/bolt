@@ -1,3 +1,5 @@
+// TODO: remove this line after denoland/deno#20028 is fixed
+import 'node:domain';
 import { Bolt, defineBoltConfig } from '../lib/mod.ts';
 import { colors } from './deps.ts';
 
