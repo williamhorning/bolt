@@ -8,6 +8,7 @@ export {
 	type WeakEvent
 } from 'npm:matrix-appservice-bridge@8.1.0';
 export {
+	Bolt,
 	BoltPlugin,
 	type BoltBridgeMessageArgs,
 	type BoltMessage

@@ -1,5 +1,6 @@
 import {
 	AppServiceRegistration,
+	Bolt,
 	BoltBridgeMessageArgs,
 	BoltMessage,
 	BoltPlugin,
@@ -22,7 +23,7 @@ export default class MatrixPlugin extends BoltPlugin {
 	config: MatrixConfig;
 	name = 'bolt-revolt';
 	version = '0.5.0';
-	kv?: Deno.Kv;
+	bolt?: Bolt;
 	constructor(config: MatrixConfig) {
 		super();
 		this.config = config;
@@ -34,13 +35,15 @@ export default class MatrixPlugin extends BoltPlugin {
 				homeserverUrl: config.homeserverUrl,
 				store: {
 					getStoredSession: async (userId: string) => {
-						return (
-							(await this.kv?.get<ClientEncryptionSession>(['session', userId]))
-								?.value || null
+						return JSON.parse(
+							(await this.bolt?.redis?.get(`mtx-session-${userId}`)) || 'null'
 						);
 					},
 					setStoredSession: async (session: ClientEncryptionSession) => {
-						await this.kv?.set(['session', session.userId], session);
+						await this.bolt?.redis?.set(
+							`mtx-session-${session.userId}`,
+							JSON.stringify(session)
+						);
 					},
 					async updateSyncToken() {}
 				}
@@ -53,8 +56,8 @@ export default class MatrixPlugin extends BoltPlugin {
 			userActivityStore: './db/userActivityStore.db'
 		});
 	}
-	async start() {
-		this.kv = await Deno.openKv('./.mxtkv');
+	async start(bolt: Bolt) {
+		this.bolt = bolt;
 		if (!existsSync(this.config.reg_path)) {
 			const reg = new AppServiceRegistration(this.config.homeserverUrl);
 			reg.setAppServiceToken(AppServiceRegistration.generateToken());
