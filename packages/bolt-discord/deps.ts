@@ -11,9 +11,9 @@ export {
 	type RESTPostAPIWebhookWithTokenJSONBody,
 	type RESTPostAPIWebhookWithTokenQuery,
 	type WithIntrinsicProps
-} from 'npm:@discordjs/core@0.6.0';
-export { REST, type RawFile } from 'npm:@discordjs/rest@1.7.1';
-export { WebSocketManager } from 'npm:@discordjs/ws@0.8.3';
+} from 'npm:@discordjs/core@1.0.0';
+export { REST, type RawFile } from 'npm:@discordjs/rest@2.0.0';
+export { WebSocketManager } from 'npm:@discordjs/ws@1.0.0';
 export {
 	Bolt,
 	BoltPlugin,

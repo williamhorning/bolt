@@ -19,7 +19,7 @@ Clone the Bolt Github repository from
 If you want to use a stable version, run the following:
 
 ```sh
-git switch 0.5.0
+git switch 0.5.1
 ```
 
 Then, you will probably want to install the Bolt CLI using the following:

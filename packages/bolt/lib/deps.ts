@@ -6,4 +6,4 @@ export {
 export {
 	connect,
 	type RedisConnectOptions
-} from 'https://deno.land/x/redis@v0.29.2/mod.ts';
+} from 'https://deno.land/x/redis@v0.31.0/mod.ts';

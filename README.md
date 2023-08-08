@@ -1,4 +1,4 @@
-# Bolt 0.5.0
+# Bolt 0.5
 
 Bolt is a cross-platform chat bot that bridges communities that's written in
 Typescript and powered by Deno. To learn more, see the

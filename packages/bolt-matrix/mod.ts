@@ -22,7 +22,7 @@ export default class MatrixPlugin extends BoltPlugin {
 	bot: Bridge;
 	config: MatrixConfig;
 	name = 'bolt-revolt';
-	version = '0.5.0';
+	version = '0.5.1';
 	bolt?: Bolt;
 	constructor(config: MatrixConfig) {
 		super();

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1
+
+- bump dependency versions
+
 ## 0.5.0
 
 // TODO: add changelog for final

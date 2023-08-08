@@ -1,11 +1,11 @@
+export { colors } from 'https://deno.land/x/cliffy@v1.0.0-rc.3/ansi/colors.ts';
+export { Command as CliffyApp } from 'https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts';
 export {
-	Command as CliffyApp,
 	Input,
 	Select,
 	Toggle,
-	colors,
 	prompt
-} from 'https://deno.land/x/cliffy@v0.25.7/mod.ts';
+} from 'https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts';
 export {
 	MongoClient,
 	type Document,

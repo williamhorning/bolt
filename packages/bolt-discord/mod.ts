@@ -25,7 +25,7 @@ export default class DiscordPlugin extends BoltPlugin {
 	gateway: WebSocketManager;
 	rest: REST;
 	name = 'bolt-discord';
-	version = '0.5.0';
+	version = '0.5.1';
 	constructor(config: DiscordConfig) {
 		super();
 		this.config = config;
@@ -53,7 +53,7 @@ export default class DiscordPlugin extends BoltPlugin {
 		forum: true
 	};
 	async createSenddata(channel: string) {
-		return await this.bot.api.webhooks.create(channel, {
+		return await this.bot.api.channels.createWebhook(channel, {
 			name: 'Bolt Bridge'
 		});
 	}
@@ -123,12 +123,13 @@ export default class DiscordPlugin extends BoltPlugin {
 	}
 	async bridgeThread(data: BoltBridgeThreadArgs) {
 		if (data.event === 'threadCreate') {
-			const isForum =
-				(await this.bot.api.channels.get(data.data.bridgePlatform.channel))
-					.type === 15;
+			const channel = await this.bot.api.channels.get(
+				data.data.bridgePlatform.channel
+			);
+			const isForum = channel.type === 15;
 			const handler = isForum
-				? this.bot.api.threads.createForumThread
-				: this.bot.api.threads.create;
+				? this.bot.api.channels.createForumThread
+				: this.bot.api.channels.createThread;
 			const result = await handler(data.data.bridgePlatform.channel, {
 				message: { content: '.' },
 				name: data.data.name || 'bridged thread',

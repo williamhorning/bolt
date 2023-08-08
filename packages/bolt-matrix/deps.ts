@@ -6,7 +6,7 @@ export {
 	Request,
 	type ClientEncryptionSession,
 	type WeakEvent
-} from 'npm:matrix-appservice-bridge@8.1.0';
+} from 'npm:matrix-appservice-bridge@9.0.1';
 export {
 	Bolt,
 	BoltPlugin,
