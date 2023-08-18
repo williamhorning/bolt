@@ -6,7 +6,7 @@ import {
 	BoltBridgeThreadArgs,
 	BoltPlugin,
 	Client,
-	GatewayIntentBits,
+	GatewayIntentBits as Intents,
 	REST,
 	WebSocketManager
 } from './deps.ts';
@@ -33,7 +33,7 @@ export default class DiscordPlugin extends BoltPlugin {
 		this.gateway = new WebSocketManager({
 			rest: this.rest,
 			token: config.token,
-			intents: 65081 as GatewayIntentBits
+			intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent
 		});
 		this.bot = new Client({ rest: this.rest, gateway: this.gateway });
 	}
