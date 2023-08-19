@@ -5,7 +5,6 @@ import {
 } from "discord.js";
 import EventEmitter from "node:events";
 import { commandhandle } from "../commands/index.js";
-import { currentcollection, legacycollection } from "../utils.js";
 
 export default class dscd extends EventEmitter {
 	constructor(config) {
@@ -42,9 +41,6 @@ export default class dscd extends EventEmitter {
 			});
 		});
 		this.discord.login(this.config.token);
-	}
-	get userId() {
-		return this.discord.user?.id;
 	}
 	async constructmsg(message) {
 		return {
@@ -170,18 +166,5 @@ export default class dscd extends EventEmitter {
 				token: a.token,
 			};
 		}
-	}
-	async isBridged(msg) {
-		return (
-			(msg.webhookid &&
-				(await legacycollection.findOne({
-					"value.id": msg.webhookid,
-				}))) ||
-			(await currentcollection.findOne({
-				"value.bridges.platform": "discord",
-				"value.bridges.channel": msg.channel,
-				"value.bridges.senddata.id": msg.webhookid,
-			}))
-		);
 	}
 }

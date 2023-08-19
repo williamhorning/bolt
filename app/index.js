@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { parseArgs } from "node:util";
 import { tryBridgeSend } from "./bridge/index.js";
+import { isbridged } from "./bridge/utils.js";
 import { commandhandle } from "./commands/index.js";
 import { boltErrorButExit, platforms } from "./utils.js";
 
@@ -13,8 +14,7 @@ for (const platform in platforms) {
 }
 
 async function msgCreate(msg) {
-	console.log(msg);
-	if (await platforms[msg.platform].isBridged(msg)) return;
+	if (await isbridged(msg)) return;
 
 	if (msg.content?.startsWith("!bolt")) {
 		let opts = parseArgs({

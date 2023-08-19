@@ -1,36 +1,34 @@
-import { boltError, legacycollection, platforms } from "../utils.js";
-import { getBridges } from "./utils.js";
+import { platforms as BoltPlatforms, boltError } from "../utils.js";
+import { getBridges, legacyBridgeDatabase } from "./utils.js";
 
 export async function tryBridgeSend(msg) {
 	const { legacy, current } = await getBridges(msg);
 	if (!legacy && !current) return;
-	const bridgeplatforms = legacy
+	const platforms = legacy
 		? await Promise.all(
-				Object.keys(platforms)
+				Object.keys(BoltPlatforms)
 					.filter((i) => i !== msg.platform)
 					.map(async (i) => {
 						return {
 							platform: i,
-							senddata: (
-								await legacycollection.findOne({ _id: `${i}-${legacy.value}` })
-							).value,
+							senddata: await legacyBridgeDatabase.get(`${i}-${legacy}`),
 						};
 					})
 		  )
 		: current.bridges.filter((i) => {
 				return !(i.platform == msg.platform && i.channel == msg.channel);
 		  });
-	for (const platform of bridgeplatforms) {
+	for (const platform of platforms) {
 		if (!platform?.platform || !platform?.senddata) continue;
 		try {
-			await platforms[platform.platform].bridgeSend(msg, platform.senddata);
+			await BoltPlatforms[platform.platform].bridgeSend(msg, platform.senddata);
 		} catch (e) {
 			try {
-				await platforms[platform.platform].bridgeSend(
+				await BoltPlatforms[platform.platform].bridgeSend(
 					boltError(`sending a message failed:`, e, {
 						msg,
 						platform,
-						platforms: bridgeplatforms,
+						platforms,
 						legacy,
 						current,
 						e,
@@ -42,7 +40,7 @@ export async function tryBridgeSend(msg) {
 				boltError(`sending an error failed`, e2, {
 					msg,
 					platform,
-					platforms: bridgeplatforms,
+					platforms,
 					legacy,
 					current,
 					e,

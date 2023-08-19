@@ -7,13 +7,14 @@ export default {
 			channel,
 			platform,
 		});
+		console.log(await getBridges({ platform, channel }));
 		return boltEmbedMsg(
 			"Bolt Bridge status",
 			`Here's what's going on with your bridge`,
 			[
 				{
 					name: "bridge IDs",
-					value: `The bridge ID is \`${legacyBridgeId?.value}\` and the beta bridge ID is \`${thisbridge?._id}\``,
+					value: `The bridge ID is \`${legacyBridgeId}\` and the beta bridge ID is \`${thisbridge?._id}\``,
 				},
 			]
 		);
