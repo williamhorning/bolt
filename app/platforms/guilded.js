@@ -1,6 +1,5 @@
 import { Client as GuildedClient, WebhookClient } from "guilded.js";
 import EventEmitter from "node:events";
-import { currentcollection, legacycollection } from "../utils.js";
 
 export default class gldd extends EventEmitter {
 	constructor(config) {
@@ -15,9 +14,6 @@ export default class gldd extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.guilded.login();
-	}
-	get userId() {
-		return this.guilded.user?.id;
 	}
 	async constructmsg(message) {
 		if (!message) return;
@@ -185,17 +181,5 @@ export default class gldd extends EventEmitter {
 			id: a.id,
 			token: a.token,
 		};
-	}
-	async isBridged(msg) {
-		return (
-			(msg.author.id === this.userId && msg.embeds && !msg.replyto) ||
-			(msg.webhookid &&
-				(await currentcollection.findOne({
-					"value.bridges.platform": "guilded",
-					"value.bridges.senddata.id": msg.webhookid,
-				}))) ||
-			(msg.webhookid &&
-				(await legacycollection.findOne({ "value.id": msg.webhookid })))
-		);
 	}
 }

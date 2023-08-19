@@ -15,9 +15,6 @@ export default class rvlt extends EventEmitter {
 		});
 		this.revolt.loginBot(this.config.token);
 	}
-	get userId() {
-		return this.revolt.user?._id;
-	}
 	async constructmsg(message) {
 		let bg = (await message.author.fetchProfile()).background;
 		let msg = {
@@ -169,8 +166,5 @@ export default class rvlt extends EventEmitter {
 			throw new Error("Please enable masquerade permssions in this channel");
 		}
 		return channelId;
-	}
-	async isBridged(msg) {
-		return msg.author.id == this.userId && msg.masquerade;
 	}
 }
