@@ -1,4 +1,4 @@
-ARG DENO_VERSION=v1.36.0
+ARG DENO_VERSION=v1.36.1
 
 FROM docker.io/lukechannings/deno:${DENO_VERSION}
 

@@ -37,7 +37,7 @@ export async function handleBoltCommand(opts: BoltCommandOptions) {
 					extra: opts,
 					code: 'CommandFailed'
 				})
-			).message
+			).boltmessage
 		);
 	}
 }

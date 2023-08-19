@@ -87,27 +87,33 @@ export default class GuildedPlugin extends BoltPlugin {
 						idtrsnd
 					);
 				}
-				return {
-					channel: result.channelId,
-					id: result.id,
-					plugin: 'bolt-guilded',
-					senddata
-				};
+				try {
+					return {
+						channel: result.channelId,
+						id: result.id,
+						plugin: 'bolt-guilded',
+						senddata
+					};
+				} finally {
+					// TODO: find way to run migration code here
+				}
 			} else {
 				if (
 					data.event === 'threadMessageCreate' ||
 					data.event === 'messageCreate'
 				) {
 					const msgd = coreToMessage({ ...dat, replyto });
-					const result = await (
-						await fetch(
-							`https://media.guilded.gg/webhooks/${senddata.id}/${senddata.token}`,
-							{
-								method: 'POST',
-								body: JSON.stringify(msgd)
-							}
-						)
-					).json();
+					const resp = await fetch(
+						`https://media.guilded.gg/webhooks/${senddata.id}/${senddata.token}`,
+						{
+							method: 'POST',
+							body: JSON.stringify(msgd)
+						}
+					);
+					if (resp.status === 404) {
+						// TODO: remove webhook
+					}
+					const result = await resp.json();
 					return {
 						channel: result.channelId,
 						id: result.id,

@@ -28,13 +28,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	async load(plugins: BoltPlugin[]) {
 		for (const plugin of plugins) {
 			if (plugin.boltversion !== '1') {
-				throw (
-					await logBoltError(this, {
-						message: `This plugin isn't supported by this version of Bolt.`,
-						extra: { plugin: plugin.name },
-						code: 'PluginNotCompatible'
-					})
-				).e;
+				throw await logBoltError(this, {
+					message: `This plugin isn't supported by this version of Bolt.`,
+					extra: { plugin: plugin.name },
+					code: 'PluginNotCompatible'
+				});
 			}
 			this.plugins.push(plugin);
 			await plugin.start(this);
@@ -58,14 +56,12 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		try {
 			await this.mongo.connect(this.config.database.mongo);
 		} catch (e) {
-			throw (
-				await logBoltError(this, {
-					message: `Can't connect to MongoDB`,
-					cause: e,
-					extra: {},
-					code: 'MongoDBConnectFailed'
-				})
-			).e;
+			throw await logBoltError(this, {
+				message: `Can't connect to MongoDB`,
+				cause: e,
+				extra: {},
+				code: 'MongoDBConnectFailed'
+			});
 		}
 		try {
 			if (this.config.database.redis) {

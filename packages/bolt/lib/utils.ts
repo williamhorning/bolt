@@ -89,22 +89,28 @@ export function createBoltMessage(
 	};
 }
 
-class BoltError extends Error {
-	id: string;
-	extra: Record<string, unknown>;
+export class BoltError extends Error {
 	code: string;
+	extra: Record<string, unknown>;
+	id: string;
+	boltmessage: BoltMessage<CreateBoltMessageOptions>;
+	e = this;
+	name = 'BoltError';
 	constructor(
 		message: string,
 		options: {
-			id: string;
 			extra: Record<string, unknown>;
 			code: string;
-		} & ErrorOptions
+			cause?: Error;
+		}
 	) {
-		super(message, options);
+		super(message, { cause: options.cause });
 		this.code = options.code;
 		this.extra = options.extra;
-		this.id = options.id;
+		this.id = crypto.randomUUID();
+		this.boltmessage = createBoltMessage({
+			content: `Something went wrong: ${this.code}! Join the Bolt support server and share the following: \`\`\`\n${message}\n${this.id}\`\`\``
+		});
 	}
 }
 
@@ -122,35 +128,26 @@ export async function logBoltError(
 		code: string;
 	}
 ) {
-	const id = crypto.randomUUID();
 	const e = new BoltError(message, {
 		cause,
-		id,
 		extra,
 		code
 	});
-	const msg = `Bolt Error:\n${bolt.plugins.length} plugins - ${
-		Deno.build.target
-	} - ${id} - ${code}\n${message}\n${
-		cause ? `\`\`\`json\n${JSON.stringify(cause)}\n\`\`\`\n` : ''
-	}\`\`\`json\n${extra}\n\`\`\``;
 	if (bolt.config.http.errorURL) {
 		try {
+			const msg = `Bolt Error:\n${bolt.plugins.length} plugins - ${
+				Deno.build.target
+			} - ${e.id} - ${code}\n${message}\n${
+				cause ? `\`\`\`json\n${JSON.stringify(cause)}\n\`\`\`\n` : ''
+			}\`\`\`json\n${extra}\n\`\`\``;
 			await fetch(bolt.config.http.errorURL, {
 				method: 'POST',
 				body: msg
 			});
 		} catch {
-			console.error(`logging error ${id} failed`);
+			console.error(`logging error ${e.id} failed`);
 		}
 	}
-	const boltError = {
-		e,
-		message: createBoltMessage({
-			content: `Something went wrong: ${code}! Join the Bolt support server and share the following: \`\`\`\n${message}\n${id}\`\`\``
-		}),
-		code
-	};
-	bolt.emit('error', boltError);
-	return boltError;
+	bolt.emit('error', e);
+	return e;
 }

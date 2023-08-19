@@ -88,7 +88,7 @@ export async function bridgeBoltMessage(
 								extra: errordata,
 								code: 'BridgeFailed'
 							})
-						).message,
+						).boltmessage,
 						...bridgedata
 					},
 					event
@@ -159,7 +159,7 @@ export async function bridgeBoltThread(
 								event === 'threadCreate' ? 'ThreadCreate' : 'ThreadDelete'
 							}Failed`
 						})
-					).message,
+					).boltmessage,
 					channel: thread.parent
 				},
 				true

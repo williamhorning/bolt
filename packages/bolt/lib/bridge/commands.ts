@@ -67,7 +67,7 @@ async function joinBoltBridge(
 		message: createBoltMessage({
 			content: 'Joined a bridge!'
 		}),
-		code: 'Ok'
+		code: 'OK'
 	};
 }
 
@@ -101,14 +101,35 @@ async function leaveBoltBridge(bolt: Bolt, channel: string, platform: string) {
 	}
 	return {
 		message: createBoltMessage({ content: 'Left a bridge!' }),
-		code: 'Ok',
+		code: 'OK',
 		e: false
 	};
 }
 
+async function resetBoltBridge(
+	bolt: Bolt,
+	channel: string,
+	platform: string,
+	name?: string
+) {
+	const current = await getBoltBridge(bolt, { channel });
+	if (current?._id) {
+		const result = await leaveBoltBridge(bolt, channel, platform);
+		if (result.code !== 'OK') return result.message;
+	}
+	const result = await joinBoltBridge(
+		bolt,
+		channel,
+		platform,
+		name || current?._id.substring(6)
+	);
+	if (result.code !== 'OK') return result.message;
+	return createBoltMessage({ content: 'Reset this bridge!' });
+}
+
 export const BoltBridgeCommands = [
 	{
-		name: 'getbridge',
+		name: 'bridgestatus',
 		description: 'gets information about the current bridge',
 		execute: async ({ bolt, channel }) => {
 			const data = await getBoltBridge(bolt, { channel });
@@ -140,20 +161,7 @@ export const BoltBridgeCommands = [
 		name: 'resetbridge',
 		description: 'leaves and rejoins the provided bridge',
 		hasOptions: true,
-		execute: async ({ bolt, channel, platform, arg: name }) => {
-			const current = await getBoltBridge(bolt, { channel });
-			if (current?._id) {
-				const result = await leaveBoltBridge(bolt, channel, platform);
-				if (result.code !== 'Ok') return result.message;
-			}
-			const result = await joinBoltBridge(
-				bolt,
-				channel,
-				platform,
-				name || current?._id.substring(6)
-			);
-			if (result.code !== 'Ok') return result.message;
-			return createBoltMessage({ content: 'Reset this bridge!' });
-		}
+		execute: async ({ bolt, channel, platform, arg: name }) =>
+			await resetBoltBridge(bolt, channel, platform, name)
 	}
 ] as BoltCommand[];

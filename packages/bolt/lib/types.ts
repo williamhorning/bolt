@@ -1,4 +1,4 @@
-import { logBoltError } from './utils.ts';
+import { BoltError } from './utils.ts';
 
 type BoltMediaEmbed = {
 	url: string;
@@ -94,7 +94,7 @@ export type BoltPluginEvents = {
 	threadCreate: [BoltThread];
 	threadUpdate: [BoltThread];
 	threadDelete: [BoltThread];
-	error: [Awaited<ReturnType<typeof logBoltError>>];
+	error: [BoltError];
 	warning: [string];
 	ready: [unknown?];
 	debug: [unknown];

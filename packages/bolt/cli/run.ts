@@ -1,4 +1,4 @@
-// TODO: remove this line after denoland/deno#20028 is fixed
+// TODO: remove this line after denoland/deno#20028 is in a stable release
 import 'node:domain';
 import { Bolt, defineBoltConfig } from '../lib/mod.ts';
 import { colors } from './deps.ts';
