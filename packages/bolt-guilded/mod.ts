@@ -4,7 +4,8 @@ import {
 	BoltPlugin,
 	Client
 } from './deps.ts';
-import { coreToMessage, idTransform, messageToCore } from './messages.ts';
+import { bridgeLegacy } from './legacybridging.ts';
+import { coreToMessage, messageToCore } from './messages.ts';
 
 export default class GuildedPlugin extends BoltPlugin {
 	bot: Client;
@@ -57,76 +58,58 @@ export default class GuildedPlugin extends BoltPlugin {
 		};
 	}
 	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		if (data.event !== 'messageDelete') {
-			const dat = data.data as BoltBridgeMessage;
-			let replyto;
-			try {
-				if (dat.replytoId) {
-					replyto = await messageToCore(
-						await this.bot.messages.fetch(dat.channel, dat.replytoId),
-						this
-					);
-				}
-			} catch {
-				replyto = undefined;
-			}
-			const senddata = dat.senddata as string | { token: string; id: string };
-			if (typeof senddata === 'string') {
-				const channel = await this.bot.channels.fetch(data.data.channel);
-				const idtrsnd = idTransform({ ...dat, replyto });
-				let result;
-				if (
-					data.event === 'messageCreate' ||
-					data.event === 'threadMessageCreate'
-				) {
-					result = await channel.send(idtrsnd);
-				} else {
-					result = await this.bot.messages.update(
-						data.data.channel,
-						dat.id,
-						idtrsnd
-					);
-				}
+		switch (data.type) {
+			case 'create': {
+				const dat = data.data as BoltBridgeMessage & {
+					senddata: string | { token: string; id: string };
+				};
+				let replyto;
 				try {
-					return {
-						channel: result.channelId,
-						id: result.id,
-						plugin: 'bolt-guilded',
-						senddata
-					};
-				} finally {
-					// TODO: find way to run migration code here
+					if (dat.replytoId) {
+						replyto = await messageToCore(
+							await this.bot.messages.fetch(dat.channel, dat.replytoId),
+							this
+						);
+					}
+				} catch {
+					replyto = undefined;
 				}
-			} else {
-				if (
-					data.event === 'threadMessageCreate' ||
-					data.event === 'messageCreate'
-				) {
+				if (typeof dat.senddata === 'string') {
+					return await bridgeLegacy.bind(this)(dat, dat.senddata, replyto);
+				} else {
 					const msgd = coreToMessage({ ...dat, replyto });
 					const resp = await fetch(
-						`https://media.guilded.gg/webhooks/${senddata.id}/${senddata.token}`,
+						`https://media.guilded.gg/webhooks/${dat.senddata.id}/${dat.senddata.token}`,
 						{
 							method: 'POST',
 							body: JSON.stringify(msgd)
 						}
 					);
 					if (resp.status === 404) {
-						// TODO: remove webhook
+						// if the webhook disappeared, but the channel hasn't, try to legacy send it, which should recreate the webhook
+						return await bridgeLegacy.bind(this)(
+							dat,
+							dat.bridgePlatform.channel,
+							replyto
+						);
 					}
 					const result = await resp.json();
 					return {
 						channel: result.channelId,
 						id: result.id,
 						plugin: 'bolt-guilded',
-						senddata
+						senddata: dat.senddata
 					};
-				} else {
-					return { ...dat.bridgePlatform, id: data.data.id };
 				}
 			}
-		} else {
-			await this.bot.messages.delete(data.data.channel, data.data.id);
-			return { ...data.data.bridgePlatform, id: data.data.id };
+			case 'update': {
+				// editing is NOT supported
+				return { ...data.data.bridgePlatform, id: data.data.id };
+			}
+			case 'delete': {
+				await this.bot.messages.delete(data.data.channel, data.data.id);
+				return { ...data.data.bridgePlatform, id: data.data.id };
+			}
 		}
 	}
 }

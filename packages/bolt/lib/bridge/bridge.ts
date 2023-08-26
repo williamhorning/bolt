@@ -60,11 +60,19 @@ export async function bridgeBoltMessage(
 			bridgePlatform: platform
 		};
 		let handledat;
-
+		let type: 'create' | 'update' | 'delete';
+		if (event === 'messageCreate' || event === 'threadMessageCreate') {
+			type = 'create';
+		} else if (event === 'messageUpdate' || event === 'threadMessageUpdate') {
+			type = 'update';
+		} else {
+			type = 'delete';
+		}
 		try {
 			handledat = await plugin.bridgeMessage({
-				data: { ...message, ...bridgedata },
-				event
+				data: { bolt, ...message, ...bridgedata },
+				event,
+				type
 			});
 		} catch (e) {
 			const errordata = {
@@ -81,6 +89,7 @@ export async function bridgeBoltMessage(
 			try {
 				handledat = await plugin.bridgeMessage({
 					data: {
+						bolt,
 						...(
 							await logBoltError(bolt, {
 								message: `Bridging that message failed`,
@@ -91,7 +100,8 @@ export async function bridgeBoltMessage(
 						).boltmessage,
 						...bridgedata
 					},
-					event
+					event,
+					type
 				});
 			} catch (e2) {
 				await logBoltError(bolt, {

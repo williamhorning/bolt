@@ -43,40 +43,37 @@ export default class RevoltPlugin extends BoltPlugin {
 		return ch.id;
 	}
 	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		if (data.event !== 'messageDelete') {
-			const dat = data.data as BoltBridgeMessage;
-			const channel = await this.bot.channels.fetch(dat.id);
-			let handler;
-			if (
-				data.event === 'messageUpdate' ||
-				data.event === 'threadMessageUpdate'
-			) {
-				handler = (await channel.fetchMessage(dat.id)).edit;
-			} else {
-				handler = channel.sendMessage;
+		switch (data.type) {
+			case 'create':
+			case 'update': {
+				const dat = data.data as BoltBridgeMessage;
+				const channel = await this.bot.channels.fetch(dat.id);
+				const handler =
+					data.type === 'update'
+						? (await channel.fetchMessage(dat.id)).edit
+						: channel.sendMessage;
+				let replyto;
+				try {
+					if (dat.replytoId) {
+						replyto = await messageToCore(
+							this,
+							await this.bot.messages.fetch(dat.channel, dat.replytoId)
+						);
+					}
+				} catch {}
+				const result = await handler(await coreToMessage({ ...dat, replyto }));
+				return {
+					channel: dat.channel,
+					id: 'id' in result ? result.id : result._id,
+					plugin: 'bolt-revolt',
+					senddata: dat.channel
+				};
 			}
-			let replyto;
-			try {
-				if (dat.replytoId) {
-					replyto = await messageToCore(
-						this,
-						await this.bot.messages.fetch(dat.channel, dat.replytoId)
-					);
-				}
-			} catch {
-				replyto = undefined;
+			case 'delete': {
+				const channel = await this.bot.channels.fetch(data.data.channel);
+				await channel.deleteMessages([data.data.id]);
+				return { ...data.data.bridgePlatform, id: data.data.id };
 			}
-			const result = await handler(await coreToMessage({ ...dat, replyto }));
-			return {
-				channel: dat.channel,
-				id: 'id' in result ? result.id : result._id,
-				plugin: 'bolt-revolt',
-				senddata: dat.channel
-			};
-		} else {
-			const channel = await this.bot.channels.fetch(data.data.channel);
-			await channel.deleteMessages([data.data.id]);
-			return { ...data.data.bridgePlatform, id: data.data.id };
 		}
 	}
 }

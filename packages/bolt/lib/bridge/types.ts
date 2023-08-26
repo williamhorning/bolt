@@ -1,3 +1,4 @@
+import { Bolt } from '../mod.ts';
 import { BoltMessage, BoltMessageDelete, BoltThread } from '../types.ts';
 
 export interface BoltBridgeDocument {
@@ -20,6 +21,7 @@ export interface BoltBridgeSentPlatform extends BoltBridgePlatform {
 export interface BoltBridgeMessage
 	extends Omit<BoltMessage<unknown>, 'replyto'>,
 		BoltBridgePlatform {
+	bolt: Bolt;
 	bridgePlatform: BoltBridgePlatform;
 	replytoId?: string;
 }
@@ -27,6 +29,7 @@ export interface BoltBridgeMessage
 export interface BoltBridgeMessageDelete
 	extends BoltMessageDelete<unknown>,
 		BoltBridgePlatform {
+	bolt: Bolt;
 	bridgePlatform: BoltBridgePlatform;
 }
 
@@ -41,6 +44,7 @@ export type BoltBridgeMessageArgs = {
 		| 'messageUpdate'
 		| 'threadMessageUpdate'
 		| 'messageDelete';
+	type: 'create' | 'update' | 'delete';
 	data: BoltBridgeMessage | BoltBridgeMessageDelete;
 };
 

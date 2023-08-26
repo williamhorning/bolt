@@ -99,14 +99,14 @@ export class BoltError extends Error {
 	constructor(
 		message: string,
 		options: {
-			extra: Record<string, unknown>;
+			extra?: Record<string, unknown>;
 			code: string;
 			cause?: Error;
 		}
 	) {
 		super(message, { cause: options.cause });
 		this.code = options.code;
-		this.extra = options.extra;
+		this.extra = options.extra || {};
 		this.id = crypto.randomUUID();
 		this.boltmessage = createBoltMessage({
 			content: `Something went wrong: ${this.code}! Join the Bolt support server and share the following: \`\`\`\n${message}\n${this.id}\`\`\``
@@ -145,7 +145,12 @@ export async function logBoltError(
 				body: msg
 			});
 		} catch {
-			console.error(`logging error ${e.id} failed`);
+			bolt.emit(
+				'error',
+				new BoltError(`logging error ${e.id} failed`, {
+					code: 'ErrorLogFailed'
+				})
+			);
 		}
 	}
 	bolt.emit('error', e);

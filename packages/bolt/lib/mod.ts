@@ -1,5 +1,8 @@
 export { Bolt } from './bolt.ts';
 export {
+	getBoltBridge,
+	getBoltBridgedMessage,
+	updateBoltBridge,
 	type BoltBridgeDocument,
 	type BoltBridgeMessage,
 	type BoltBridgeMessageArgs,
@@ -17,4 +20,9 @@ export {
 	type BoltPluginEvents,
 	type BoltThread
 } from './types.ts';
-export { BoltPlugin, defineBoltConfig, logBoltError } from './utils.ts';
+export {
+	BoltPlugin,
+	createBoltMessage,
+	defineBoltConfig,
+	logBoltError
+} from './utils.ts';

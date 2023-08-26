@@ -5,6 +5,9 @@ export {
 export { Client, Message } from 'npm:guilded.js@0.23.4';
 export {
 	BoltPlugin,
+	createBoltMessage,
+	getBoltBridge,
+	updateBoltBridge,
 	type BoltBridgeMessage,
 	type BoltBridgeMessageArgs,
 	type BoltBridgePlatform,

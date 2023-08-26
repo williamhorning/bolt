@@ -6,8 +6,6 @@
 
 ## 0.5.0
 
-// TODO: add changelog for final
-
 ## 0.4.9
 
 - backport some fixes from 0.5.0

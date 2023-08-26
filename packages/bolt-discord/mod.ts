@@ -58,67 +58,63 @@ export default class DiscordPlugin extends BoltPlugin {
 		});
 	}
 	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		if (
-			data.event === 'messageCreate' ||
-			data.event === 'threadMessageCreate' ||
-			data.event === 'messageUpdate' ||
-			data.event === 'threadMessageUpdate'
-		) {
-			const dat = data.data as BoltBridgeMessage;
-			let replyto;
-			try {
-				if (dat.replytoId) {
-					replyto = await messageToCore(
-						this.bot.api,
-						await this.bot.api.channels.getMessage(dat.channel, dat.replytoId)
+		switch (data.type) {
+			case 'create':
+			case 'update': {
+				const dat = data.data as BoltBridgeMessage;
+				let replyto;
+				try {
+					if (dat.replytoId) {
+						replyto = await messageToCore(
+							this.bot.api,
+							await this.bot.api.channels.getMessage(dat.channel, dat.replytoId)
+						);
+					}
+				} catch {}
+				const msgd = await coreToMessage({ ...dat, replyto });
+				const senddata = dat.senddata as { token: string; id: string };
+				let wh;
+				let thread;
+				if (data.type === 'create') {
+					wh = await this.bot.api.webhooks.execute(
+						senddata.id,
+						senddata.token,
+						msgd
+					);
+				} else {
+					wh = await this.bot.api.webhooks.editMessage(
+						senddata.id,
+						senddata.token,
+						dat.id,
+						msgd
 					);
 				}
-			} catch {
-				replyto = undefined;
+				if (dat.threadId) {
+					thread = {
+						id: dat.threadId,
+						parent: wh.channel_id
+					};
+				}
+				return {
+					channel: wh.channel_id,
+					id: wh.id,
+					plugin: 'bolt-discord',
+					senddata,
+					thread
+				};
 			}
-			const msgd = await coreToMessage({ ...dat, replyto });
-			const senddata = dat.senddata as { token: string; id: string };
-			let wh;
-			if (
-				data.event === 'messageCreate' ||
-				data.event === 'threadMessageCreate'
-			) {
-				wh = await this.bot.api.webhooks.execute(
-					senddata.id,
-					senddata.token,
-					msgd
+			case 'delete': {
+				await this.bot.api.channels.deleteMessage(
+					data.data.channel,
+					data.data.id
 				);
-			} else {
-				wh = await this.bot.api.webhooks.editMessage(
-					senddata.id,
-					senddata.token,
-					dat.id,
-					msgd
-				);
+				return {
+					channel: data.data.channel,
+					id: data.data.id,
+					plugin: 'bolt-discord',
+					senddata: data.data.senddata
+				};
 			}
-			return {
-				channel: wh.channel_id,
-				id: wh.id,
-				plugin: 'bolt-discord',
-				senddata,
-				thread: dat.threadId
-					? {
-							id: dat.threadId,
-							parent: wh.channel_id
-					  }
-					: undefined
-			};
-		} else {
-			const msgd = data.data;
-			await this.bot.api.channels.deleteMessage(msgd.channel, msgd.id, {
-				reason: 'Bridge message deletion'
-			});
-			return {
-				channel: msgd.channel,
-				id: msgd.id,
-				plugin: 'bolt-discord',
-				senddata: msgd.senddata
-			};
 		}
 	}
 	async bridgeThread(data: BoltBridgeThreadArgs) {

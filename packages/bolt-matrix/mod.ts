@@ -85,29 +85,25 @@ export default class MatrixPlugin extends BoltPlugin {
 			}`
 		);
 		const room = data.data.bridgePlatform.senddata as string;
-		if (data.event !== 'messageDelete') {
-			const message = coreToMessage(
-				data.data as unknown as BoltMessage<unknown>
-			);
-			if (
-				data.event === 'messageCreate' ||
-				data.event === 'threadMessageCreate'
-			) {
-				const result = await intent.sendMessage(room, message);
-				return {
-					channel: room,
-					id: result.event_id,
-					plugin: 'bolt-matrix',
-					senddata: room
-				};
-			} else {
+		switch (data.type) {
+			case 'create':
+			case 'update': {
+				const message = coreToMessage(
+					data.data as unknown as BoltMessage<unknown>
+				);
+				let editinfo = {};
+				if (data.type === 'update') {
+					editinfo = {
+						'm.new_content': message,
+						'm.relates_to': {
+							rel_type: 'm.replace',
+							event_id: data.data.id
+						}
+					};
+				}
 				const result = await intent.sendMessage(room, {
 					...message,
-					'm.new_content': message,
-					'm.relates_to': {
-						rel_type: 'm.replace',
-						event_id: data.data.id
-					}
+					...editinfo
 				});
 				return {
 					channel: room,
@@ -116,19 +112,20 @@ export default class MatrixPlugin extends BoltPlugin {
 					senddata: room
 				};
 			}
-		} else {
-			await intent.sendEvent(room, 'm.room.redaction', {
-				content: {
-					reason: 'bridge message deletion'
-				},
-				redacts: data.data.id
-			});
-			return {
-				channel: room,
-				id: data.data.id,
-				plugin: 'bolt-matrix',
-				senddata: room
-			};
+			case 'delete': {
+				await intent.sendEvent(room, 'm.room.redaction', {
+					content: {
+						reason: 'bridge message deletion'
+					},
+					redacts: data.data.id
+				});
+				return {
+					channel: room,
+					id: data.data.id,
+					plugin: 'bolt-matrix',
+					senddata: room
+				};
+			}
 		}
 	}
 }
