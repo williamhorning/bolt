@@ -87,9 +87,7 @@ export type BoltThread = {
 
 export type BoltPluginEvents = {
 	messageCreate: [BoltMessage<unknown>];
-	threadMessageCreate: [BoltMessage<unknown>];
 	messageUpdate: [BoltMessage<unknown>];
-	threadMessageUpdate: [BoltMessage<unknown>];
 	messageDelete: [BoltMessageDelete<unknown>];
 	threadCreate: [BoltThread];
 	threadUpdate: [BoltThread];

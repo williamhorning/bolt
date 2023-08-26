@@ -6,26 +6,12 @@ import { getBoltBridge, getBoltBridgedMessage } from './utils.ts';
 
 export async function bridgeBoltMessage(
 	bolt: Bolt,
-	event:
-		| 'messageCreate'
-		| 'threadMessageCreate'
-		| 'messageUpdate'
-		| 'threadMessageUpdate'
-		| 'messageDelete',
+	type: 'create' | 'update' | 'delete',
 	message: BoltMessage<unknown>
 ) {
 	const data = [];
 	const bridge = await getBoltBridge(bolt, { channel: message.channel });
 	if (!bridge) return;
-
-	let type: 'create' | 'update' | 'delete';
-	if (event === 'messageCreate' || event === 'threadMessageCreate') {
-		type = 'create';
-	} else if (event === 'messageUpdate' || event === 'threadMessageUpdate') {
-		type = 'update';
-	} else {
-		type = 'delete';
-	}
 
 	const platforms: (BoltBridgePlatform | BoltBridgeSentPlatform)[] | false =
 		type === 'create'
@@ -72,7 +58,6 @@ export async function bridgeBoltMessage(
 		try {
 			handledat = await plugin.bridgeMessage({
 				data: { ...message, ...bridgedata },
-				event,
 				type
 			});
 		} catch (e) {
@@ -81,7 +66,7 @@ export async function bridgeBoltMessage(
 				cause: e,
 				extra: {
 					e,
-					event,
+					type,
 					replyto,
 					message: { ...message, platform: undefined },
 					data,
@@ -98,7 +83,6 @@ export async function bridgeBoltMessage(
 						...error.boltmessage,
 						...bridgedata
 					},
-					event,
 					type
 				});
 			} catch (e2) {
@@ -151,7 +135,6 @@ export async function bridgeBoltThread(
 
 		try {
 			const handledat = await plugin.bridgeThread({
-				event,
 				type: event === 'threadCreate' ? 'create' : 'delete',
 				data: {
 					...thread,
@@ -161,7 +144,7 @@ export async function bridgeBoltThread(
 			});
 			data.push(handledat);
 		} catch (e) {
-			await bridgeBoltMessage(bolt, 'messageCreate', {
+			await bridgeBoltMessage(bolt, 'create', {
 				...(
 					await logBoltError(bolt, {
 						message: `Can't bridge thread events`,

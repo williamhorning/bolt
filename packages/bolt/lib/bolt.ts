@@ -85,16 +85,12 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	private async registerPluginEvents(plugin: BoltPlugin) {
 		for await (const event of plugin) {
 			this.emit(event.name, ...event.value);
-			if (
-				event.name.startsWith('message') ||
-				event.name.startsWith('threadMessage')
-			) {
+			if (event.name.startsWith('message')) {
 				const msg = event.value[0] as BoltMessage<unknown>;
 				if (await getBoltBridgedMessage(this, msg.id)) return;
 				if (
 					msg.content?.startsWith('!bolt') &&
-					(event.name === 'messageCreate' ||
-						event.name === 'threadMessageCreate')
+					event.name === 'messageCreate'
 				) {
 					handleBoltCommand({
 						bolt: this,
@@ -107,16 +103,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 					});
 				}
 
-				bridgeBoltMessage(
-					this,
-					event.name as
-						| 'messageCreate'
-						| 'threadMessageCreate'
-						| 'messageUpdate'
-						| 'threadMessageUpdate'
-						| 'messageDelete',
-					msg
-				);
+				const type = event.name.replace('message', '').toLowerCase() as
+					| 'create'
+					| 'update'
+					| 'delete';
+				bridgeBoltMessage(this, type, msg);
 			} else if (event.name.startsWith('thread')) {
 				bridgeBoltThread(
 					this,

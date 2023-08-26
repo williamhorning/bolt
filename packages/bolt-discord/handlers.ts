@@ -46,16 +46,10 @@ export function registerEvents(plugin: DiscordPlugin, bolt: Bolt) {
 		if (data) plugin.emit('threadDelete', data);
 	});
 	plugin.bot.on(GatewayDispatchEvents.MessageCreate, async message =>
-		plugin.emit(
-			message.data.thread?.id ? 'threadMessageCreate' : 'messageCreate',
-			await messageToCore(message.api, message.data)
-		)
+		plugin.emit('messageCreate', await messageToCore(message.api, message.data))
 	);
 	plugin.bot.on(GatewayDispatchEvents.MessageUpdate, async message =>
-		plugin.emit(
-			message.data.thread?.id ? 'threadMessageUpdate' : 'messageUpdate',
-			await messageToCore(message.api, message.data)
-		)
+		plugin.emit('messageUpdate', await messageToCore(message.api, message.data))
 	);
 	plugin.bot.on(GatewayDispatchEvents.MessageDelete, message =>
 		plugin.emit('messageDelete', {

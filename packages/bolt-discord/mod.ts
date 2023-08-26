@@ -118,7 +118,7 @@ export default class DiscordPlugin extends BoltPlugin {
 		}
 	}
 	async bridgeThread(data: BoltBridgeThreadArgs) {
-		if (data.event === 'threadCreate') {
+		if (data.type === 'create') {
 			const channel = await this.bot.api.channels.get(
 				data.data.bridgePlatform.channel
 			);
