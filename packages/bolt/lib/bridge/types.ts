@@ -38,6 +38,7 @@ export interface BoltBridgeThread extends BoltThread, BoltBridgePlatform {
 }
 
 export type BoltBridgeMessageArgs = {
+	/** @deprecated */
 	event:
 		| 'messageCreate'
 		| 'threadMessageCreate'
@@ -49,6 +50,8 @@ export type BoltBridgeMessageArgs = {
 };
 
 export type BoltBridgeThreadArgs = {
+	/** @deprecated */
 	event: 'threadCreate' | 'threadDelete';
+	type: 'create' | 'update' | 'delete';
 	data: BoltBridgeThread;
 };
