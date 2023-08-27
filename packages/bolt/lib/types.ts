@@ -43,7 +43,7 @@ export interface BoltEmbed {
 	};
 }
 
-interface BoltMessageBase<Message> {
+export interface BoltMessageBase<Message> {
 	id: string;
 	platform: {
 		name: string;
@@ -51,6 +51,8 @@ interface BoltMessageBase<Message> {
 	};
 	channel: string;
 	guild?: string;
+	threadId?: string;
+	timestamp: number;
 }
 
 export interface BoltMessage<Message> extends BoltMessageBase<Message> {
@@ -72,8 +74,6 @@ export interface BoltMessage<Message> extends BoltMessageBase<Message> {
 	embeds?: BoltEmbed[];
 	reply: (message: BoltMessage<unknown>) => Promise<void>;
 	replyto?: Omit<BoltMessage<unknown>, 'replyto'>;
-	threadId?: string;
-	timestamp: number;
 }
 
 export type BoltMessageDelete<Message> = BoltMessageBase<Message>;

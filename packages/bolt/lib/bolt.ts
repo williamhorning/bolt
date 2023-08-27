@@ -5,8 +5,8 @@ import {
 	getBoltBridgedMessage
 } from './bridge/mod.ts';
 import { BoltInfoCommands, handleBoltCommand } from './commands/mod.ts';
-import { EventEmitter, MongoClient, connect } from './deps.ts';
-import { BoltMessage, BoltPluginEvents, BoltThread } from './types.ts';
+import { EventEmitter, MongoClient, Redis, connect } from './deps.ts';
+import { BoltPluginEvents } from './types.ts';
 import { BoltConfig, BoltPlugin, logBoltError } from './utils.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {
@@ -14,13 +14,13 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	commands = [...BoltInfoCommands, ...BoltBridgeCommands];
 	database: string;
 	version = '0.5.1';
-	plugins = [] as BoltPlugin[];
+	plugins: BoltPlugin[] = [];
 	mongo = new MongoClient();
-	redis?: Awaited<ReturnType<typeof connect>>;
+	redis?: Redis;
 	constructor(config: BoltConfig) {
 		super();
 		this.config = config;
-		this.database = config.prod ? 'bolt' : 'bolt-canary';
+		this.database = config.database.mongo.database;
 	}
 	getPlugin(name: string) {
 		return this.plugins.find(i => i.name === name);
@@ -36,10 +36,12 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			}
 			this.plugins.push(plugin);
 			await plugin.start(this);
+			for await (const event of plugin) {
+				this.emit(event.name, ...event.value);
+			}
 			if (plugin?.commands) {
 				this.commands.push(...plugin.commands);
 			}
-			this.registerPluginEvents(plugin);
 		}
 	}
 	async unload(plugins: BoltPlugin[]) {
@@ -51,10 +53,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	async setup() {
 		await this.dbsetup();
 		await this.load(this.config.plugins);
+		this.registerPluginEvents();
 	}
 	private async dbsetup() {
 		try {
-			await this.mongo.connect(this.config.database.mongo);
+			await this.mongo.connect(this.config.database.mongo.connection);
 		} catch (e) {
 			throw await logBoltError(this, {
 				message: `Can't connect to MongoDB`,
@@ -82,39 +85,32 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			this.redis = undefined;
 		}
 	}
-	private async registerPluginEvents(plugin: BoltPlugin) {
-		for await (const event of plugin) {
-			this.emit(event.name, ...event.value);
-			if (event.name.startsWith('message')) {
-				const msg = event.value[0] as BoltMessage<unknown>;
-				if (await getBoltBridgedMessage(this, msg.id)) return;
-				if (
-					msg.content?.startsWith('!bolt') &&
-					event.name === 'messageCreate'
-				) {
-					handleBoltCommand({
-						bolt: this,
-						name: msg.content.split(' ')[1],
-						reply: msg.reply,
-						channel: msg.channel,
-						platform: msg.platform.name,
-						arg: msg.content.split(' ')[2],
-						timestamp: msg.timestamp
-					});
-				}
-
-				const type = event.name.replace('message', '').toLowerCase() as
-					| 'create'
-					| 'update'
-					| 'delete';
-				bridgeBoltMessage(this, type, msg);
-			} else if (event.name.startsWith('thread')) {
-				bridgeBoltThread(
-					this,
-					event.name as 'threadCreate' | 'threadDelete',
-					event.value[0] as BoltThread
-				);
+	private registerPluginEvents() {
+		// TODO: move all code below to respective folders or do something else
+		this.on('messageCreate', async msg => {
+			if (await getBoltBridgedMessage(this, msg.id)) return;
+			if (msg.content?.startsWith('!bolt')) {
+				handleBoltCommand({
+					bolt: this,
+					name: msg.content.split(' ')[1],
+					reply: msg.reply,
+					channel: msg.channel,
+					platform: msg.platform.name,
+					arg: msg.content.split(' ')[2],
+					timestamp: msg.timestamp
+				});
 			}
-		}
+			bridgeBoltMessage(this, 'create', msg);
+		});
+		this.on('messageUpdate', async msg => {
+			if (await getBoltBridgedMessage(this, msg.id)) return;
+			bridgeBoltMessage(this, 'update', msg);
+		});
+		this.on('messageDelete', async msg => {
+			if (await getBoltBridgedMessage(this, msg.id)) return;
+			bridgeBoltMessage(this, 'delete', msg);
+		});
+		this.on('threadCreate', thread => bridgeBoltThread(this, 'create', thread));
+		this.on('threadDelete', thread => bridgeBoltThread(this, 'delete', thread));
 	}
 }

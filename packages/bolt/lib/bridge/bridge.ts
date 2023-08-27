@@ -1,5 +1,6 @@
 import { Bolt } from '../bolt.ts';
-import { BoltMessage, BoltThread } from '../types.ts';
+import { BoltMessage } from '../mod.ts';
+import { BoltMessageBase, BoltThread } from '../types.ts';
 import { logBoltError } from '../utils.ts';
 import { BoltBridgePlatform, BoltBridgeSentPlatform } from './types.ts';
 import { getBoltBridge, getBoltBridgedMessage } from './utils.ts';
@@ -7,7 +8,9 @@ import { getBoltBridge, getBoltBridgedMessage } from './utils.ts';
 export async function bridgeBoltMessage(
 	bolt: Bolt,
 	type: 'create' | 'update' | 'delete',
-	message: BoltMessage<unknown>
+	message: BoltMessageBase<unknown> & {
+		replyto?: BoltMessage<unknown>;
+	}
 ) {
 	const data = [];
 	const bridge = await getBoltBridge(bolt, { channel: message.channel });
@@ -111,7 +114,7 @@ export async function bridgeBoltMessage(
 
 export async function bridgeBoltThread(
 	bolt: Bolt,
-	event: 'threadCreate' | 'threadDelete',
+	type: 'create' | 'delete',
 	thread: BoltThread
 ) {
 	const data = [];
@@ -135,7 +138,7 @@ export async function bridgeBoltThread(
 
 		try {
 			const handledat = await plugin.bridgeThread({
-				type: event === 'threadCreate' ? 'create' : 'delete',
+				type,
 				data: {
 					...thread,
 					...platform,
@@ -149,10 +152,8 @@ export async function bridgeBoltThread(
 					await logBoltError(bolt, {
 						message: `Can't bridge thread events`,
 						cause: e,
-						extra: { bridge, e, event },
-						code: `${
-							event === 'threadCreate' ? 'ThreadCreate' : 'ThreadDelete'
-						}Failed`
+						extra: { bridge, e, type },
+						code: `Thread${type}Failed`
 					})
 				).boltmessage,
 				channel: thread.parent
@@ -160,7 +161,7 @@ export async function bridgeBoltThread(
 		}
 	}
 
-	if (event !== 'threadDelete') {
+	if (type !== 'delete') {
 		for (const i of data) {
 			await bolt.mongo
 				.database(bolt.database)

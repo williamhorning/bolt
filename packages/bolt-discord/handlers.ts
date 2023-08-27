@@ -59,7 +59,8 @@ export function registerEvents(plugin: DiscordPlugin, bolt: Bolt) {
 				message
 			},
 			channel: message.data.channel_id,
-			guild: message.data.guild_id
+			guild: message.data.guild_id,
+			timestamp: Date.now()
 		})
 	);
 	plugin.bot.on(GatewayDispatchEvents.InteractionCreate, async interaction => {

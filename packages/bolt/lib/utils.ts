@@ -21,7 +21,10 @@ export interface BoltConfig {
 	prod: boolean;
 	plugins: BoltPlugin[];
 	database: {
-		mongo: MongoConnectOptions | string;
+		mongo: {
+			connection: MongoConnectOptions | string;
+			database: string;
+		};
 		redis?: RedisConnectOptions;
 	};
 	http: { dashURL?: string; apiURL?: string; errorURL?: string };
@@ -50,9 +53,17 @@ export function defineBoltConfig(config?: Partial<BoltConfig>): BoltConfig {
 	if (!config.prod) config.prod = false;
 	if (!config.plugins) config.plugins = [];
 	if (!config.database)
-		config.database = { mongo: 'mongodb://localhost:27017' };
+		config.database = {
+			mongo: {
+				connection: 'mongodb://localhost:27017',
+				database: 'bolt-testing'
+			}
+		};
 	if (!config.database.mongo)
-		config.database.mongo = 'mongodb://localhost:27017';
+		config.database.mongo = {
+			connection: 'mongodb://localhost:27017',
+			database: config.prod ? 'bolt' : 'bolt-testing'
+		};
 	if (!config.http)
 		config.http = {
 			apiURL: 'http://localhost:9090',

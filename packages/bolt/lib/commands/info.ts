@@ -16,7 +16,7 @@ export const BoltInfoCommands = [
 		description: 'get information about bolt',
 		execute: ({ bolt }) => {
 			return createBoltMessage({
-				content: `Bolt 0.5 running on Deno with ${bolt.plugins.length} plugins, MongoDB, Redis, and other open-source software.`
+				content: `Bolt ${bolt.version} running on Deno ${Deno.version.deno} with ${bolt.plugins.length} plugins, MongoDB, Redis, and other open-source software.`
 			});
 		}
 	},

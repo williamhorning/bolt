@@ -30,7 +30,8 @@ export default class GuildedPlugin extends BoltPlugin {
 				id: message.id,
 				platform: { name: 'guilded', message },
 				channel: message.channelId,
-				guild: message.serverId
+				guild: message.serverId,
+				timestamp: new Date(message.deletedAt).getTime()
 			});
 		});
 		this.bot.on('ready', () => {

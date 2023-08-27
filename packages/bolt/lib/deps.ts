@@ -5,5 +5,6 @@ export {
 } from 'https://deno.land/x/mongo@v0.31.2/mod.ts';
 export {
 	connect,
+	type Redis,
 	type RedisConnectOptions
 } from 'https://deno.land/x/redis@v0.31.0/mod.ts';

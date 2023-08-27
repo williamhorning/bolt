@@ -26,7 +26,8 @@ export async function onEvent(this: MatrixPlugin, request: Request<WeakEvent>) {
 		this.emit('messageDelete', {
 			id: event.redacts as string,
 			platform: { name: 'bolt-matrix', message: event },
-			channel: event.room_id
+			channel: event.room_id,
+			timestamp: event.origin_server_ts
 		});
 	}
 }

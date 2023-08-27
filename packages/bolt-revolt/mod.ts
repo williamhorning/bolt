@@ -25,7 +25,8 @@ export default class RevoltPlugin extends BoltPlugin {
 			this.emit('messageDelete', {
 				id: message.id,
 				platform: { name: 'bolt-revolt', message },
-				channel: message.channelId
+				channel: message.channelId,
+				timestamp: Date.now()
 			});
 		});
 		this.bot.on('ready', () => {
