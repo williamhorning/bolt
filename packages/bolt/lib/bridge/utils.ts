@@ -77,17 +77,12 @@ export async function joinBoltBridge(
 	};
 	try {
 		const senddata = await plugin.createSenddata(channel);
-		await updateBoltBridge(bolt, {
-			...bridge,
-			platforms: [
-				...bridge.platforms,
-				{
-					channel,
-					plugin: platform,
-					senddata
-				}
-			]
+		bridge.platforms.push({
+			channel,
+			plugin: platform,
+			senddata
 		});
+		await updateBoltBridge(bolt, bridge);
 	} catch (e) {
 		return logBoltError(bolt, {
 			message: `Can't update this bridge`,
