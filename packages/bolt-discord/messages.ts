@@ -43,7 +43,7 @@ export async function messageToCore(
 			);
 		},
 		platform: {
-			name: 'discord',
+			name: 'bolt-discord',
 			message
 		},
 		attachments: message.attachments?.map(i => {
