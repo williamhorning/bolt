@@ -2,7 +2,7 @@ export {
 	type APIEmbed,
 	type APIWebhookMessagePayloadResolvable
 } from 'npm:guilded-api-typings@0.13.2';
-export { Client, Message } from 'npm:guilded.js@0.23.4';
+export { Client, Message } from 'npm:guilded.js@0.23.5';
 export {
 	BoltPlugin,
 	createBoltMessage,
