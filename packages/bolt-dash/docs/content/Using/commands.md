@@ -26,7 +26,7 @@ Links to the landing page for the Bolt website
 
 ## bridge commands
 
-### getbridge
+### bridgestatus
 
 Gets information about what bridge the current channel is in.
 

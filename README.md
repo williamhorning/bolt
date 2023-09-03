@@ -6,13 +6,15 @@ Typescript and powered by Deno. To learn more, see the
 
 ## Feature support matrix
 
-Key: ✓ = supported, ~ = supported w/limitations, I = incomplete, T = todo, E =
-eventually, X = not supported
+|              | text  | threads | forums |
+| ------------ | ----- | ------- | ------ |
+| bolt         | ✓     | ✓       | X      |
+| bolt-discord | ✓     | ✓       | ✓      |
+| bolt-guilded | ✓\*   | X       | X      |
+| bolt-matrix  | ✓\*\* | X       | X      |
+| bolt-revolt  | ✓     | X       | X      |
 
-|              | text | threads | forums |
-| ------------ | ---- | ------- | ------ |
-| bolt         | ✓    | ✓       | E      |
-| bolt-discord | ✓    | ✓       | ✓      |
-| bolt-guilded | ~    | T       | E      |
-| bolt-matrix  | ~    | E       | X      |
-| bolt-revolt  | ✓    | X       | X      |
+\* bolt-guilded's text support doesn't fully support all the stuff other
+platforms do  
+\*\* bolt-matrix's implementation is barely functional and shouldn't be used,
+mostly a POC

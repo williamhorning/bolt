@@ -21,7 +21,9 @@ export default defineBoltConfig({
 		})
 	],
 	database: {
-		mongo: 'mongodb://localhost:27017',
+		mongo: {
+			connection: 'mongodb://localhost:27017'
+		},
 		redis: {
 			hostname: 'redis'
 		}
@@ -51,10 +53,14 @@ Tells Bolt where the dashboard/docs site is located.
 
 A Discord-compatible webhook to send errors to.
 
-### database.mongo
+### database.mongo.connection
 
 A MongoDB connection URL or
 [ConnectOptions](https://deno.land/x/mongo@v0.31.2/mod.ts?s=ConnectOptions)
+
+### database.mongo.database
+
+The MongoDB database to be used to.
 
 ### database.redis
 
