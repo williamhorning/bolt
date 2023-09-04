@@ -1,5 +1,6 @@
 import { Bolt } from '../bolt.ts';
-import { logBoltError } from '../mod.ts';
+import { getBoltBridgedMessage } from '../bridge/mod.ts';
+import { logBoltError } from '../utils.ts';
 import defaultcommands from './default.ts';
 import { BoltCommand, BoltCommandArguments } from './types.ts';
 
@@ -12,6 +13,19 @@ export class BoltCommands {
 	constructor(bolt: Bolt) {
 		this.bolt = bolt;
 		this.registerCommands(...defaultcommands);
+		bolt.on('messageCreate', async msg => {
+			if (await getBoltBridgedMessage(bolt, msg.id)) return;
+			if (msg.content?.startsWith('!bolt')) {
+				this.runCommand({
+					name: msg.content.split(' ')[1],
+					reply: msg.reply,
+					channel: msg.channel,
+					platform: msg.platform.name,
+					arg: msg.content.split(' ')[2],
+					timestamp: msg.timestamp
+				});
+			}
+		});
 	}
 
 	registerCommands(...cmds: BoltCommand[]) {

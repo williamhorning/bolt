@@ -54,7 +54,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		await this.dbsetup();
 		this.registerPluginEvents();
 		this.cmds.registerCommands(...BoltBridgeCommands);
-		await this.load(this.config.plugins);
+		this.load(this.config.plugins);
 	}
 	private async dbsetup() {
 		try {
@@ -87,19 +87,9 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		}
 	}
 	private registerPluginEvents() {
-		// TODO: move all code below to respective folders or do something else
+		// TODO: move all code below to bridge folder
 		this.on('messageCreate', async msg => {
 			if (await getBoltBridgedMessage(this, msg.id)) return;
-			if (msg.content?.startsWith('!bolt')) {
-				this.cmds.runCommand({
-					name: msg.content.split(' ')[1],
-					reply: msg.reply,
-					channel: msg.channel,
-					platform: msg.platform.name,
-					arg: msg.content.split(' ')[2],
-					timestamp: msg.timestamp
-				});
-			}
 			bridgeBoltMessage(this, 'create', msg);
 		});
 		this.on('messageUpdate', async msg => {

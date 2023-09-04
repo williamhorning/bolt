@@ -1,11 +1,11 @@
 import { BoltCommand } from '../commands/mod.ts';
 import { createBoltMessage } from '../utils.ts';
 import {
-	getBoltBridge,
 	joinBoltBridge,
 	leaveBoltBridge,
 	resetBoltBridge
-} from './utils.ts';
+} from './commandinternal.ts';
+import { getBoltBridge } from './utils.ts';
 
 export const BoltBridgeCommands = [
 	{
