@@ -22,7 +22,8 @@ export async function messageToCore(
 			username: author.nickname || author.username || 'user on guilded',
 			rawname: author.username || 'user on guilded',
 			profile: author.user?.avatar || undefined,
-			id: message.authorId
+			id: message.authorId,
+			color: '#F5C400'
 		},
 		channel: message.channelId,
 		id: message.id,

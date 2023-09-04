@@ -42,7 +42,8 @@ export async function coreToMessage(
 		masquerade: masquerade
 			? {
 					avatar: message.author.profile,
-					name: message.author.username
+					name: message.author.username,
+					colour: message.author.color
 			  }
 			: undefined
 	};
@@ -64,7 +65,8 @@ export async function messageToCore(
 				message.author?.username ||
 				`${message.authorId || 'unknown user'} on revolt`,
 			profile: message.author?.avatarURL,
-			id: message.authorId || 'unknown'
+			id: message.authorId || 'unknown',
+			color: '#ff4654'
 		},
 		channel: message.channelId,
 		id: message.id,

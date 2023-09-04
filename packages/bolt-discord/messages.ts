@@ -17,12 +17,21 @@ export async function messageToCore(
 	excludeReply?: boolean
 ): Promise<BoltMessage<GatewayMessageUpdateDispatchData>> {
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
+	let color = '#FFFFFF';
+	if (message.guild_id && message.member) {
+		const roles = await api.guilds.getRoles(message.guild_id);
+		const role = roles.find(i => message.member!.roles.includes(i.id));
+		if (role) {
+			color = `#${role.color.toString(16)}`;
+		}
+	}
 	return {
 		author: {
 			username:
 				message.member?.nick || message.author?.username || 'discord user',
 			rawname: message.author?.username || 'discord user',
-			id: message.author?.id || message.webhook_id || ''
+			id: message.author?.id || message.webhook_id || '',
+			color
 		},
 		channel: message.channel_id,
 		content: message.content,

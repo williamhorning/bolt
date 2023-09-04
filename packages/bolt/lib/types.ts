@@ -69,6 +69,7 @@ export interface BoltMessage<Message> extends BoltMessageBase<Message> {
 		profile?: string;
 		banner?: string;
 		id: string;
+		color?: string;
 	};
 	content?: string;
 	embeds?: BoltEmbed[];
