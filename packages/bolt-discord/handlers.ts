@@ -65,11 +65,16 @@ export function registerEvents(plugin: DiscordPlugin, bolt: Bolt) {
 	plugin.bot.on(GatewayDispatchEvents.InteractionCreate, async interaction => {
 		if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;
 		const opts = interaction.data.data.options;
-		const arg = opts
-			? opts[0].type === 3
-				? opts[0].value
-				: undefined
-			: undefined;
+		let arg = '';
+		if (opts && opts[0]) {
+			const opt = opts[0];
+			arg += opt.name;
+			if (opt.type === 1) {
+				for (const i of opt.options || []) {
+					arg += ` ${i.value}`;
+				}
+			}
+		}
 		await bolt.cmds.runCommand({
 			name: interaction.data.data.name,
 			reply: async msg => {

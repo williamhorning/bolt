@@ -11,29 +11,29 @@ export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
 			opts.push({
 				name: 'options',
 				description: 'option to pass to this command',
-				type: 3,
-				required: true
+				type: 3
 			});
 		}
 
 		if (command.options?.subcommands) {
-			command.options.subcommands.map(i => {
-				const cmd = {
-					name: i.name,
-					description: i.description,
-					type: 1,
-					options: [] as unknown[]
-				};
-				if (i.options?.hasArgument) {
-					cmd.options.push({
-						name: 'options',
-						description: 'option to pass to this command',
-						type: 3,
-						required: true
-					});
-				}
-				return cmd;
-			});
+			opts.push(
+				...command.options.subcommands.map(i => {
+					const cmd = {
+						name: i.name,
+						description: i.description || i.name,
+						type: 1,
+						options: [] as { type: number; name: string; description: string }[]
+					};
+					if (i.options?.hasArgument) {
+						cmd.options.push({
+							name: 'options',
+							description: 'option to pass to this command',
+							type: 3
+						});
+					}
+					return cmd;
+				})
+			);
 		}
 
 		return {
