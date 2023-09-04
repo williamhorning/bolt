@@ -4,14 +4,14 @@ import {
 	bridgeBoltThread,
 	getBoltBridgedMessage
 } from './bridge/mod.ts';
-import { BoltInfoCommands, handleBoltCommand } from './commands/mod.ts';
+import { BoltCommands } from './commands/mod.ts';
 import { EventEmitter, MongoClient, Redis, connect } from './deps.ts';
 import { BoltPluginEvents } from './types.ts';
 import { BoltConfig, BoltPlugin, logBoltError } from './utils.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {
 	config: BoltConfig;
-	commands = [...BoltInfoCommands, ...BoltBridgeCommands];
+	cmds = new BoltCommands(this);
 	database: string;
 	version = '0.5.1';
 	plugins: BoltPlugin[] = [];
@@ -36,11 +36,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			}
 			this.plugins.push(plugin);
 			await plugin.start(this);
+			if (plugin?.commands) {
+				this.cmds.registerCommands(...plugin.commands);
+			}
 			for await (const event of plugin) {
 				this.emit(event.name, ...event.value);
-			}
-			if (plugin?.commands) {
-				this.commands.push(...plugin.commands);
 			}
 		}
 	}
@@ -52,8 +52,9 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	}
 	async setup() {
 		await this.dbsetup();
-		await this.load(this.config.plugins);
 		this.registerPluginEvents();
+		this.cmds.registerCommands(...BoltBridgeCommands);
+		await this.load(this.config.plugins);
 	}
 	private async dbsetup() {
 		try {
@@ -90,8 +91,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		this.on('messageCreate', async msg => {
 			if (await getBoltBridgedMessage(this, msg.id)) return;
 			if (msg.content?.startsWith('!bolt')) {
-				handleBoltCommand({
-					bolt: this,
+				this.cmds.runCommand({
 					name: msg.content.split(' ')[1],
 					reply: msg.reply,
 					channel: msg.channel,

@@ -18,6 +18,7 @@ export async function getBoltBridge(
 ) {
 	let query;
 	if (channel) {
+		// @ts-ignore: THIS IS A VALID QUERY, DON'T WORRY
 		query = { 'platforms.channel': channel };
 	} else if (_id) {
 		query = { _id };

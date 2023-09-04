@@ -12,7 +12,7 @@ export {
 	type BoltBridgeThread,
 	type BoltBridgeThreadArgs
 } from './bridge/mod.ts';
-export { handleBoltCommand, type BoltCommand } from './commands/mod.ts';
+export { type BoltCommand } from './commands/mod.ts';
 export {
 	type BoltEmbed,
 	type BoltMessage,

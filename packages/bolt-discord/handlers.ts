@@ -4,8 +4,7 @@ import {
 	GatewayDispatchEvents,
 	GatewayThreadDeleteDispatchData,
 	GatewayThreadUpdateDispatchData,
-	WithIntrinsicProps,
-	handleBoltCommand
+	WithIntrinsicProps
 } from './deps.ts';
 import { coreToMessage, messageToCore } from './messages.ts';
 import { default as DiscordPlugin } from './mod.ts';
@@ -71,8 +70,7 @@ export function registerEvents(plugin: DiscordPlugin, bolt: Bolt) {
 				? opts[0].value
 				: undefined
 			: undefined;
-		await handleBoltCommand({
-			bolt,
+		await bolt.cmds.runCommand({
 			name: interaction.data.data.name,
 			reply: async msg => {
 				await interaction.api.interactions.reply(

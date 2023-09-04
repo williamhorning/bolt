@@ -4,7 +4,7 @@ import {
 	BoltBridgeSentPlatform,
 	BoltBridgeThreadArgs
 } from './bridge/mod.ts';
-import { BoltCommand } from './commands/mod.ts';
+import { BoltCommand } from './commands/types.ts';
 import {
 	EventEmitter,
 	MongoConnectOptions,

@@ -1,14 +1,32 @@
 import { createBoltMessage } from '../utils.ts';
-import { BoltCommand } from './mod.ts';
+import { BoltCommand } from './types.ts';
 
-export const BoltInfoCommands = [
+export default [
 	{
 		name: 'help',
 		description: 'get help with bolt',
-		execute: ({ bolt }) => {
+		execute: ({ commands }) => {
 			return createBoltMessage({
-				content: `Looking for help with Bolt? Take a look at ${bolt.config.http.dashURL}/docs`
+				embeds: [
+					{
+						title: 'Bolt Help',
+						description:
+							"Here's some basic help. Take a look at [the docs](https://bolt.williamhorning.dev/docs) for more information.",
+						fields: [
+							{
+								name: 'Commands',
+								value: [...commands.commands.keys()]
+									.map(i => `\`${i}\``)
+									.join(', '),
+								inline: true
+							}
+						]
+					}
+				]
 			});
+		},
+		options: {
+			default: true
 		}
 	},
 	{
