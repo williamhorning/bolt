@@ -5,6 +5,9 @@ export interface BoltBridgeDocument {
 	_id: string;
 	name: string;
 	platforms: BoltBridgePlatform[];
+	settings?: {
+		realnames?: boolean;
+	};
 }
 
 export interface BoltBridgePlatform {

@@ -8,9 +8,11 @@ import { getBoltBridge, getBoltBridgedMessage } from './utils.ts';
 export async function bridgeBoltMessage(
 	bolt: Bolt,
 	type: 'create' | 'update' | 'delete',
-	message: BoltMessageBase<unknown> & {
-		replyto?: BoltMessage<unknown>;
-	}
+	message:
+		| (BoltMessageBase<unknown> & {
+				replyto?: BoltMessage<unknown>;
+		  })
+		| BoltMessage<unknown>
 ) {
 	const data = [];
 	const bridge = await getBoltBridge(bolt, { channel: message.channel });
@@ -45,6 +47,10 @@ export async function bridgeBoltMessage(
 			: undefined;
 
 		const replyto = await getBoltBridgedMessage(bolt, message.replyto?.id);
+
+		if (bridge.settings?.realnames && 'author' in message) {
+			message.author.username = message.author.rawname;
+		}
 
 		const bridgedata = {
 			...platform,
