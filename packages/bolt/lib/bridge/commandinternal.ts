@@ -9,6 +9,7 @@ export async function joinBoltBridge(
 	platform: string,
 	name?: string
 ) {
+	name = name?.split(' ')[0];
 	const current = await getBoltBridge(bolt, { channel });
 	if (current?._id) {
 		return {
@@ -108,6 +109,7 @@ export async function resetBoltBridge(
 	platform: string,
 	name?: string
 ) {
+	name = name?.split(' ')[0];
 	const current = await getBoltBridge(bolt, { channel });
 	if (current?._id) {
 		const result = await leaveBoltBridge(bolt, channel, platform);
