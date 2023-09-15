@@ -26,7 +26,7 @@ additional or different rules as documented below.
 - Use Deno Lint to check for issues in your code. While manually checking your
   code should help you find errors or other issues, a linter can help make sure
   you catch these. See
-  [this page](https://deno.land/manual@v1.36.3/tools/formatter) for more
+  [this page](https://deno.land/manual@v1.36.4/tools/formatter) for more
   information.
 - Follow the
   [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and the

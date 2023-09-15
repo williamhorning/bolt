@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.2
+
+- update the bridigng commands to match 0.4.x in style
+- redo the command system
+- implement role colors for revolt
+- discord subcommands
+- fix bridge creation
+- refactor core
+- bump dependency versions
+- implement embed-bridge migration
+- fix discord intents
+- bump dependency versions
+- bump deno version
+
 ## 0.5.1
 
 - bump dependency versions

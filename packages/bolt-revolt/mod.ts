@@ -10,7 +10,7 @@ export default class RevoltPlugin extends BoltPlugin {
 	bot: Client;
 	token: string;
 	name = 'bolt-revolt';
-	version = '0.5.1';
+	version = '0.5.2';
 	constructor(config: { token: string }) {
 		super();
 		this.bot = new Client();

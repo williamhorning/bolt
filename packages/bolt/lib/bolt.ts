@@ -13,7 +13,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	config: BoltConfig;
 	cmds = new BoltCommands(this);
 	database: string;
-	version = '0.5.1';
+	version = '0.5.2';
 	plugins: BoltPlugin[] = [];
 	mongo = new MongoClient();
 	redis?: Redis;
