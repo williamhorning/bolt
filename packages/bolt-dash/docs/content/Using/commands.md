@@ -26,18 +26,18 @@ Links to the landing page for the Bolt website
 
 ## bridge commands
 
-### bridgestatus
+### bridge status
 
 Gets information about what bridge the current channel is in.
 
-### joinbridge <name>
+### bridge join <name>
 
 Joins the bridge with the name provided.
 
-### resetbridge [name]
+### bridge reset [name]
 
 Resets the current bridge with the name provided or the current bridges name.
 
-### leavebridge
+### bridge leave
 
 Leaves the bridge the channel is currently in.
