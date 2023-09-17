@@ -24,5 +24,3 @@ export default async function run({ config }: { config?: string }) {
 
 	await bolt.setup();
 }
-
-run({});

@@ -1,6 +1,5 @@
 import { CliffyApp } from './deps.ts';
 import migration from './migrations.ts';
-import run from './run.ts';
 
 const cli = new CliffyApp()
 	.name('bolt')
