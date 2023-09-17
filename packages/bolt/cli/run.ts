@@ -5,7 +5,7 @@ export default async function run({ config }: { config?: string }) {
 	let cfg;
 
 	try {
-		cfg = (await import(`${Deno.cwd()}/${config || 'config.ts'}`))?.default;
+		cfg = (await import(config || `${Deno.cwd()}/config.ts`))?.default;
 	} catch (e) {
 		console.error(colors.red(`Can't load your config, exiting...\n`), e);
 		Deno.exit(1);
