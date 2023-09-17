@@ -39,6 +39,8 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			if (plugin?.commands) {
 				this.cmds.registerCommands(...plugin.commands);
 			}
+		}
+		for (const plugin of plugins) {
 			for await (const event of plugin) {
 				this.emit(event.name, ...event.value);
 			}
