@@ -35,7 +35,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 				});
 			}
 			this.plugins.push(plugin);
-			await plugin.start(this);
+			plugin.start(this);
 			if (plugin?.commands) {
 				this.cmds.registerCommands(...plugin.commands);
 			}
