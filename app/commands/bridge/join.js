@@ -27,9 +27,19 @@ export default {
 				"You're already in a bridge!"
 			);
 		}
+
+		let bridge_name = opts.bridge || opts.positionals?.shift()
+
+		if (!bridge_name) {
+			return boltEmbedMsg(
+				"Bolt Bridges (legacy)",
+				"You must specify a name for your bridge"
+			);
+		}
+
 		try {
 			joinLegacy(
-				opts.bridge || opts.positionals?.shift(),
+				bridge_name,
 				channel,
 				platform,
 				guild
