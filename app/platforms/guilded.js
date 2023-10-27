@@ -4,6 +4,9 @@ import EventEmitter from "node:events";
 export default class gldd extends EventEmitter {
 	constructor(config) {
 		super();
+		this._setup(config);
+	}
+	_setup(config) {
 		this.config = config;
 		this.guilded = new GuildedClient({ token: this.config.token });
 		this.guilded.on("ready", () => {
@@ -14,6 +17,10 @@ export default class gldd extends EventEmitter {
 			this.emit("msgcreate", await this.constructmsg(message));
 		});
 		this.guilded.login();
+		this.guilded.ws.emitter.on("exit", (info) => {
+			console.log(info);
+			this._setup(config);
+		});
 	}
 	async constructmsg(message) {
 		if (!message) return;

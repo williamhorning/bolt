@@ -6,7 +6,7 @@ import rvl from "./platforms/revolt.js";
 export const prod = process.env.prod;
 export const displayname = prod ? "Bolt" : "Bolt Canary";
 export const productname = prod ? "bolt" : "bolt-canary";
-export const version = "0.4.11";
+export const version = "0.4.12";
 export const iconURL =
 	"https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024";
 

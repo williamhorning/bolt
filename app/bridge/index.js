@@ -33,8 +33,7 @@ export async function tryBridgeSend(msg) {
 						current,
 						e,
 					}),
-					platform.senddata,
-					false
+					platform.senddata
 				);
 			} catch (e2) {
 				boltError(`sending an error failed`, e2, {

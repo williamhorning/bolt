@@ -4,7 +4,7 @@ export default {
 	execute: () => {
 		return boltEmbedMsg(
 			"Bolt Help",
-			"Need help? Take a look at the [docs](https://github.com/williamhorning/bolt/blob/0.4.x/docs/README.md)\nNeed more help? Join one of the support servers:\n - [discord](https://discord.gg/eGq7uhtJDx)\n- [guilded](https://www.guilded.gg/i/kamX0vek)\n - [revolt](https://app.revolt.chat/invite/tpGKXcqk)"
+			"Need help? Take a look at the [docs](https://bolt.williamhorning.dev/docs/Using/)\nNeed more help? Join one of the support servers, which are also linked above."
 		);
 	},
 	metadata: {
