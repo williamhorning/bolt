@@ -5,7 +5,7 @@ export default {
 		return boltEmbedMsg("Version", `Hello from Bolt ${version}!`);
 	},
 	metadata: {
-		command: "version",
-		description: "see what version bolt is",
+		command: "info",
+		description: "see information about bolt",
 	},
 };

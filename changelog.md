@@ -1,5 +1,12 @@
 # changelog
 
+## 0.4.12
+
+- fix guilded connection issues (hopefully)
+- update commands to match 0.5.x
+
+## 0.4.11
+
 ## 0.4.10
 
 - remove /utils dependencies
