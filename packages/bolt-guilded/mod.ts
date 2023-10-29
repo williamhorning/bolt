@@ -37,6 +37,7 @@ export default class GuildedPlugin extends BoltPlugin {
 		this.bot.on('ready', () => {
 			this.emit('ready');
 		});
+		this.bot.on('debug', console.log);
 	}
 	start() {
 		this.bot.login();
