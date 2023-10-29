@@ -34,9 +34,13 @@ Gets information about what bridge the current channel is in.
 
 Joins the bridge with the name provided.
 
+When using Bolt 0.4.x, use `--bridge=<name>` instead.
+
 ### bridge reset [name]
 
 Resets the current bridge with the name provided or the current bridges name.
+
+This command isn't available in Bolt 0.4.x.
 
 ### bridge leave
 
