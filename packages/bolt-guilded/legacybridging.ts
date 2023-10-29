@@ -16,6 +16,7 @@ export async function bridgeLegacy(
 ) {
 	const channel = await this.bot.channels.fetch(dat.channel);
 	const idtrsnd = idTransform({ ...dat, replyto });
+	// @ts-ignore
 	const result = await channel.send(idtrsnd);
 	try {
 		return {
@@ -50,12 +51,12 @@ export async function bridgeLegacy(
 				}
 			}
 		} catch {
-			channel.send(
-				createBoltMessage({
-					content:
-						"In the next major version of Bolt, 1.0.0, embed-based bridges like this one won't be supported anymore. Take a look at https://go.williamhorning.dev/bolt-guilded-36 for more information and how to migrate to webhook-based bridges. This should be the last time you see this message."
-				})
-			);
+			const warning = createBoltMessage({
+				content:
+					"In the next major version of Bolt, 1.0.0, embed-based bridges like this one won't be supported anymore. Take a look at https://go.williamhorning.dev/bolt-guilded-36 for more information and how to migrate to webhook-based bridges. This should be the last time you see this message."
+			});
+			// @ts-ignore
+			channel.send(warning);
 		}
 	}
 }

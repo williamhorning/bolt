@@ -17,7 +17,7 @@ to the one below:
 version: '2'
 services:
   bolt:
-    image: williamfromnj/bolt:0.5.2
+    image: williamfromnj/bolt:0.5.3
     volumes:
       - ./config:/app/data
     restart: always

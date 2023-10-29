@@ -1,8 +1,15 @@
 # Changelog
 
+## 0.5.3
+
+- bump dependency versions
+- bump deno version
+- fix bug in bolt-guilded
+- fix some typing errors
+
 ## 0.5.2
 
-- update the bridigng commands to match 0.4.x in style
+- update the bridging commands to match 0.4.x in style
 - redo the command system
 - implement role colors for revolt
 - discord subcommands

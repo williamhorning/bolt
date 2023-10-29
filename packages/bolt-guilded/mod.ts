@@ -10,22 +10,26 @@ import { coreToMessage, messageToCore } from './messages.ts';
 export default class GuildedPlugin extends BoltPlugin {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.5.2';
+	version = '0.5.3';
 	constructor(config: { token: string }) {
 		super();
 		this.bot = new Client(config);
-		this.bot.on('debug', (data: unknown) => {
+		this.setupClient(this.bot, config);
+	}
+	private setupClient(client: Client, config: { token: string }) {
+		client.on('debug', (data: unknown) => {
+			console.log(data);
 			this.emit('debug', data);
 		});
-		this.bot.on('messageCreated', async message => {
+		client.on('messageCreated', async message => {
+			const msg = await messageToCore(message, this);
+			if (msg) this.emit('messageCreate', msg);
+		});
+		client.on('messageUpdated', async message => {
 			const msg = await messageToCore(message, this);
 			if (msg) this.emit('messageUpdate', msg);
 		});
-		this.bot.on('messageUpdated', async message => {
-			const msg = await messageToCore(message, this);
-			if (msg) this.emit('messageUpdate', msg);
-		});
-		this.bot.on('messageDeleted', message => {
+		client.on('messageDeleted', message => {
 			this.emit('messageDelete', {
 				id: message.id,
 				platform: { name: 'guilded', message },
@@ -34,11 +38,16 @@ export default class GuildedPlugin extends BoltPlugin {
 				timestamp: new Date(message.deletedAt).getTime()
 			});
 		});
-		this.bot.on('ready', () => {
+		client.on('ready', () => {
 			this.emit('ready');
 		});
-		this.bot.on('debug', console.log);
+		client.ws.emitter.on('exit', info => {
+			this.emit('debug', info);
+			this.bot = new Client(config);
+			this.setupClient(this.bot, config);
+		});
 	}
+
 	start() {
 		this.bot.login();
 	}

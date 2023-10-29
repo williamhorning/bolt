@@ -57,6 +57,7 @@ export async function messageToCore(
 		}),
 		platform: { name: 'bolt-guilded', message },
 		reply: async (msg: BoltMessage<unknown>) => {
+			// @ts-ignore
 			await message.reply(coreToMessage(msg));
 		},
 		content: message.content,

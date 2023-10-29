@@ -12,7 +12,6 @@ export default async function run({ config }: { config?: string }) {
 	}
 
 	const bolt = new Bolt(defineBoltConfig(cfg));
-	window.bolt = bolt;
 
 	bolt.on('error', msg => {
 		console.error(msg);

@@ -25,7 +25,7 @@ export default class DiscordPlugin extends BoltPlugin {
 	gateway: WebSocketManager;
 	rest: REST;
 	name = 'bolt-discord';
-	version = '0.5.2';
+	version = '0.5.3';
 	constructor(config: DiscordConfig) {
 		super();
 		this.config = config;
@@ -70,7 +70,9 @@ export default class DiscordPlugin extends BoltPlugin {
 							await this.bot.api.channels.getMessage(dat.channel, dat.replytoId)
 						);
 					}
-				} catch {}
+				} catch {
+					replyto = undefined;
+				}
 				const msgd = await coreToMessage({ ...dat, replyto });
 				const senddata = dat.senddata as { token: string; id: string };
 				let wh;

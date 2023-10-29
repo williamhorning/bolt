@@ -10,8 +10,8 @@ default export and allows you to use a helper function.
 ## Example
 
 ```ts
-import { defineBoltConfig } from 'https://bolt.williamhorning.dev/x/bolt/0.5.2/mod.ts';
-import bolt_discord from 'https://bolt.williamhorning.dev/x/bolt-discord/0.5.2/mod.ts';
+import { defineBoltConfig } from 'https://bolt.williamhorning.dev/x/bolt/0.5.3/mod.ts';
+import bolt_discord from 'https://bolt.williamhorning.dev/x/bolt-discord/0.5.3/mod.ts';
 
 export default defineBoltConfig({
 	plugins: [
