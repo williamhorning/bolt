@@ -1,8 +1,8 @@
-import { boltEmbedMsg } from "../utils.js";
+import { createMsg } from "../../utils.js";
 
 export default {
 	execute: () => {
-		return boltEmbedMsg("Bolt Website", `https://bolt.williamhorning.dev/`);
+		return createMsg("Bolt Website", `https://bolt.williamhorning.dev/`);
 	},
 	metadata: {
 		command: "site",

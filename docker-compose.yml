@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
   bolt-node:
-    image: node:19
+    image: node:21
     volumes:
       - /home/ubuntu/bolt:/app
     command: ./app/index.js

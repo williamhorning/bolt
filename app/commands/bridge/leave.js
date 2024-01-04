@@ -1,32 +1,30 @@
-import { getBridges, leaveLegacy } from "../../bridge/utils.js";
-import { boltEmbedMsg, boltError } from "../../utils.js";
+import { getBridge, updateBridge } from "../../bridge.js";
+import { createMsg } from "../../utils.js";
 
 export default {
-	execute: async ({ channel, platform }) => {
-		let { current, legacy: legacyBridgeId } = await getBridges({
-			platform,
-			channel,
-		});
+  execute: async ({ channel, platform }) => {
+    let current = await getBridge({
+      platform,
+      channel,
+    });
 
-		if (current) {
-			return boltEmbedMsg(
-				"Bolt Bridges",
-				"Please use the API or dash to configure non-legacy bridges."
-			);
-		}
+    if (!current) {
+      return createMsg(
+        "Bolt Bridges",
+        "To run this you need to be in a bridge."
+      );
+    }
 
-		try {
-			leaveLegacy(legacyBridgeId, channel, platform);
-			return boltEmbedMsg("Bolt Bridges (legacy)", "Left bridge.");
-		} catch (e) {
-			return boltError("Something went wrong trying to leave your bridge", e, {
-				channel,
-				platform,
-			});
-		}
-	},
-	metadata: {
-		command: "leave",
-		description: "leave a bridge",
-	},
+    current.value.bridges = current.value.bridges.filter(
+      (i) => i.channel !== channel && i.platform !== platform
+    );
+
+    await updateBridge(current);
+
+    return createMsg("Bolt Bridges", "Left bridge!");
+  },
+  metadata: {
+    command: "leave",
+    description: "leave a bridge",
+  },
 };

@@ -1,8 +1,8 @@
-import { boltEmbedMsg } from "../utils.js";
+import { createMsg } from "../../utils.js";
 
 export default {
 	execute: ({ timestamp }) => {
-		return boltEmbedMsg(
+		return createMsg(
 			"Pong! 🏓",
 			`Bolt works, probably. - ${Date.now() - timestamp}ms`
 		);

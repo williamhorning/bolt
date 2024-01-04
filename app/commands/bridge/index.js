@@ -8,7 +8,8 @@ export default {
 		);
 	},
 	metadata: {
-		command: "help",
-		description: "get help with bolt bridges",
+		command: "bridge",
+		description: "connect different chat apps",
+		hasSubcommands: true,
 	},
 };

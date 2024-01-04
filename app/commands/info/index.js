@@ -1,8 +1,8 @@
-import { boltEmbedMsg, version } from "../utils.js";
+import { createMsg, version } from "../../utils.js";
 
 export default {
 	execute: () => {
-		return boltEmbedMsg("Version", `Hello from Bolt ${version}!`);
+		return createMsg("Version", `Hello from Bolt ${version}!`);
 	},
 	metadata: {
 		command: "info",

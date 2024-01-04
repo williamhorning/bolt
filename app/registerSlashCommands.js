@@ -1,85 +1,95 @@
 import {
-	SlashCommandBuilder,
-	SlashCommandStringOption,
-	SlashCommandSubcommandBuilder,
+  SlashCommandBuilder,
+  SlashCommandStringOption,
+  SlashCommandSubcommandBuilder,
 } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
-import "dotenv/config";
 import { readdir } from "fs/promises";
 
-let cmds = [];
+export async function registerCommands() {
+  let cmds = await getCommands();
 
-for await (let file of await readdir("app/commands")) {
-	if (!(file.endsWith(".js") && file !== "index.js")) continue;
+  const rest = new REST({
+    version: "10",
+  }).setToken(process.env.DISCORD_TOKEN);
 
-	// import metadata and make builder
-	let meta = await (await import(`../app/commands/${file}`)).default.metadata;
-	let cmd = new SlashCommandBuilder();
-	if (meta.hidden === true) continue;
-	cmd.setName(meta.command).setDescription(meta.description);
+  try {
+    await rest.put(`/applications/${process.env.DISCORD_CLIENTID}/commands`, {
+      body: cmds,
+    });
+  } catch (error) {
+    throw error;
+  }
+}
 
-	// handle more metadata, including subcommands
-	await handleMetadata(meta, cmd);
+async function getCommands() {
+  let cmds = [];
 
-	// add to list of commands
-	cmds.push(cmd);
+  for await (let file of await readdir("app/commands", { recursive: true })) {
+    if (file === "index.js") continue;
+
+    let meta = await (
+      await import(`./commands/${file}/index.js`)
+    )?.default?.metadata;
+
+    if (!meta || meta.hidden === true) continue;
+
+    let cmd = new SlashCommandBuilder()
+      .setName(meta.command)
+      .setDescription(meta.description);
+
+    await handleMetadata(meta, cmd);
+
+    cmds.push(cmd);
+  }
+
+  return cmds;
 }
 
 async function handleMetadata(meta, cmd) {
-	if (meta.hasSubcommands) {
-		for await (let file of await readdir(`app/commands/${meta.command}/`)) {
-			if (!file.endsWith(".js")) continue;
+  if (meta.hasSubcommands) {
+    for await (let file of await readdir(`app/commands/${meta.command}/`)) {
+      if (!file.endsWith(".js") || file.includes("index")) continue;
 
-			// import metadata and make builder
-			let meta2 = await (
-				await import(`../app/commands/${meta.command}/${file}`)
-			).default.metadata;
-			let subcmd = new SlashCommandSubcommandBuilder();
-			subcmd.setName(meta2.command).setDescription(meta2.description);
+      let meta2 = await (
+        await import(`./commands/${meta.command}/${file}`)
+      ).default.metadata;
 
-			// handle options
-			if (meta2.hasOptions) {
-				handleOpts(meta2, subcmd);
-			}
+      if (!meta2 || meta2.hidden === true) continue;
 
-			// register subcommand
-			cmd.addSubcommand(subcmd);
-		}
-	}
+      let subcmd = new SlashCommandSubcommandBuilder()
+        .setName(meta2.command)
+        .setDescription(meta2.description);
 
-	// deal with options
-	if (meta.hasOptions) {
-		handleOpts(meta, cmd);
-	}
+      if (meta2.hasOptions) {
+        handleOpts(meta2, subcmd);
+      }
+
+      cmd.addSubcommand(subcmd);
+    }
+  }
+
+  if (meta.hasOptions) {
+    handleOpts(meta, cmd);
+  }
 }
 
 function handleOpts(meta, cmd) {
-	for (let item in meta.options) {
-		let i = meta.options[item];
-		let choices = i.expectedValues?.map((a) => {
-			return {
-				name: a,
-				value: a,
-			};
-		});
-		let opt = new SlashCommandStringOption();
-		opt
-			.setName(item)
-			.setDescription(i.description || "option")
-			.setRequired(i.required || false);
-		if (choices) {
-			opt.setChoices(...choices);
-		}
-		cmd.addStringOption(opt);
-	}
+  for (let item in meta.options) {
+    let i = meta.options[item];
+    let choices = i.expectedValues?.map((a) => {
+      return {
+        name: a,
+        value: a,
+      };
+    });
+    let opt = new SlashCommandStringOption()
+      .setName(item)
+      .setDescription(i.description || "option")
+      .setRequired(i.required || false);
+    if (choices) {
+      opt.setChoices(...choices);
+    }
+    cmd.addStringOption(opt);
+  }
 }
-
-let rest = new REST({
-	version: "9",
-}).setToken(process.env.DISCORD_TOKEN);
-
-await rest.put(`/applications/${process.env.DISCORD_CLIENTID}/commands`, {
-	body: cmds,
-});
-
-console.log("registered commands");
