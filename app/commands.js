@@ -34,9 +34,7 @@ export async function commandhandle({
   let execute;
   if (!subcmd) subcmd = "index";
   try {
-    console.log(currentdir(cmd, `${subcmd}.js`));
     let mod = await import(currentdir(cmd, `${subcmd}.js`));
-    console.log(mod);
     execute = mod.default.execute;
   } catch (e) {
     if (e.code === "ERR_MODULE_NOT_FOUND") {

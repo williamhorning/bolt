@@ -20,7 +20,7 @@ export const platforms = {
 export const collection = new MongoClient(
   process.env.MONGO_URL || "mongodb://localhost:27017"
 )
-  .db(process.env.MONGO_DB || process.env.prod ? "bolt" : "bolt-canary")
+  .db(process.env.MONGO_DB || (process.env.prod ? "bolt" : "bolt-canary"))
   .collection("bridgev1");
 
 export async function logError(e, extra = {}, usewebhook = true) {
@@ -60,13 +60,14 @@ export async function logFatalError(e) {
 }
 
 export function createMsg(title, description, uuid) {
-  return {
+  let data = {
     author: {
       username: "Bolt",
       profile:
         "https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024",
     },
     embeds: [{ title, description }],
-    uuid,
   };
+  if (uuid) data.uuid = uuid;
+  return data;
 }

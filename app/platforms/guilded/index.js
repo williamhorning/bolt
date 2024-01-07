@@ -38,13 +38,13 @@ export default class GuildedPlugin extends EventEmitter {
 
   async createSenddata(channel) {
     const ch = await this.bot.channels.fetch(channel);
-    const webhook = await this.bot.webhooks.createWebhook(ch.serverId, {
+    const webhook = await this.bot.webhooks.create(ch.serverId, {
       name: "Bolt Bridges",
       channelId: channel,
     });
     return {
       id: webhook.id,
-      token: webhook.token,
+      token: webhook.token || "shouldn't be null",
     };
   }
 

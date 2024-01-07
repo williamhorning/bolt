@@ -29,16 +29,16 @@ export async function constructGuildedMsg(msgd) {
       ]
     );
   }
-  if (msg?.embeds?.length < 1) {
-    delete dat.embeds;
-  } else {
-    dat?.embeds?.map((embed) => {
+  if (dat.embeds.length !== 0) {
+    dat.embeds.map((embed) => {
       for (let i in embed) {
         let item = embed[i];
         if (item == null || item == undefined) embed[i] = undefined;
       }
       embed.timestamp = embed.timestamp || new Date().toISOString();
     });
+  } else {
+    delete dat.embeds;
   }
   let files = [];
   if (msg.attachments?.length > 0) {
@@ -50,7 +50,7 @@ export async function constructGuildedMsg(msgd) {
       });
     }
   }
-  return [dat, undefined, files];
+  return [dat, dat.embeds, files];
 }
 
 function chooseValidGuildedUsername(msg) {
@@ -96,9 +96,10 @@ export async function constructmsg(message, guilded) {
     guild: message.serverId,
     id: message.id,
     timestamp: message._createdAt,
-    reply: (content) => {
-      if (typeof content != "string") content = constructGuildedMsg(content);
-      return message.reply(content);
+    reply: async (content) => {
+      if (typeof content != "string")
+        content = (await constructGuildedMsg(content))[0];
+      return await message.reply(content);
     },
     webhookid: message.createdByWebhookId,
   };

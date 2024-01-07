@@ -42,10 +42,7 @@ export async function constructmsg({ data: message, api }, exclreply = false) {
 async function getReply(message, api, exclreply) {
   if (!message.referenced_message || exclreply) return undefined;
   try {
-    return await constructmsg(
-      { message: message.referenced_message, api },
-      true
-    );
+    return await constructmsg({ data: message.referenced_message, api }, true);
   } catch {
     return;
   }

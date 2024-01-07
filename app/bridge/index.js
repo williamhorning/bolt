@@ -1,5 +1,5 @@
 import { logError, platforms } from "../utils.js";
-import { getBridge } from "./utils.js";
+import { getBridge, updateBridge } from "./utils.js";
 
 export async function bridgeMessage(msg) {
   const current = await getBridge(msg);
@@ -10,13 +10,20 @@ export async function bridgeMessage(msg) {
     try {
       await platforms[bridge.platform].bridgeSend(msg, bridge.senddata);
     } catch (e) {
-      handleBridgeError(e, msg, bridge);
+      handleBridgeError(e, msg, bridge, current);
     }
   }
 }
 
-async function handleBridgeError(e, msg, bridge) {
-  if (e.code === 404) return;
+async function handleBridgeError(e, msg, bridge, current) {
+  if (e.response?.status === 404) {
+    let updated_bridge = {
+      ...current,
+      value: { bridges: current.value.bridges.filter((i) => i !== bridge) },
+    };
+    await updateBridge(updated_bridge);
+    return;
+  }
   let err = await logError(e, { msg, bridge });
   try {
     await platforms[bridge.platform].bridgeSend(err, bridge.senddata, false);
