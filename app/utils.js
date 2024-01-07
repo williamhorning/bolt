@@ -17,8 +17,10 @@ export const platforms = {
   }),
 };
 
-export const collection = new MongoClient("mongodb://localhost:27017")
-  .db(process.env.prod ? "bolt" : "bolt-canary")
+export const collection = new MongoClient(
+  process.env.MONGO_URL || "mongodb://localhost:27017"
+)
+  .db(process.env.MONGO_DB || process.env.prod ? "bolt" : "bolt-canary")
   .collection("bridgev1");
 
 export async function logError(e, extra = {}, usewebhook = true) {

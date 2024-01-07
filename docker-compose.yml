@@ -4,7 +4,8 @@ services:
   bolt:
     image: node:21
     volumes:
-      - .:/app
-    command: ./app/index.js
+      - ./app:/app
+    command: ./index.js
+    network_mode: host
     working_dir: /app
     restart: always

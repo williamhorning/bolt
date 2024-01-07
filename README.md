@@ -1,31 +1,35 @@
-# bolt
+# Bolt 0.4.x
 
-## docs
+## Hosting
 
-looking for bolt docs? check out [the docs](/docs/README.md), this readme is for the bolt codebase itself.
+### Prerequisites
 
-## setup
-
-### prerequisites
-
-- Node.js 19 or higher
-- NPM 8 or higher
-- MongoDB on localhost:27017
+- Node.js 21 or higher or Docker Compose
+- MongoDB hosted on localhost:27017 OR the address provided in MONGO_URI
 - A Discord, Revolt, and Guilded bot with the token and client ID accessible
 
-### steps
+### Running
 
 1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Setup `.env` to contain the following:
+2. Setup `.env` to contain the following:
 
 ```sh
-DISCORD_TOKEN = "token.goes.here"
-DISCORD_CLIENTID = "clientid.goes.here"
-GUILDED_TOKEN = "token.goes.here"
-REVOLT_TOKEN = "token.goes.here"
+# discord
+DISCORD_TOKEN = ""
+DISCORD_CLIENTID = ""
+# guilded
+GUILDED_TOKEN = ""
+# revolt
+REVOLT_TOKEN = ""
+# mongodb
+MONGO_URI = ""
+MONGO_DB = ""
+# error handling
 ERROR_HOOK = "webhook.goes.here"
+# deprecated options
+PROD = "1"
 ```
 
-4. Run `node app/registerSlashCommands.js` to register the slash commands
-5. Run `node app/index.js` or `docker compose up` to start the bot
+3. Install dependencies
+4. Run the app with either Docker Compose or Node
+5. Run `app/platforms/discord/commands.js` to register slash commands
