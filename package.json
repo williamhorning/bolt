@@ -1,15 +1,15 @@
 {
   "name": "bolt",
-  "bin": "./scripts/cli.js",
+  "bin": "./app/index.js",
   "dependencies": {
     "@discordjs/builders": "^1.7.0",
     "@discordjs/core": "^1.1.1",
-    "@discordjs/rest": "^1.7.1",
+    "@discordjs/rest": "^2.2.0",
     "@discordjs/ws": "^1.0.2",
     "@williamhorning/revolt.js": "^7.0.0-beta.10",
-    "dotenv": "^16.0.1",
-    "guilded.js": "^0.14.0",
-    "mongodb": "^5.7.0"
+    "dotenv": "^16.3.1",
+    "guilded.js": "^0.23.7",
+    "mongodb": "^6.3.0"
   },
   "type": "module"
 }

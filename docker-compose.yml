@@ -1,11 +1,10 @@
 version: "3.1"
 
 services:
-  bolt-node:
+  bolt:
     image: node:21
     volumes:
-      - /home/ubuntu/bolt:/app
+      - .:/app
     command: ./app/index.js
-    network_mode: host
     working_dir: /app
     restart: always

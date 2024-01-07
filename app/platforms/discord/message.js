@@ -1,6 +1,15 @@
 export async function constructmsg({ data: message, api }, exclreply = false) {
+  let content =
+    !message.content && !message.embeds && message.type === 20
+      ? "loading slash command response..."
+      : message.content;
   return {
-    content: message.type === 20 ? "loading..." : message.content,
+    attachments: message.attachments?.map((i) => {
+      return {
+        file: i.file,
+        name: i.filename,
+      };
+    }),
     author: {
       username:
         message.member?.nick || message.author?.username || "discord user",
@@ -8,20 +17,14 @@ export async function constructmsg({ data: message, api }, exclreply = false) {
       profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
       id: message.author?.id || message.webhook_id || "",
     },
-    replyto: message.referenced_message
-      ? await getReply(message, api, exclreply)
-      : undefined,
-    attachments: message.attachments?.map((i) => {
-      return {
-        file: i.file,
-        name: i.filename,
-      };
-    }),
-    platform: "discord",
     channel: message.channel_id,
+    content,
+    embeds: message.embeds?.map((i) => {
+      return { ...i, timestamp: new Date(i.timestamp).getTime() };
+    }),
     guild: message.guild_id,
     id: message.id,
-    timestamp: new Date(message.timestamp).getTime(),
+    platform: "discord",
     reply: async (content) => {
       await api.channels.createMessage(message.channel_id, {
         ...coreToMessage(content),
@@ -30,15 +33,14 @@ export async function constructmsg({ data: message, api }, exclreply = false) {
         },
       });
     },
-    embeds: message.embeds?.map((i) => {
-      return { ...i, timestamp: new Date(i.timestamp).getTime() };
-    }),
+    replyto: await getReply(message, api, exclreply),
+    timestamp: new Date(message.timestamp).getTime(),
     webhookid: message.webhook_id,
   };
 }
 
 async function getReply(message, api, exclreply) {
-  if (!message.referenced_message || exclreply) return;
+  if (!message.referenced_message || exclreply) return undefined;
   try {
     return await constructmsg(
       { message: message.referenced_message, api },

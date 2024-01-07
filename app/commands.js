@@ -1,5 +1,26 @@
+import { parseArgs } from "node:util";
 import { basename, join } from "path/posix";
 import { createMsg, logError } from "./utils.js";
+
+export function handleMessageCommand(msg) {
+  if (msg.content?.startsWith("!bolt")) {
+    let opts = parseArgs({
+      args: msg.content.split(" "),
+      strict: false,
+    });
+    opts.positionals.shift();
+    commandhandle({
+      channel: msg.channel,
+      cmd: opts.positionals.shift(),
+      subcmd: opts.positionals.shift(),
+      guild: msg.guild,
+      opts: opts.values,
+      platform: msg.platform,
+      timestamp: msg.timestamp,
+      replyfn: msg.reply,
+    });
+  }
+}
 
 export async function commandhandle({
   cmd,
@@ -13,7 +34,9 @@ export async function commandhandle({
   let execute;
   if (!subcmd) subcmd = "index";
   try {
-    let mod = await import(currentdir(import.meta.url, cmd, `${subcmd}.js`));
+    console.log(currentdir(cmd, `${subcmd}.js`));
+    let mod = await import(currentdir(cmd, `${subcmd}.js`));
+    console.log(mod);
     execute = mod.default.execute;
   } catch (e) {
     if (e.code === "ERR_MODULE_NOT_FOUND") {
@@ -38,9 +61,9 @@ export async function commandhandle({
   await replyfn(reply, false);
 }
 
-function currentdir(importmetaurl, additional = "", thingtosanitize) {
+function currentdir(additional = "", thingtosanitize) {
   return join(
-    new URL(".", importmetaurl).href,
+    new URL(".", import.meta.url).pathname,
     "commands",
     additional,
     basename(thingtosanitize)

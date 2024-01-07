@@ -1,11 +1,11 @@
+import { EventEmitter } from "events";
 import { Client, WebhookClient } from "guilded.js";
-import BasePlugin from "../common.js";
 import { idSend } from "./idsend.js";
 import { constructGuildedMsg, constructmsg } from "./message.js";
 
-export default class GuildedPlugin extends BasePlugin {
+export default class GuildedPlugin extends EventEmitter {
   constructor({ token }) {
-    super({ token });
+    super();
     this.bot = new Client({ token });
     this.#setupClient(token);
   }
@@ -26,6 +26,14 @@ export default class GuildedPlugin extends BasePlugin {
 
   get userid() {
     return this.bot.user?.id;
+  }
+
+  isBridged(msg) {
+    if (msg.author.id === this.userid && msg.embeds && !msg.replyto) {
+      return true;
+    } else {
+      return "query";
+    }
   }
 
   async createSenddata(channel) {

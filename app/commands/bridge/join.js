@@ -1,4 +1,4 @@
-import { getBridge, updateBridge } from "../../bridge.js";
+import { getBridge, updateBridge } from "../../bridge/index.js";
 import { createMsg, platforms } from "../../utils.js";
 
 export default {

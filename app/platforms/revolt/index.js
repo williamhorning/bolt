@@ -1,10 +1,10 @@
 import { Client } from "@williamhorning/revolt.js";
-import BasePlugin from "../common.js";
+import { EventEmitter } from "events";
 import { constructmsg, constructRevoltMessage } from "./message.js";
 
-export default class RevoltPlugin extends BasePlugin {
+export default class RevoltPlugin extends EventEmitter {
   constructor({ token }) {
-    super({ token });
+    super();
     this.bot = new Client();
     this.bot.on("ready", () => {
       this.emit("ready");
@@ -18,6 +18,10 @@ export default class RevoltPlugin extends BasePlugin {
 
   get userid() {
     return this.bot.user.id;
+  }
+
+  isBridged(msg) {
+    return msg.author.id === this.userid && msg.masquerade;
   }
 
   async bridgeSend(msg, id, masq = true) {
