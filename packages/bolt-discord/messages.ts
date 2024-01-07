@@ -27,6 +27,7 @@ export async function messageToCore(
 	}
 	return {
 		author: {
+			profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
 			username:
 				message.member?.nick || message.author?.username || 'discord user',
 			rawname: message.author?.username || 'discord user',
@@ -46,10 +47,12 @@ export async function messageToCore(
 			};
 		}),
 		reply: async (msg: BoltMessage<unknown>) => {
-			await api.channels.createMessage(
-				message.channel_id,
-				await coreToMessage(msg)
-			);
+			await api.channels.createMessage(message.channel_id, {
+				...(await coreToMessage(msg)),
+				message_reference: {
+					message_id: message.id
+				}
+			});
 		},
 		platform: {
 			name: 'bolt-discord',
