@@ -18,6 +18,7 @@ const cli = new CliffyApp()
 		'--config <input:string>',
 		'path to config file relative to the current directory'
 	)
+	.option('--debug', 'enables debug mode')
 	.action(run);
 
 cli.parse(Deno.args);

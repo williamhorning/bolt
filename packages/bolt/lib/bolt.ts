@@ -41,9 +41,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			}
 		}
 		for (const plugin of plugins) {
-			for await (const event of plugin) {
-				this.emit(event.name, ...event.value);
-			}
+			(async () => {
+				for await (const event of plugin) {
+					this.emit(event.name, ...event.value);
+				}
+			})();
 		}
 	}
 	async unload(plugins: BoltPlugin[]) {

@@ -62,13 +62,20 @@ export default class RevoltPlugin extends BoltPlugin {
 						);
 					}
 				} catch {}
-				const result = await handler(await coreToMessage({ ...dat, replyto }));
-				return {
-					channel: dat.channel,
-					id: 'id' in result ? result.id : result._id,
-					plugin: 'bolt-revolt',
-					senddata: dat.channel
-				};
+				try {
+					const result = await handler(
+						await coreToMessage({ ...dat, replyto })
+					);
+					return {
+						channel: dat.channel,
+						id: 'id' in result ? result.id : result._id,
+						plugin: 'bolt-revolt',
+						senddata: dat.channel
+					};
+				} catch (e) {
+					// TODO: proper error handling
+					return {};
+				}
 			}
 			case 'delete': {
 				const channel = await this.bot.channels.fetch(data.data.channel);

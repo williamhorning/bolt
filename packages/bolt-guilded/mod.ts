@@ -18,7 +18,6 @@ export default class GuildedPlugin extends BoltPlugin {
 	}
 	private setupClient(client: Client, config: { token: string }) {
 		client.on('debug', (data: unknown) => {
-			console.log(data);
 			this.emit('debug', data);
 		});
 		client.on('messageCreated', async message => {

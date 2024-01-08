@@ -70,7 +70,7 @@ export async function messageToCore(
 		},
 		channel: message.channelId,
 		id: message.id,
-		timestamp: message.createdAt.getUTCMilliseconds(),
+		timestamp: message.createdAt.valueOf(),
 		embeds: (message.embeds as TextEmbed[] | undefined)?.map(i => {
 			return {
 				...i,

@@ -1,7 +1,13 @@
 import { Bolt, defineBoltConfig } from '../lib/mod.ts';
 import { colors } from './deps.ts';
 
-export default async function run({ config }: { config?: string }) {
+export default async function run({
+	config,
+	debug
+}: {
+	config?: string;
+	debug?: true | undefined;
+}) {
 	let cfg;
 
 	try {
@@ -20,6 +26,13 @@ export default async function run({ config }: { config?: string }) {
 	bolt.on('warning', msg => {
 		console.warn(colors.yellow(msg));
 	});
+
+	if (debug) {
+		bolt.on('debug', msg => {
+			console.debug(colors.blue(msg as string));
+		});
+		window.bolt = bolt;
+	}
 
 	await bolt.setup();
 }
