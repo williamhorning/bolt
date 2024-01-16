@@ -1,4 +1,4 @@
-export { existsSync } from 'https://deno.land/std@0.204.0/fs/mod.ts';
+export { existsSync } from 'https://deno.land/std@0.212.0/fs/exists.ts';
 export {
 	AppServiceRegistration,
 	Bridge,
@@ -6,7 +6,7 @@ export {
 	Request,
 	type ClientEncryptionSession,
 	type WeakEvent
-} from 'npm:matrix-appservice-bridge@9.0.1';
+} from 'npm:matrix-appservice-bridge@10.1.0';
 export {
 	Bolt,
 	BoltPlugin,

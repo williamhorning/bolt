@@ -6,7 +6,7 @@ using [Docker](./docker.md) or a VM in a production environment.
 
 ## Prerequisites
 
-- [Deno >=1.39.0](https://deno.land)
+- [Deno >=1.39.4](https://deno.land)
 - [Git (when running from source)](https://git-scm.com)
 - [MongoDB >=4](https://www.mongodb.com/docs/manual/installation/)
 - [Redis (optional)](https://redis.io/docs/getting-started/installation/)
@@ -19,7 +19,7 @@ Clone the Bolt Github repository from
 If you want to use a stable version, run the following:
 
 ```sh
-git switch 0.5.3
+git switch 0.5.4
 ```
 
 Then, you will probably want to install the Bolt CLI using the following:

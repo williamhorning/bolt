@@ -4,7 +4,7 @@ import run from './run.ts';
 
 const cli = new CliffyApp()
 	.name('bolt')
-	.version('0.5.3')
+	.version('0.5.4')
 	.description('Cross-platform bot connecting communities')
 	.default('help')
 	.command('help', 'Show this help.')

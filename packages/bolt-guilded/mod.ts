@@ -10,7 +10,7 @@ import { coreToMessage, messageToCore } from './messages.ts';
 export default class GuildedPlugin extends BoltPlugin {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.5.3';
+	version = '0.5.4';
 	constructor(config: { token: string }) {
 		super();
 		this.bot = new Client(config);

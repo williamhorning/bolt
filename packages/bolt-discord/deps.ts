@@ -12,9 +12,9 @@ export {
 	type RESTPostAPIWebhookWithTokenQuery,
 	type RESTPutAPIApplicationCommandsJSONBody,
 	type WithIntrinsicProps
-} from 'npm:@discordjs/core@1.0.1';
-export { REST, type RawFile } from 'npm:@discordjs/rest@2.0.1';
-export { WebSocketManager } from 'npm:@discordjs/ws@1.0.1';
+} from 'npm:@discordjs/core@1.1.1';
+export { REST, type RawFile } from 'npm:@discordjs/rest@2.2.0';
+export { WebSocketManager } from 'npm:@discordjs/ws@1.0.2';
 export {
 	Bolt,
 	BoltPlugin,

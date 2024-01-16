@@ -25,7 +25,7 @@ export default class DiscordPlugin extends BoltPlugin {
 	gateway: WebSocketManager;
 	rest: REST;
 	name = 'bolt-discord';
-	version = '0.5.3';
+	version = '0.5.4';
 	constructor(config: DiscordConfig) {
 		super();
 		this.config = config;

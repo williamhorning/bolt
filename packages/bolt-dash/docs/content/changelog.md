@@ -1,6 +1,26 @@
 # Changelog
 
-## 0.5.3
+## 0.5.4
+
+- update docker example
+- rename license file
+- update docs and /x links
+- update legal stuff
+- move site stuff to williamhorning/williamhorning
+- bump versions
+
+## 0.4.13
+
+- add tool-versions file
+- remove prettier config
+- update license year and docs links
+- switch over to bridgev1
+- clean up bridge code
+- update command stuff
+- backport platform code
+- fix docker-compose file
+
+## 0.5.4
 
 - bump dependency versions
 - bump deno version
