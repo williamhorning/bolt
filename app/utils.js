@@ -20,7 +20,7 @@ export const platforms = {
 export const collection = new MongoClient(
   process.env.MONGO_URL || "mongodb://localhost:27017"
 )
-  .db(process.env.MONGO_DB || (process.env.prod ? "bolt" : "bolt-canary"))
+  .db(process.env.MONGO_DB)
   .collection("bridgev1");
 
 export async function logError(e, extra = {}, usewebhook = true) {
@@ -31,19 +31,21 @@ export async function logError(e, extra = {}, usewebhook = true) {
   if (process.env.ERROR_HOOK && usewebhook) {
     delete extra.msg;
 
-    let embed = {
-      title: e.message,
-      description: `\`\`\`${e.stack}\`\`\`\n\`\`\`json\n${JSON.stringify(
-        { ...extra, uuid },
-        null,
-        2
-      )}\`\`\``,
-    };
-
     await fetch(process.env.ERROR_HOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds: [embed] }),
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: e.message,
+            description: `\`\`\`${e.stack}\`\`\`\n\`\`\`json\n${JSON.stringify(
+              { ...extra, uuid },
+              null,
+              2
+            )}\`\`\``,
+          },
+        ],
+      }),
     });
   }
 

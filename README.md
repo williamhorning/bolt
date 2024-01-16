@@ -26,8 +26,6 @@ MONGO_URI = ""
 MONGO_DB = ""
 # error handling
 ERROR_HOOK = "webhook.goes.here"
-# deprecated options
-PROD = "1"
 ```
 
 3. Install dependencies

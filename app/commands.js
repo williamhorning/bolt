@@ -34,13 +34,13 @@ export async function commandhandle({
   let execute;
   if (!subcmd) subcmd = "index";
   try {
-    let mod = await import(currentdir(cmd, `${subcmd}.js`));
-    execute = mod.default.execute;
+    execute = (await import(currentdir(cmd, `${subcmd}.js`))).default.execute;
   } catch (e) {
     if (e.code === "ERR_MODULE_NOT_FOUND") {
       execute = () => createMsg("Bolt", "Command not found. Try `!bolt help`");
     } else {
-      throw e;
+      execute = async () =>
+        await logError(e, { cmd, subcmd, channel, platform, opts });
     }
   }
   let reply;
