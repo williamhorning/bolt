@@ -1,6 +1,7 @@
 {
   "name": "bolt",
   "bin": "./index.js",
+  "version": "0.4.13",
   "dependencies": {
     "@discordjs/builders": "^1.7.0",
     "@discordjs/core": "^1.1.1",
