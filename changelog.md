@@ -1,1 +1,0 @@
-packages/bolt-dash/docs/content/changelog.md

@@ -11,7 +11,7 @@ export default [
 					{
 						title: 'Bolt Help',
 						description:
-							"Here's some basic help. Take a look at [the docs](https://bolt.williamhorning.dev/docs) for more information.",
+							"Here's some basic help. Take a look at [the docs](https://williamhorning.dev/bolt/docs) for more information.",
 						fields: [
 							{
 								name: 'Commands',

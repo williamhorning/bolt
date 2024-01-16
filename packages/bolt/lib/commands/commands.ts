@@ -16,12 +16,13 @@ export class BoltCommands {
 		bolt.on('messageCreate', async msg => {
 			if (await getBoltBridgedMessage(bolt, msg.id)) return;
 			if (msg.content?.startsWith('!bolt')) {
+				let [_, name, ...arg] = msg.content.split(' ');
 				this.runCommand({
-					name: msg.content.split(' ')[1],
+					name,
 					reply: msg.reply,
 					channel: msg.channel,
 					platform: msg.platform.name,
-					arg: msg.content.split(' ')[2],
+					arg: arg.join(' '),
 					timestamp: msg.timestamp
 				});
 			}

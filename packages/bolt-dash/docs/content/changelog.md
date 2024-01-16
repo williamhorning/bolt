@@ -27,6 +27,8 @@
 
 ## 0.5.0
 
+- that whole rewrite thing
+
 ## 0.4.9
 
 - backport some fixes from 0.5.0

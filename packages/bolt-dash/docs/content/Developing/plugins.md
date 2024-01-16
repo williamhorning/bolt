@@ -11,7 +11,7 @@ import {
 	createBoltMessage,
 	BoltPlugin,
 	Bolt
-} from 'https://bolt.williamhorning.dev/x/bolt/0.5.3/mod.ts';
+} from 'https://williamhorning.dev/bolt/x/bolt/0.5.3/mod.ts';
 
 export default class ExamplePlugin extends BoltPlugin {
 	name = 'example';

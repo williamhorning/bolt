@@ -53,7 +53,7 @@ export async function bridgeLegacy(
 		} catch {
 			const warning = createBoltMessage({
 				content:
-					"In the next major version of Bolt, 1.0.0, embed-based bridges like this one won't be supported anymore. Take a look at https://go.williamhorning.dev/bolt-guilded-36 for more information and how to migrate to webhook-based bridges. This should be the last time you see this message."
+					"In the next major version of Bolt, 1.0.0, embed-based bridges like this one won't be supported anymore. Take a look at https://github.com/williamhorning/bolt/issues/36 for more information and how to migrate to webhook-based bridges. This should be the last time you see this message."
 			});
 			// @ts-ignore
 			channel.send(warning);
