@@ -20,7 +20,7 @@
 - backport platform code
 - fix docker-compose file
 
-## 0.5.4
+## 0.5.3
 
 - bump dependency versions
 - bump deno version
