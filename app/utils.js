@@ -1,4 +1,5 @@
 import { MongoClient } from "mongodb";
+import { format } from "node:util";
 import DiscordPlugin from "./platforms/discord/index.js";
 import GuildedPlugin from "./platforms/guilded/index.js";
 import RevoltPlugin from "./platforms/revolt/index.js";
@@ -38,11 +39,10 @@ export async function logError(e, extra = {}, usewebhook = true) {
         embeds: [
           {
             title: e.message,
-            description: `\`\`\`${e.stack}\`\`\`\n\`\`\`json\n${JSON.stringify(
-              { ...extra, uuid },
-              getCircularReplacer(),
-              2
-            )}\`\`\``,
+            description: `\`\`\`${e.stack}\`\`\`\n\`\`\`json\n${format({
+              ...extra,
+              uuid,
+            })}\`\`\``,
           },
         ],
       }),
@@ -72,21 +72,4 @@ export function createMsg(title, description, uuid) {
   };
   if (uuid) data.uuid = uuid;
   return data;
-}
-
-function getCircularReplacer() {
-  const ancestors = [];
-  return function (key, value) {
-    if (typeof value !== "object" || value === null) {
-      return value;
-    }
-    while (ancestors.length > 0 && ancestors.at(-1) !== this) {
-      ancestors.pop();
-    }
-    if (ancestors.includes(value)) {
-      return "[Circular]";
-    }
-    ancestors.push(value);
-    return value;
-  };
 }

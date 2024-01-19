@@ -14,7 +14,9 @@ export async function constructmsg({ data: message, api }, exclreply = false) {
       username:
         message.member?.nick || message.author?.username || "discord user",
       rawname: message.author?.username,
-      profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
+      profile: message.author.avatar
+        ? `https://cdn.discordapp.com/avatars/${message.author.id}/${message.author.avatar}.png`
+        : "https://cdn.discordapp.com/embed/avatars/1.png",
       id: message.author?.id || message.webhook_id || "",
     },
     channel: message.channel_id,
