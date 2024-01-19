@@ -2,7 +2,7 @@ version: "3.1"
 
 services:
   bolt:
-    image: node:21
+    image: node:21-alpine
     volumes:
       - ./app:/app
     command: ./index.js
