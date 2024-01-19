@@ -40,7 +40,7 @@ export async function logError(e, extra = {}, usewebhook = true) {
             title: e.message,
             description: `\`\`\`${e.stack}\`\`\`\n\`\`\`json\n${JSON.stringify(
               { ...extra, uuid },
-              null,
+              getCircularReplacer(),
               2
             )}\`\`\``,
           },
@@ -72,4 +72,21 @@ export function createMsg(title, description, uuid) {
   };
   if (uuid) data.uuid = uuid;
   return data;
+}
+
+function getCircularReplacer() {
+  const ancestors = [];
+  return function (key, value) {
+    if (typeof value !== "object" || value === null) {
+      return value;
+    }
+    while (ancestors.length > 0 && ancestors.at(-1) !== this) {
+      ancestors.pop();
+    }
+    if (ancestors.includes(value)) {
+      return "[Circular]";
+    }
+    ancestors.push(value);
+    return value;
+  };
 }

@@ -14,35 +14,44 @@ export function registerEvents(dsc) {
   });
   dsc.bot.on(GatewayDispatchEvents.InteractionCreate, (interaction) => {
     if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;
-    const opts = interaction.data.data.options || [];
-    let subcmd = "";
-    let arg = {};
-    for (let opt of opts) {
-      if (opt.type === ApplicationCommandOptionType.Subcommand)
-        subcmd = opt.name;
-      for (let opt2 of opt.options || []) arg[opt2.name] = opt2.value;
-    }
-    for (let opt of opts[0]?.options || []) {
-      if (opt.type === ApplicationCommandOptionType.Subcommand)
-        subcmd = opt.name;
-      if (opt.type === ApplicationCommandOptionType.String)
-        arg[opt.name] = opt.value;
-    }
     commandhandle({
       cmd: interaction.data.data.name,
-      subcmd,
       channel: interaction.data.channel.id,
       platform: "discord",
       guild: interaction.data.guild_id,
-      opts: arg,
-      timestamp: Date.now(),
-      replyfn: async (msg) => {
-        await interaction.api.interactions.reply(
-          interaction.data.id,
-          interaction.data.token,
-          coreToMessage(msg)
-        );
-      },
+      ...get_options(interaction),
+      ...transformation_helper(interaction),
     });
   });
+}
+
+function get_options(interaction) {
+  const discord_options = interaction.data.data.options || [];
+  let subcmd = "";
+  let opts = {};
+  for (let opt of discord_options) {
+    if (opt.type === ApplicationCommandOptionType.Subcommand) subcmd = opt.name;
+    for (let opt2 of opt.options || []) opts[opt2.name] = opt2.value;
+  }
+  for (let opt of discord_options[0]?.options || []) {
+    if (opt.type === ApplicationCommandOptionType.Subcommand) subcmd = opt.name;
+    if (opt.type === ApplicationCommandOptionType.String)
+      opts[opt.name] = opt.value;
+  }
+  return { subcmd, opts };
+}
+
+function transformation_helper(interaction) {
+  return {
+    replyfn: async (msg) => {
+      await interaction.api.interactions.reply(
+        interaction.data.id,
+        interaction.data.token,
+        coreToMessage(msg)
+      );
+    },
+    timestamp: new Date(
+      Number(BigInt(interaction.data.id) >> 22n) + 1420070400000
+    ).getTime(),
+  };
 }

@@ -74,7 +74,7 @@ function validUsernameCheck(username) {
 
 export async function constructmsg(message, guilded) {
   if (!message) return;
-  if (!message.createdByWebhookId && message.authorId) {
+  if (!message.createdByWebhookId && message.authorId !== "Ann6LewA") {
     await guilded.members.fetch(message.serverId, message.authorId);
   }
   return {
@@ -95,7 +95,7 @@ export async function constructmsg(message, guilded) {
     channel: message.channelId,
     guild: message.serverId,
     id: message.id,
-    timestamp: message._createdAt,
+    timestamp: message.createdAt.getTime(),
     reply: async (content) => {
       if (typeof content != "string")
         content = (await constructGuildedMsg(content))[0];
