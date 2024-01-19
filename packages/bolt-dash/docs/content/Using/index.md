@@ -10,9 +10,9 @@ the bot, invite it using one of the following links:
 Need support? Take a look at some of the pages listed in the sidebar or join one
 of the supports servers:
 
-- [Discord](https://discord.gg/eGq7uhtJDx)
-- [Guilded](https://www.guilded.gg/i/kamX0vek)
-- [Revolt](https://app.revolt.chat/invite/tpGKXcqk)
+- [Discord](https://discord.gg/HEysJsa4VZ)
+- [Guilded](https://www.guilded.gg/i/kdxvnDKk)
+- [Revolt](https://app.revolt.chat/invite/N4XXTjYF)
 
 You can find a changelog [here](../changelog.md) and the legal documents for the
 hosted version [here](./legal.md)
