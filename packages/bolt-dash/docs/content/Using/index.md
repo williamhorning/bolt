@@ -11,7 +11,7 @@ Need support? Take a look at some of the pages listed in the sidebar or join one
 of the supports servers:
 
 - [Discord](https://discord.gg/HEysJsa4VZ)
-- [Guilded](https://www.guilded.gg/i/kdxvnDKk)
+- [Guilded](https://www.guilded.gg/i/240lgAJ2)
 - [Revolt](https://app.revolt.chat/invite/N4XXTjYF)
 
 You can find a changelog [here](../changelog.md) and the legal documents for the
