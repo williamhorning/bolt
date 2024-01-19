@@ -35,7 +35,9 @@ export async function constructGuildedMsg(msgd) {
         let item = embed[i];
         if (item == null || item == undefined) embed[i] = undefined;
       }
-      embed.timestamp = embed.timestamp || new Date().toISOString();
+      if (embed.timestamp) {
+        embed.timestamp = new Date(embed.timestamp).toISOString();
+      }
     });
   } else {
     delete dat.embeds;
