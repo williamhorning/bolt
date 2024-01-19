@@ -3,8 +3,9 @@ export async function constructmsg(message, revolt) {
   let msg = {
     content: message.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
     author: {
-      username: message.member?.nickname || message.author.username,
-      rawname: message.author.username,
+      username:
+        message.member?.nickname || message.author?.username || "revolt user",
+      rawname: message.author.username || "revolt user",
       profile: message.author.avatarURL,
       banner: null,
       id: message.authorId,
