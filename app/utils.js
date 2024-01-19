@@ -39,7 +39,7 @@ export async function logError(e, extra = {}, usewebhook = true) {
         embeds: [
           {
             title: e.message,
-            description: `\`\`\`${e.stack}\`\`\`\n\`\`\`json\n${format({
+            description: `\`\`\`${e.stack}\`\`\`\n\`\`\`js\n${format({
               ...extra,
               uuid,
             })}\`\`\``,
