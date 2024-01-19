@@ -6,7 +6,7 @@ export async function constructmsg({ data: message, api }, exclreply = false) {
   return {
     attachments: message.attachments?.map((i) => {
       return {
-        file: i.file,
+        file: i.url,
         name: i.filename,
       };
     }),

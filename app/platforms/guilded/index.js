@@ -49,7 +49,7 @@ export default class GuildedPlugin extends EventEmitter {
   }
 
   async bridgeSend(msg, senddata) {
-    if (typeof msg === "string") return idSend(msg, senddata, this.bot);
+    if (typeof senddata === "string") return idSend(msg, senddata, this.bot);
     let hook = new WebhookClient(senddata);
     let constructed = await constructGuildedMsg(msg);
     let execute = await hook.send(...constructed);
