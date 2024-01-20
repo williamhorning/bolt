@@ -1,3 +1,5 @@
+import { BadCharactersRegex } from "./constants.js";
+
 export async function constructGuildedMsg(msgd) {
   let msg = Object.assign({}, msgd);
   let dat = {
@@ -54,22 +56,26 @@ export async function constructGuildedMsg(msgd) {
 }
 
 function chooseValidGuildedUsername(msg) {
-  if (validUsernameCheck(msg.author.username)) {
+  if (valid_username_check(msg.author.username)) {
     return msg.author.username;
-  } else if (validUsernameCheck(msg.author.rawname)) {
+  } else if (valid_username_check(msg.author.rawname)) {
     return msg.author.rawname;
   } else {
     return `user on ${msg.platform}`;
   }
 }
 
-function validUsernameCheck(username) {
-  if (!username) return false;
-  return (
-    username.length > 1 &&
-    username.length < 32 &&
-    username.match(/^[a-zA-Z0-9_ ()]*$/gms)
-  );
+function valid_username_check(e) {
+  if (0 === e.length) return false;
+  if (
+    e.startsWith(" ") ||
+    e.endsWith(" ") ||
+    e.startsWith(" ") ||
+    e.endsWith(" ")
+  )
+    return false;
+  if (e.length > 25) return false;
+  return BadCharactersRegex.test(e);
 }
 
 export async function constructmsg(message, guilded) {
