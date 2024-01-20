@@ -67,17 +67,35 @@ async function getAttachments(message) {
 
 export async function constructRevoltMessage(msgd, masq = true) {
   let msg = Object.assign({}, msgd);
-  let dat = {
+  return {
     content: msg.content?.replace(/!\[(.*)\]\((.+)\)/g, "[$1]($2)"),
+    masquerade: masq
+      ? {
+          name: msg.author.username,
+          avatar: msg.author.profile,
+        }
+      : undefined,
+    attachments: await constructRevoltAttachments(msg),
+    embeds: constructRevoltEmbeds(msg),
   };
-  if (masq) {
-    dat.masquerade = {
-      name: msg.author.username,
-      avatar: msg.author.profile,
+}
+
+function constructRevoltEmbeds(msg) {
+  let embeds = msg.embeds?.map(mapEmbed) || [];
+  if (msg.replyto) {
+    const reply_embed = {
+      title: `Replying to ${msg.replyto.author.username}'s message`,
+      icon_url: msg.replyto.author.profile,
     };
+    if (msg.replyto.content) reply_embed.description = msg.replyto.content;
+    embeds.push(reply_embed, ...(msg.replyto.embeds?.map(mapEmbed) || []));
   }
+  return embeds.length > 0 ? embeds : undefined;
+}
+
+async function constructRevoltAttachments(msg) {
   if (msg.attachments?.length > 0) {
-    dat.attachments = [];
+    let attachments = [];
     for (let attachment of msg.attachments) {
       let formdat = new FormData();
       let req = await fetch(attachment.file);
@@ -91,32 +109,21 @@ export async function constructRevoltMessage(msgd, masq = true) {
         }
       );
       let revoltjson = await revoltrequest.json();
-      if (!revoltjson.id) continue; // there's an error
-      await dat.attachments.push(revoltjson.id);
+      if (!revoltjson.id) continue;
+      await attachments.push(revoltjson.id);
     }
+    return attachments;
+  } else {
+    return undefined;
   }
-  if (msg.replyto) {
-    dat.embeds = [
-      {
-        title: `Replying to ${msg.replyto.author.username}'s message`,
-        icon_url: msg.replyto.author.profile,
-        description: msg.replyto.content,
-      },
-    ];
+}
+
+function mapEmbed(i) {
+  if (i.fields) {
+    for (let field of i.fields) {
+      i.description += `\n**${field.name}**\n${field.value}\n`;
+    }
+    delete i.fields;
   }
-  if (msg.embeds?.length > 0) {
-    dat.embeds = [
-      ...msg.embeds?.map((i) => {
-        if (i.fields) {
-          for (let field of i.fields) {
-            i.description += `\n**${field.name}**\n${field.value}\n`;
-          }
-          delete i.fields;
-        }
-        return i;
-      }),
-      ...(dat.embeds || []),
-    ];
-  }
-  return dat;
+  return i;
 }
