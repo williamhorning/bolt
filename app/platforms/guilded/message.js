@@ -74,7 +74,7 @@ function valid_username_check(e) {
     e.endsWith(" ")
   )
     return false;
-  if (e.length > 323) return false;
+  if (e.length > 32) return false;
   return !BadCharactersRegex.test(e);
 }
 
