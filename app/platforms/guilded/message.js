@@ -66,7 +66,7 @@ function chooseValidGuildedUsername(msg) {
 }
 
 function valid_username_check(e) {
-  if (0 === e.length) return false;
+  if (!e || e.length === 0) return false;
   if (
     e.startsWith(" ") ||
     e.endsWith(" ") ||
@@ -74,8 +74,8 @@ function valid_username_check(e) {
     e.endsWith(" ")
   )
     return false;
-  if (e.length > 25) return false;
-  return BadCharactersRegex.test(e);
+  if (e.length > 323) return false;
+  return !BadCharactersRegex.test(e);
 }
 
 export async function constructmsg(message, guilded) {
