@@ -44,16 +44,20 @@ export default class DiscordPlugin extends EventEmitter {
   }
 
   async bridgeSend(msg, senddata) {
-    const result = await this.bot.api.webhooks.execute(
-      senddata.id,
-      senddata.token,
-      coreToMessage(msg),
-      { wait: true }
-    );
-    return {
-      message: result.id,
-      channel: result.channel_id,
-      platform: "discord",
-    };
+    try {
+      const result = await this.bot.api.webhooks.execute(
+        senddata.id,
+        senddata.token,
+        coreToMessage(msg),
+        { wait: true }
+      );
+      return {
+        message: result.id,
+        channel: result.channel_id,
+        platform: "discord",
+      };
+    } catch (e) {
+      throw new Error(e.message, { cause: e });
+    }
   }
 }

@@ -53,7 +53,7 @@ export async function logError(e, extra = {}, usewebhook = true) {
     `Something went wrong!`,
     `Please join one of the support servers for help:
     https://williamhorning.dev/bolt/docs/Using/
-    \`\`\`${uuid}\n\`\`\``,
+    \`\`\`${uuid}\`\`\``,
     uuid
   );
 }

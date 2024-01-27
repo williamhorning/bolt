@@ -7,10 +7,6 @@ export default class GuildedPlugin extends EventEmitter {
   constructor({ token }) {
     super();
     this.bot = new Client({ token });
-    this.#setupClient(token);
-  }
-
-  #setupClient(token) {
     this.bot.on("ready", () => {
       this.emit("ready");
     });
@@ -18,8 +14,8 @@ export default class GuildedPlugin extends EventEmitter {
       this.emit("msgcreate", await constructmsg(message, this.bot));
     });
     this.bot.ws.emitter.on("exit", () => {
-      this.bot = new Client({ token });
-      this.#setupClient(token);
+      this.bot.ws.shouldRequestMissedEvents = true;
+      this.bot.ws.connect();
     });
     this.bot.login();
   }

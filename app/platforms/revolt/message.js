@@ -125,5 +125,14 @@ function mapEmbed(i) {
     }
     delete i.fields;
   }
-  return i;
+  let data = {
+    colour: i.color,
+    url: i.url,
+    description: i.description,
+    title: i.description,
+    iconUrl: i.icon_url,
+    type: "Text",
+    title: i.title,
+  };
+  return Object.fromEntries(Object.entries(data).filter(([_, v]) => v != null));
 }
