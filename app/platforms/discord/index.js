@@ -1,12 +1,15 @@
 import { Client } from "@discordjs/core";
 import { REST } from "@discordjs/rest";
 import { WebSocketManager } from "@discordjs/ws";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import { registerEvents } from "./events.js";
 import { coreToMessage } from "./message.js";
 
 export default class DiscordPlugin extends EventEmitter {
-  constructor({ token }) {
+  static name = "discord";
+  name = "discord";
+
+  constructor({ token, bolt }) {
     super();
     this.rest = new REST({ version: "10", makeRequest: fetch }).setToken(token);
     this.gateway = new WebSocketManager({
@@ -21,7 +24,7 @@ export default class DiscordPlugin extends EventEmitter {
       },
     });
     this.bot = new Client({ rest: this.rest, gateway: this.gateway });
-    registerEvents(this);
+    registerEvents(this, bolt);
     this.gateway.connect();
   }
 

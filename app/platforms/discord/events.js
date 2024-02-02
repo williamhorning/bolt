@@ -2,10 +2,9 @@ import {
   ApplicationCommandOptionType,
   GatewayDispatchEvents,
 } from "@discordjs/core";
-import { commandhandle } from "../../commands.js";
 import { constructmsg, coreToMessage } from "./message.js";
 
-export function registerEvents(dsc) {
+export function registerEvents(dsc, bolt) {
   dsc.bot.on(GatewayDispatchEvents.Ready, () => {
     dsc.emit("ready");
   });
@@ -14,7 +13,7 @@ export function registerEvents(dsc) {
   });
   dsc.bot.on(GatewayDispatchEvents.InteractionCreate, (interaction) => {
     if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;
-    commandhandle({
+    bolt.cmd.runCommand({
       cmd: interaction.data.data.name,
       channel: interaction.data.channel.id,
       platform: "discord",

@@ -1,9 +1,12 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import { Client, WebhookClient } from "guilded.js";
 import { idSend } from "./idsend.js";
 import { constructGuildedMsg, constructmsg } from "./message.js";
 
 export default class GuildedPlugin extends EventEmitter {
+  static name = "guilded";
+  name = "guilded";
+
   constructor({ token }) {
     super();
     this.bot = new Client({ token });
@@ -46,6 +49,8 @@ export default class GuildedPlugin extends EventEmitter {
 
   async bridgeSend(msg, senddata) {
     if (typeof senddata === "string") return idSend(msg, senddata, this.bot);
+    if (senddata.token === "shouldn't be null")
+      throw { response: { status: 404 } };
     let hook = new WebhookClient(senddata);
     let constructed = await constructGuildedMsg(msg);
     let execute = await hook.send(...constructed);

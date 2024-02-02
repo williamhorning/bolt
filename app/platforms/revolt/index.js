@@ -1,8 +1,11 @@
 import { Client } from "@williamhorning/revolt.js";
-import { EventEmitter } from "events";
+import { EventEmitter } from "node:events";
 import { constructmsg, constructRevoltMessage } from "./message.js";
 
 export default class RevoltPlugin extends EventEmitter {
+  static name = "revolt";
+  name = "revolt";
+
   constructor({ token }) {
     super();
     this.bot = new Client();

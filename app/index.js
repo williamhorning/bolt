@@ -1,19 +1,18 @@
 import "dotenv/config";
-import { bridgeMessage, isBridged } from "./bridge/index.js";
-import { handleMessageCommand } from "./commands.js";
-import { logFatalError, platforms } from "./utils.js";
+import DiscordPlugin from "./platforms/discord/index.js";
+import GuildedPlugin from "./platforms/guilded/index.js";
+import RevoltPlugin from "./platforms/revolt/index.js";
+import Bolt from "./bolt.js";
+import { defaultcommands } from "./default_commands.js";
+import process from "node:process";
 
-process.on("uncaughtException", logFatalError);
-process.on("unhandledRejection", logFatalError);
+let bot = new Bolt();
 
-for (const platform in platforms) {
-  platforms[platform].on("msgcreate", msgCreate);
-}
+process.on("uncaughtException", (e) => bot.logFatalError(e));
+process.on("unhandledRejection", (e) => bot.logFatalError(e));
 
-async function msgCreate(msg) {
-  if (await isBridged(msg)) return;
+bot.cmd.regusterCommands(...defaultcommands);
 
-  handleMessageCommand(msg);
+await bot.load(DiscordPlugin, GuildedPlugin, RevoltPlugin);
 
-  await bridgeMessage(msg, platforms);
-}
+await bot.run();
