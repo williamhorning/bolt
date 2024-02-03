@@ -1,34 +1,34 @@
 export async function idSend(msg, id, guilded) {
-	let ch = await guilded.channels.fetch(id);
-	let senddat = {
+	const ch = await guilded.channels.fetch(id);
+	const senddat = {
 		embeds: [
 			{
 				author: {
 					name: msg.author.username,
-					icon_url: msg.author.profile,
+					icon_url: msg.author.profile
 				},
 				description: msg.content,
 				footer: {
-					text: "try setting up this bridge again for webhooks",
-				},
+					text: 'try setting up this bridge again for webhooks'
+				}
 			},
-			...(msg.embeds || []),
-		],
+			...(msg.embeds || [])
+		]
 	};
 	if (msg.replyto) {
 		senddat.embeds[0].description += `\n**In response to ${msg.replyto.author.username}'s message:**\n${msg.replyto.content}`;
 	}
 	if (msg.attachments?.length > 0) {
 		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
-			.map((a) => {
+			.map(a => {
 				return `![${a.alt || a.name}](${a.file})`;
 			})
-			.join("\n")}`;
+			.join('\n')}`;
 	}
-	let execute = await ch.send(senddat);
+	const execute = await ch.send(senddat);
 	return {
 		channel: ch,
-		platform: "guilded",
-		message: execute.id,
+		platform: 'guilded',
+		message: execute.id
 	};
 }

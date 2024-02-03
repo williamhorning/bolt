@@ -1,2 +1,5 @@
-.env
+/.env
+/config
+/config.ts
+/docker-compose.yml
 node_modules

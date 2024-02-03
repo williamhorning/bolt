@@ -1,0 +1,21 @@
+version: '2'
+services:
+  bolt:
+    build: .
+    volumes:
+      - ./config/config:/app/data
+    restart: always
+  mongo:
+    image: mongo:6-jammy
+    ports:
+      - 27017:27017
+    volumes:
+      - ./config/db:/data/db
+    restart: always
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - ./config/redis:/data
+    restart: always
