@@ -17,10 +17,10 @@ export async function onEvent(this: MatrixPlugin, request: Request<WeakEvent>) {
 		}
 	}
 	if (event.type === 'm.room.message' && !event['m.new_content']) {
-		this.emit('messageCreate', await messageToCore(event, intent));
+		this.emit('messageCreate', await messageToCore(event, intent, this.config.homeserverUrl));
 	}
 	if (event.type === 'm.room.message' && event['m.new_content']) {
-		this.emit('messageUpdate', await messageToCore(event, intent));
+		this.emit('messageUpdate', await messageToCore(event, intent, this.config.homeserverUrl));
 	}
 	if (event.type === 'm.room.redaction') {
 		this.emit('messageDelete', {
@@ -34,7 +34,8 @@ export async function onEvent(this: MatrixPlugin, request: Request<WeakEvent>) {
 
 export async function messageToCore(
 	event: WeakEvent,
-	intent: Intent
+	intent: Intent,
+	homeserverUrl: String
 ): Promise<BoltMessage<WeakEvent>> {
 	const sender = await intent.getProfileInfo(event.sender);
 	return {
@@ -42,7 +43,7 @@ export async function messageToCore(
 			username: sender.displayname || event.sender,
 			rawname: event.sender,
 			id: event.sender,
-			profile: sender.avatar_url
+			profile: `${sender.avatar_url.replace("mxc://", `${homeserverUrl}/_matrix/media/v3/thumbnail/`)}?width=96&height=96&method=scale`
 		},
 		channel: event.room_id,
 		id: event.event_id,
@@ -57,11 +58,9 @@ export async function messageToCore(
 
 export function coreToMessage(msg: BoltMessage<unknown>) {
 	return {
-		content: {
-			body: msg.content
-				? msg.content
-				: "*this bridge doesn't support anything except text at the moment*",
-			msgtype: 'm.text'
-		}
+		body: msg.content
+			? msg.content
+			: "*this bridge doesn't support anything except text at the moment*",
+		msgtype: 'm.text'
 	};
 }
