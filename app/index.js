@@ -1,10 +1,11 @@
-import "dotenv/config";
 import DiscordPlugin from "./platforms/discord/index.js";
 import GuildedPlugin from "./platforms/guilded/index.js";
 import RevoltPlugin from "./platforms/revolt/index.js";
-import Bolt from "./bolt.js";
+import { Bolt } from "./bolt.js";
 import { defaultcommands } from "./default_commands.js";
-import process from "node:process";
+import { process, config } from "./deps.js";
+
+config();
 
 let bot = new Bolt();
 

@@ -1,7 +1,4 @@
-import {
-  ApplicationCommandOptionType,
-  GatewayDispatchEvents,
-} from "@discordjs/core";
+import { ApplicationCommandOptionType, GatewayDispatchEvents } from "./deps.js";
 import { constructmsg, coreToMessage } from "./message.js";
 
 export function registerEvents(dsc, bolt) {

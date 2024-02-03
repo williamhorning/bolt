@@ -1,11 +1,8 @@
 import { BoltCommands } from "./commands.js";
-import { MongoClient } from "mongodb";
-import { format } from "node:util";
 import { BoltBridges } from "./bridge.js";
-import { EventEmitter } from "node:events";
-import { env, exit } from "node:process";
+import { EventEmitter, MongoClient, env, exit, format } from "./deps.js";
 
-export default class Bolt extends EventEmitter {
+export class Bolt extends EventEmitter {
   database = env.MONGO_DB || "bolt";
   collection = "bridgev1";
   plugins = [];

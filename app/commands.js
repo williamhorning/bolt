@@ -1,4 +1,4 @@
-import { parseArgs } from "node:util";
+import { parseArgs } from "./deps.js";
 
 export class BoltCommands {
   commands = new Map();

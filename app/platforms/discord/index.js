@@ -1,7 +1,4 @@
-import { Client } from "@discordjs/core";
-import { REST } from "@discordjs/rest";
-import { WebSocketManager } from "@discordjs/ws";
-import { EventEmitter } from "node:events";
+import { Client, REST, WebSocketManager, EventEmitter } from "./deps.js";
 import { registerEvents } from "./events.js";
 import { coreToMessage } from "./message.js";
 

@@ -1,5 +1,4 @@
-import { EventEmitter } from "node:events";
-import { Client, WebhookClient } from "guilded.js";
+import { EventEmitter, Client, WebhookClient } from "./deps.js";
 import { idSend } from "./idsend.js";
 import { constructGuildedMsg, constructmsg } from "./message.js";
 

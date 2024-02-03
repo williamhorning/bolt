@@ -1,5 +1,4 @@
-import { Client } from "@williamhorning/revolt.js";
-import { EventEmitter } from "node:events";
+import { Client, EventEmitter } from "./deps.js";
 import { constructmsg, constructRevoltMessage } from "./message.js";
 
 export default class RevoltPlugin extends EventEmitter {
