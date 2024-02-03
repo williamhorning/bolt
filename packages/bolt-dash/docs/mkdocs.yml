@@ -1,0 +1,10 @@
+site_url: 'https://williamhorning.dev/bolt/docs'
+repo_url: 'https://github.com/williamhorning/bolt'
+edit_uri: 'https://github.com/williamhorning/bolt/blob/main/packages/bolt-dash/docs/docs'
+site_description: 'Documentation for Bolt'
+site_name: 'Bolt Docs'
+theme:
+  name: readthedocs
+  locale: en
+site_dir: './output'
+docs_dir: './content'
