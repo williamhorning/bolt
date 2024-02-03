@@ -11,7 +11,7 @@ import {
 import { coreToMessage, onEvent } from './events.ts';
 
 type MatrixConfig = {
-	accessToken: string;
+	appserviceUrl: string;
 	homeserverUrl: string;
 	domain: string;
 	port?: number;
@@ -21,7 +21,7 @@ type MatrixConfig = {
 export default class MatrixPlugin extends BoltPlugin {
 	bot: Bridge;
 	config: MatrixConfig;
-	name = 'bolt-revolt';
+	name = 'bolt-matrix';
 	version = '0.5.4';
 	bolt?: Bolt;
 	constructor(config: MatrixConfig) {
@@ -31,23 +31,6 @@ export default class MatrixPlugin extends BoltPlugin {
 			homeserverUrl: this.config.homeserverUrl,
 			domain: this.config.domain,
 			registration: this.config.reg_path,
-			bridgeEncryption: {
-				homeserverUrl: config.homeserverUrl,
-				store: {
-					getStoredSession: async (userId: string) => {
-						return JSON.parse(
-							(await this.bolt?.redis?.get(`mtx-session-${userId}`)) || 'null'
-						);
-					},
-					setStoredSession: async (session: ClientEncryptionSession) => {
-						await this.bolt?.redis?.set(
-							`mtx-session-${session.userId}`,
-							JSON.stringify(session)
-						);
-					},
-					async updateSyncToken() {}
-				}
-			},
 			controller: {
 				onEvent: onEvent.bind(this)
 			},
@@ -59,16 +42,14 @@ export default class MatrixPlugin extends BoltPlugin {
 	async start(bolt: Bolt) {
 		this.bolt = bolt;
 		if (!existsSync(this.config.reg_path)) {
-			const reg = new AppServiceRegistration(this.config.homeserverUrl);
+			const reg = new AppServiceRegistration(this.config.appserviceUrl);
 			reg.setAppServiceToken(AppServiceRegistration.generateToken());
 			reg.setHomeserverToken(AppServiceRegistration.generateToken());
-			reg.setId(
-				'b4d15f02f7e406db25563c1a74ac78863dc4fbcc5595db8d835f6ee6ffef1448'
-			);
+			reg.setId(AppServiceRegistration.generateToken());
 			reg.setProtocols(['bolt']);
 			reg.setRateLimited(false);
-			reg.setSenderLocalpart('boltbot');
-			reg.addRegexPattern('users', '@bolt_*', true);
+			reg.setSenderLocalpart('bot.bolt');
+			reg.addRegexPattern('users', `@bolt-(discord|revolt)_.+:${this.config.domain}`, true);
 			reg.outputAsYaml(this.config.reg_path);
 		}
 		await this.bot.run(this.config.port || 8081);
@@ -80,9 +61,9 @@ export default class MatrixPlugin extends BoltPlugin {
 	}
 	async bridgeMessage(data: BoltBridgeMessageArgs) {
 		const intent = this.bot.getIntent(
-			`${data.data.platform.name}_${
+			`@${data.data.platform.name}_${
 				'author' in data.data ? data.data.author.id : 'deletion'
-			}`
+			}:${this.config.domain}`
 		);
 		const room = data.data.bridgePlatform.senddata as string;
 		switch (data.type) {
