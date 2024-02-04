@@ -101,7 +101,6 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 			bridgeBoltMessage(this, 'update', msg);
 		});
 		this.on('messageDelete', async msg => {
-			if (await getBoltBridgedMessage(this, msg.id)) return;
 			bridgeBoltMessage(this, 'delete', msg);
 		});
 		this.on('threadCreate', thread => bridgeBoltThread(this, 'create', thread));
