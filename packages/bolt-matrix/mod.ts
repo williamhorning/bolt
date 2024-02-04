@@ -60,15 +60,13 @@ export default class MatrixPlugin extends BoltPlugin {
 		return channelId;
 	}
 	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		const intent = this.bot.getIntent(
-			`@${data.data.platform.name}_${
-				'author' in data.data ? data.data.author.id : 'deletion'
-			}:${this.config.domain}`
-		);
 		const room = data.data.bridgePlatform.senddata as string;
 		switch (data.type) {
 			case 'create':
 			case 'update': {
+				const intent = this.bot.getIntent(
+					`@${data.data.platform.name}_${data.data.author.id}:${this.config.domain}`
+				);
 				const message = coreToMessage(
 					data.data as unknown as BoltMessage<unknown>
 				);
@@ -94,15 +92,13 @@ export default class MatrixPlugin extends BoltPlugin {
 				};
 			}
 			case 'delete': {
-				await intent.sendEvent(room, 'm.room.redaction', {
-					content: {
-						reason: 'bridge message deletion'
-					},
-					redacts: data.data.id
-				});
+				const intent = this.bot.getIntent();
+				await intent.botSdkIntent.underlyingClient.redactEvent(
+					room, data.data.id, 'bridge message deletion'
+				);
 				return {
 					channel: room,
-					id: data.data.id,
+					id: data.data.id,	
 					plugin: 'bolt-matrix',
 					senddata: room
 				};
