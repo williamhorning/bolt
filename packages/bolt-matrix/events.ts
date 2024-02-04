@@ -16,10 +16,10 @@ export async function onEvent(this: MatrixPlugin, request: Request<WeakEvent>) {
 			this.emit('debug', `Failed to join room ${event.room_id}: ${e}`);
 		}
 	}
-	if (event.type === 'm.room.message' && !event['m.new_content']) {
+	if (event.type === 'm.room.message' && !event.content['m.new_content']) {
 		this.emit('messageCreate', await messageToCore(event, intent, this.config.homeserverUrl));
 	}
-	if (event.type === 'm.room.message' && event['m.new_content']) {
+	if (event.type === 'm.room.message' && event.content['m.new_content']) {
 		this.emit('messageUpdate', await messageToCore(event, intent, this.config.homeserverUrl));
 	}
 	if (event.type === 'm.room.redaction') {
@@ -46,9 +46,11 @@ export async function messageToCore(
 			profile: `${sender.avatar_url.replace("mxc://", `${homeserverUrl}/_matrix/media/v3/thumbnail/`)}?width=96&height=96&method=scale`
 		},
 		channel: event.room_id,
-		id: event.event_id,
+		id: event.content['m.relates_to']?.rel_type == "m.replace"
+			? event.content['m.relates_to'].event_id
+			: event.event_id,
 		timestamp: event.origin_server_ts,
-		content: event.content.body as string,
+		content: (event.content['m.new_content']?.body || event.content.body) as string,
 		reply: async (msg: BoltMessage<unknown>) => {
 			await intent.sendMessage(event.room_id, coreToMessage(msg));
 		},
