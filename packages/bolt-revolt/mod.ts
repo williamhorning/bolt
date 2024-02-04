@@ -63,9 +63,10 @@ export default class RevoltPlugin extends BoltPlugin {
 					}
 				} catch {}
 				try {
-					const result = await handler(
-						await coreToMessage({ ...dat, replyto })
-					);
+					const msg = await coreToMessage({ ...dat, replyto });
+					const result = data.type === 'update'
+						? await (await channel.fetchMessage(dat.id)).edit(msg) // TODO
+						: await channel.sendMessage(msg);
 					return {
 						channel: dat.channel,
 						id: 'id' in result ? result.id : result._id,
