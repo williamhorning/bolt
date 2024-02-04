@@ -3,6 +3,7 @@ export {
 	AppServiceRegistration,
 	Bridge,
 	Intent,
+	MatrixUser,
 	Request,
 	type ClientEncryptionSession,
 	type WeakEvent
@@ -13,3 +14,4 @@ export {
 	type BoltBridgeMessageArgs,
 	type BoltMessage
 } from '../bolt/mod.ts';
+export { Buffer } from "https://deno.land/std@0.177.0/node/buffer.ts";

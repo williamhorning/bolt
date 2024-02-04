@@ -5,7 +5,9 @@ import {
 	BoltMessage,
 	BoltPlugin,
 	Bridge,
+	Buffer,
 	ClientEncryptionSession,
+	MatrixUser,
 	existsSync
 } from './deps.ts';
 import { coreToMessage, onEvent } from './events.ts';
@@ -64,9 +66,26 @@ export default class MatrixPlugin extends BoltPlugin {
 		switch (data.type) {
 			case 'create':
 			case 'update': {
-				const intent = this.bot.getIntent(
-					`@${data.data.platform.name}_${data.data.author.id}:${this.config.domain}`
-				);
+				const name = `@${data.data.platform.name}_${data.data.author.id}:${this.config.domain}`;
+				const intent = this.bot.getIntent(name);
+				// check for profile
+				await intent.ensureProfile(data.data.author.username);
+				const store = this.bot.getUserStore();
+				let storeUser = await store?.getMatrixUser(name);
+				if (!storeUser) {
+					storeUser = new MatrixUser(name);
+				}
+				if (storeUser?.get("avatar") != data.data.author.profile) {
+					storeUser?.set("avatar", data.data.author.profile);
+					let b = await (await fetch(data.data.author.profile)).blob();
+					const newMxc = await intent.uploadContent(
+						Buffer.from(await b.arrayBuffer()),
+						{ type: b.type }
+					);
+					await intent.ensureProfile(data.data.author.username, newMxc);
+					await store?.setMatrixUser(storeUser);
+				}
+				// now to our message
 				const message = coreToMessage(
 					data.data as unknown as BoltMessage<unknown>
 				);
