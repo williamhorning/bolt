@@ -49,7 +49,7 @@ export default class MatrixPlugin extends BoltPlugin {
 			reg.setProtocols(['bolt']);
 			reg.setRateLimited(false);
 			reg.setSenderLocalpart('bot.bolt');
-			reg.addRegexPattern('users', `@bolt-(discord|revolt)_.+:${this.config.domain}`, true);
+			reg.addRegexPattern('users', `@bolt-.+_.+:${this.config.domain}`, true);
 			reg.outputAsYaml(this.config.reg_path);
 		}
 		await this.bot.run(this.config.port || 8081);
