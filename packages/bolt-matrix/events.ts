@@ -17,7 +17,7 @@ export async function onEvent(this: MatrixPlugin, request: Request<WeakEvent>) {
 		}
 	}
 	if (event.type === 'm.room.message' && !event['m.new_content']) {
-		this.emit('messageCreate', await messageToCore(event, intent);
+		this.emit('messageCreate', await messageToCore(event, intent));
 	}
 	if (event.type === 'm.room.message' && event['m.new_content']) {
 		this.emit('messageUpdate', await messageToCore(event, intent));
