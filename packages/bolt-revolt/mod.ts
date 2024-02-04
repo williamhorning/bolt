@@ -80,7 +80,8 @@ export default class RevoltPlugin extends BoltPlugin {
 			}
 			case 'delete': {
 				const channel = await this.bot.channels.fetch(data.data.channel);
-				await channel.deleteMessages([data.data.id]);
+				const msg = await channel.fetchMessage(data.data.id);
+				await msg.delete();
 				return { ...data.data.bridgePlatform, id: data.data.id };
 			}
 		}
