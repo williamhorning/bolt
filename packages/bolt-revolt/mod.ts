@@ -48,11 +48,7 @@ export default class RevoltPlugin extends BoltPlugin {
 			case 'create':
 			case 'update': {
 				const dat = data.data as BoltBridgeMessage;
-				const channel = await this.bot.channels.fetch(dat.id);
-				const handler =
-					data.type === 'update'
-						? (await channel.fetchMessage(dat.id)).edit
-						: channel.sendMessage;
+				const channel = await this.bot.channels.fetch(dat.channel);
 				let replyto;
 				try {
 					if (dat.replytoId) {
@@ -63,9 +59,10 @@ export default class RevoltPlugin extends BoltPlugin {
 					}
 				} catch {}
 				try {
-					const result = await handler(
-						await coreToMessage({ ...dat, replyto })
-					);
+					const msg = await coreToMessage({ ...dat, replyto });
+					const result = data.type === 'update'
+						? (await channel.fetchMessage(dat.id)).edit(msg) // TODO
+						: channel.sendMessage(msg);
 					return {
 						channel: dat.channel,
 						id: 'id' in result ? result.id : result._id,
