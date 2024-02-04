@@ -93,11 +93,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	private registerPluginEvents() {
 		// TODO: move all code below to bridge folder
 		this.on('messageCreate', async msg => {
-			if (await getBoltBridgedMessage(this, msg.id)) return;
+			if (await getBoltBridgedMessage(this, true, msg.id)) return;
 			bridgeBoltMessage(this, 'create', msg);
 		});
 		this.on('messageUpdate', async msg => {
-			if (await getBoltBridgedMessage(this, msg.id)) return;
+			if (await getBoltBridgedMessage(this, true, msg.id)) return;
 			bridgeBoltMessage(this, 'update', msg);
 		});
 		this.on('messageDelete', async msg => {
