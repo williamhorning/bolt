@@ -1,6 +1,7 @@
 export { Buffer } from 'node:buffer';
 export {
 	API,
+	ApplicationCommandOptionType,
 	Client,
 	GatewayDispatchEvents,
 	GatewayIntentBits,
@@ -20,7 +21,6 @@ export {
 	BoltPlugin,
 	type BoltBridgeMessage,
 	type BoltBridgeMessageArgs,
-	type BoltBridgeThreadArgs,
-	type BoltMessage,
-	type BoltThread
+	type BoltMessage
 } from '../bolt/mod.ts';
+export { EventEmitter } from 'node:events';

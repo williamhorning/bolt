@@ -1,4 +1,8 @@
-export * from './bridge.ts';
-export * from './commands.ts';
-export * from './types.ts';
-export * from './utils.ts';
+export { BoltBridges } from './bridge.ts';
+export type {
+	BoltBridgeDocument,
+	BoltBridgeMessage,
+	BoltBridgeMessageArgs,
+	BoltBridgePlatform,
+	BoltBridgeSentPlatform
+} from './types.ts';

@@ -16,3 +16,4 @@ export {
 	type BoltBridgeThreadArgs,
 	type BoltMessage
 } from '../bolt/mod.ts';
+export { EventEmitter } from 'node:events';

@@ -1,6 +1,6 @@
-import { Client, REST, WebSocketManager, EventEmitter } from './deps.js';
-import { registerEvents } from './events.js';
-import { coreToMessage } from './message.js';
+import { Client, REST, WebSocketManager, EventEmitter } from './deps.ts';
+import { registerEvents } from './handlers.ts';
+import { coreToMessage } from './messages.ts';
 
 export default class DiscordPlugin extends EventEmitter {
 	static name = 'discord';

@@ -81,14 +81,14 @@ export async function messageToCore(
 		}),
 		platform: { name: 'bolt-revolt', message },
 		reply: async (msg: BoltMessage<unknown>, masquerade = true) => {
-			message.reply(await coreToMessage(msg, masquerade));
+			message.reply(await coreToMessage(msg, masquerade as boolean));
 		},
 		attachments: message.attachments?.map(
 			({ filename, size, downloadURL, isSpoiler }) => {
 				return {
 					file: downloadURL,
 					name: filename,
-					spoiler: isSpoiler, // change if revolt adds spoiler support
+					spoiler: isSpoiler,
 					size: (size || 1) / 1000000
 				};
 			}

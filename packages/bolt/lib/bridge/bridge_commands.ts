@@ -1,8 +1,9 @@
+import { BoltCommand } from './deps.ts';
 import {
 	joinBoltBridge,
 	leaveBoltBridge,
 	resetBoltBridge
-} from './bridge_command_internals.js';
+} from './bridge_command_internals.ts';
 
 export const bridgecommands = [
 	{
@@ -10,7 +11,7 @@ export const bridgecommands = [
 		description: 'bridge this channel to somewhere else',
 		execute: ({ bolt }) => {
 			return bolt.createMsg({
-				content: `Try running \`!bolt help\` for help on bridges`
+				text: `Try running \`!bolt help\` for help`
 			});
 		},
 		options: {
@@ -18,18 +19,18 @@ export const bridgecommands = [
 				{
 					name: 'join',
 					description: 'join a bridge',
-					execute: async opts => (await joinBoltBridge(opts)).message,
+					execute: async opts => (await joinBoltBridge(opts)).text,
 					options: { hasArgument: true }
 				},
 				{
 					name: 'leave',
 					description: 'leave a bridge',
-					execute: async opts => (await leaveBoltBridge(opts)).message
+					execute: async opts => (await leaveBoltBridge(opts)).text
 				},
 				{
 					name: 'reset',
 					description: 'reset a bridge',
-					execute: async opts => (await resetBoltBridge(opts)).message,
+					execute: async opts => (await resetBoltBridge(opts)).text,
 					options: { hasArgument: true }
 				},
 				{
@@ -39,11 +40,11 @@ export const bridgecommands = [
 						const data = await bolt.bridge.getBridge({ channel });
 						if (data?._id) {
 							return bolt.createMsg({
-								content: `This channel is connected to \`${data._id}\``
+								text: `This channel is connected to \`${data._id}\``
 							});
 						} else {
 							return bolt.createMsg({
-								content: "You're not in any bridges right now."
+								text: "You're not in any bridges right now."
 							});
 						}
 					}
@@ -51,4 +52,4 @@ export const bridgecommands = [
 			]
 		}
 	}
-];
+] as BoltCommand[];

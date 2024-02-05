@@ -1,5 +1,5 @@
-import { Client, EventEmitter } from './deps.js';
-import { constructmsg, constructRevoltMessage } from './message.js';
+import { Client, EventEmitter } from './deps.ts';
+import { constructmsg, constructRevoltMessage } from './messages.ts';
 
 export default class RevoltPlugin extends EventEmitter {
 	static name = 'revolt';

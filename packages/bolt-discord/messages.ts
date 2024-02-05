@@ -56,7 +56,8 @@ export async function messageToCore(
 		},
 		platform: {
 			name: 'bolt-discord',
-			message
+			message,
+			webhookid: message.webhook_id
 		},
 		attachments: message.attachments?.map(i => {
 			return {

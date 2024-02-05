@@ -55,9 +55,12 @@ export async function messageToCore(
 				video: embed.video || undefined
 			};
 		}),
-		platform: { name: 'bolt-guilded', message },
+		platform: {
+			name: 'bolt-guilded',
+			message,
+			webhookid: message.createdByWebhookId
+		},
 		reply: async (msg: BoltMessage<unknown>) => {
-			// @ts-ignore
 			await message.reply(coreToMessage(msg));
 		},
 		content: message.content,
@@ -95,17 +98,21 @@ function chooseValidGuildedUsername(msg: BoltMessage<unknown>) {
 	} else if (validUsernameCheck(msg.author.rawname)) {
 		return msg.author.rawname;
 	} else {
-		return `${msg.author.id} on ${msg.platform.name}`;
+		return `${msg.author.id}`;
 	}
 }
 
-// FIXME: this logic is WRONG
-function validUsernameCheck(username: string) {
-	return (
-		username.length > 1 &&
-		username.length < 32 &&
-		username.match(/^[a-zA-Z0-9_ ()]*$/gms)
-	);
+function validUsernameCheck(e: string) {
+	if (!e || e.length === 0) return false;
+	if (
+		e.startsWith(' ') ||
+		e.endsWith(' ') ||
+		e.startsWith(' ') ||
+		e.endsWith(' ')
+	)
+		return false;
+	if (e.length > 32) return false;
+	return Boolean(e.match(/^[a-zA-Z0-9_ ()]*$/gms));
 }
 
 export function coreToMessage(
@@ -155,7 +162,7 @@ export function idTransform(msg: BoltMessage<unknown>) {
 				},
 				description: msg.content,
 				footer: {
-					text: 'Please run `!bolt resetbridge` to migrate to Webhook bridges'
+					text: 'please migrate to webhook bridges'
 				}
 			},
 			...(msg.embeds || []).map(i => {

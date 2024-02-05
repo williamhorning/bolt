@@ -1,5 +1,3 @@
-import { BoltError } from './utils.ts';
-
 type BoltMediaEmbed = {
 	url: string;
 	proxy_url?: string;
@@ -43,19 +41,7 @@ export interface BoltEmbed {
 	};
 }
 
-export interface BoltMessageBase<Message> {
-	id: string;
-	platform: {
-		name: string;
-		message: Message;
-	};
-	channel: string;
-	guild?: string;
-	threadId?: string;
-	timestamp: number;
-}
-
-export interface BoltMessage<Message> extends BoltMessageBase<Message> {
+export interface BoltMessage<Message> {
 	attachments?: {
 		alt?: string;
 		file: string;
@@ -73,27 +59,24 @@ export interface BoltMessage<Message> extends BoltMessageBase<Message> {
 	};
 	content?: string;
 	embeds?: BoltEmbed[];
-	reply: (message: BoltMessage<unknown>) => Promise<void>;
+	reply: (message: BoltMessage<unknown>, optional?: unknown) => Promise<void>;
 	replyto?: Omit<BoltMessage<unknown>, 'replyto'>;
+	id: string;
+	platform: {
+		name: string;
+		message: Message;
+		webhookid?: string;
+	};
+	channel: string;
+	guild?: string;
+	threadId?: string;
+	timestamp: number;
 }
 
-export type BoltMessageDelete<Message> = BoltMessageBase<Message>;
-
-export type BoltThread = {
-	id: string;
-	parent: string;
-	name?: string;
-	topic?: string;
-};
-
 export type BoltPluginEvents = {
+	msgcreate: [BoltMessage<unknown>];
 	messageCreate: [BoltMessage<unknown>];
-	messageUpdate: [BoltMessage<unknown>];
-	messageDelete: [BoltMessageDelete<unknown>];
-	threadCreate: [BoltThread];
-	threadUpdate: [BoltThread];
-	threadDelete: [BoltThread];
-	error: [BoltError];
+	error: [Error];
 	warning: [string];
 	ready: [unknown?];
 	debug: [unknown];

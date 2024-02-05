@@ -1,24 +1,23 @@
 import {
 	BoltBridgeMessage,
 	BoltMessage,
-	createBoltMessage,
 	getBoltBridge,
 	updateBoltBridge
 } from './deps.ts';
 import { idTransform } from './messages.ts';
 import GuildedPlugin from './mod.ts';
 
-export async function bridgeLegacy(
-	this: GuildedPlugin,
+export async function bridge_legacy(
+	guilded: GuildedPlugin,
 	dat: BoltBridgeMessage,
-	senddata: string | { id: string; token: string },
+	senddata: string,
 	replyto?: BoltMessage<unknown>
 ) {
-	const channel = await this.bot.channels.fetch(dat.channel);
+	const channel = await guilded.bot.channels.fetch(senddata);
 	const idtrsnd = idTransform({ ...dat, replyto });
-	// @ts-ignore
-	const result = await channel.send(idtrsnd);
 	try {
+		// @ts-ignore: for some idiotic reason they use the Embed class instead of the the object's type
+		const result = await channel.send(idtrsnd);
 		return {
 			channel: result.channelId,
 			id: result.id,
@@ -27,36 +26,37 @@ export async function bridgeLegacy(
 		};
 	} finally {
 		try {
-			if (
-				!(await dat.bolt.redis?.get(`guilded-embed-migration-${dat.channel}`))
-			) {
-				await dat.bolt.redis?.set(
-					`guilded-embed-migration-${dat.channel}`,
-					'true'
-				);
-				const currentbridge = await getBoltBridge(dat.bolt, {
-					channel: channel.id
-				})!;
-				const senddata = await this.createSenddata(channel.id);
-				if (currentbridge) {
-					const index = currentbridge.platforms.findIndex(
-						i => (i.channel = channel.id)
-					);
-					currentbridge.platforms[index] = {
-						channel: channel.id,
-						plugin: 'bolt-guilded',
-						senddata
-					};
-					await updateBoltBridge(dat.bolt, currentbridge);
-				}
-			}
+			await migrate_bridge(dat, senddata, guilded);
 		} catch {
-			const warning = createBoltMessage({
-				content:
-					"In the next major version of Bolt, 1.0.0, embed-based bridges like this one won't be supported anymore. Take a look at https://github.com/williamhorning/bolt/issues/36 for more information and how to migrate to webhook-based bridges. This should be the last time you see this message."
-			});
-			// @ts-ignore
-			channel.send(warning);
+			channel.send(
+				"In the next major version of Bolt, 1.0.0, embed-based bridges like this one won't be supported anymore. Take a look at https://github.com/williamhorning/bolt/issues/36 for more information and how to migrate to webhook-based bridges. This should be the last time you see this message."
+			);
+		}
+	}
+}
+
+async function migrate_bridge(
+	dat: BoltBridgeMessage,
+	senddata: string,
+	guilded: GuildedPlugin
+) {
+	if (!(await dat.bolt.redis?.get(`guilded-embed-migration-${senddata}`))) {
+		await dat.bolt.redis?.set(`guilded-embed-migration-${senddata}`, 'true');
+		// TODO: redo this
+		const currentbridge = await getBoltBridge(dat.bolt, {
+			channel: senddata
+		})!;
+		const senddata = await guilded.createSenddata(senddata);
+		if (currentbridge) {
+			const index = currentbridge.platforms.findIndex(
+				i => (i.channel = senddata)
+			);
+			currentbridge.platforms[index] = {
+				channel: senddata,
+				plugin: 'bolt-guilded',
+				senddata
+			};
+			await updateBoltBridge(dat.bolt, currentbridge);
 		}
 	}
 }

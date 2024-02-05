@@ -18,17 +18,6 @@ export default class RevoltPlugin extends BoltPlugin {
 		this.bot.on('messageCreate', async message => {
 			this.emit('messageCreate', await messageToCore(this, message));
 		});
-		this.bot.on('messageUpdate', async message => {
-			this.emit('messageUpdate', await messageToCore(this, message));
-		});
-		this.bot.on('messageDelete', message => {
-			this.emit('messageDelete', {
-				id: message.id,
-				platform: { name: 'bolt-revolt', message },
-				channel: message.channelId,
-				timestamp: Date.now()
-			});
-		});
 		this.bot.on('ready', () => {
 			this.emit('ready');
 		});
@@ -36,49 +25,46 @@ export default class RevoltPlugin extends BoltPlugin {
 	async start() {
 		await this.bot.loginBot(this.token);
 	}
+
+	isBridged(msg) {
+		return msg.author.id === this.bot.user?.id && msg.masquerade;
+	}
+
 	bridgeSupport = { text: true };
+
 	async createSenddata(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
 		if (!ch.havePermission('Masquerade'))
 			throw new Error('Please enable masquerade permissions!');
 		return ch.id;
 	}
+
 	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		switch (data.type) {
-			case 'create':
-			case 'update': {
-				const dat = data.data as BoltBridgeMessage;
-				const channel = await this.bot.channels.fetch(dat.channel);
-				let replyto;
-				try {
-					if (dat.replytoId) {
-						replyto = await messageToCore(
-							this,
-							await this.bot.messages.fetch(dat.channel, dat.replytoId)
-						);
-					}
-				} catch {}
-				try {
-					const msg = await coreToMessage({ ...dat, replyto });
-					const result = data.type === 'update'
-						? (await channel.fetchMessage(dat.id)).edit(msg) // TODO
-						: channel.sendMessage(msg);
-					return {
-						channel: dat.channel,
-						id: 'id' in result ? result.id : result._id,
-						plugin: 'bolt-revolt',
-						senddata: dat.channel
-					};
-				} catch (e) {
-					// TODO: proper error handling
-					return {};
-				}
+		const dat = data.data as BoltBridgeMessage;
+		const channel = await this.bot.channels.fetch(dat.channel);
+		let replyto;
+		try {
+			if (dat.replytoId) {
+				replyto = await messageToCore(
+					this,
+					await this.bot.messages.fetch(dat.channel, dat.replytoId)
+				);
 			}
-			case 'delete': {
-				const channel = await this.bot.channels.fetch(data.data.channel);
-				await channel.deleteMessages([data.data.id]);
-				return { ...data.data.bridgePlatform, id: data.data.id };
-			}
+		} catch {
+			replyto = undefined;
+		}
+		try {
+			const msg = await coreToMessage({ ...dat, replyto });
+			const result = await channel.sendMessage(msg);
+			return {
+				channel: dat.channel,
+				id: result.id,
+				plugin: 'bolt-revolt',
+				senddata: dat.channel
+			};
+		} catch (e) {
+			// TODO: proper error handling
+			return {};
 		}
 	}
 }

@@ -1,110 +1,147 @@
-import {
-	BoltBridgeCommands,
-	bridgeBoltMessage,
-	bridgeBoltThread,
-	getBoltBridgedMessage
-} from './bridge/mod.ts';
-import { BoltCommands } from './commands/mod.ts';
+import { BoltCommands } from './bolt_commands/bolt_commands.ts';
 import { EventEmitter, MongoClient, Redis, connect } from './deps.ts';
 import { BoltPluginEvents } from './types.ts';
-import { BoltConfig, BoltPlugin, logBoltError } from './utils.ts';
+import { BoltConfig, BoltPlugin } from './utils.ts';
+import { BoltBridges } from './bridge/mod.ts';
+import { BoltMessage } from './mod.ts';
+import { BoltEmbed } from './mod.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {
-	config: BoltConfig;
+	bridge = new BoltBridges(this);
 	cmds = new BoltCommands(this);
+	config: BoltConfig;
 	database: string;
-	version = '0.5.4';
-	plugins: BoltPlugin[] = [];
 	mongo = new MongoClient();
+	plugins: BoltPlugin[] = [];
 	redis?: Redis;
+	version = '0.5.5';
+
 	constructor(config: BoltConfig) {
 		super();
 		this.config = config;
 		this.database = config.database.mongo.database;
 	}
+
 	getPlugin(name: string) {
 		return this.plugins.find(i => i.name === name);
 	}
+
 	async load(plugins: BoltPlugin[]) {
 		for (const plugin of plugins) {
 			if (plugin.boltversion !== '1') {
-				throw await logBoltError(this, {
-					message: `This plugin isn't supported by this version of Bolt.`,
-					extra: { plugin: plugin.name },
-					code: 'PluginNotCompatible'
-				});
+				throw await this.logError(
+					new Error("this plugin isn't supported by bolt"),
+					{ plugin: plugin.name }
+				);
 			}
 			this.plugins.push(plugin);
 			plugin.start(this);
-			if (plugin?.commands) {
-				this.cmds.registerCommands(...plugin.commands);
-			}
 		}
 		for (const plugin of plugins) {
 			(async () => {
 				for await (const event of plugin) {
+					if (
+						event.name === 'messageCreate' &&
+						(await this.bridge.isBridged(
+							event.value[0] as BoltMessage<unknown>
+						))
+					) {
+						this.emit('msgcreate', event.value[0] as BoltMessage<unknown>);
+					}
 					this.emit(event.name, ...event.value);
 				}
 			})();
 		}
 	}
-	async unload(plugins: BoltPlugin[]) {
-		for (const plugin of plugins) {
-			if (plugin.stop) await plugin.stop();
-			this.plugins = this.plugins.filter(i => i.name !== plugin.name);
-		}
-	}
+
 	async setup() {
-		await this.dbsetup();
-		this.registerPluginEvents();
-		this.cmds.registerCommands(...BoltBridgeCommands);
-		this.load(this.config.plugins);
-	}
-	private async dbsetup() {
 		try {
 			await this.mongo.connect(this.config.database.mongo.connection);
 		} catch (e) {
-			throw await logBoltError(this, {
-				message: `Can't connect to MongoDB`,
-				cause: e,
-				extra: {},
-				code: 'MongoDBConnectFailed'
-			});
+			throw await this.logFatalError(e);
 		}
 		try {
 			if (this.config.database.redis) {
 				this.redis = await connect(this.config.database.redis);
 			} else {
-				this.emit(
-					'warning',
-					'not using Redis, things may slow down or be disabled.'
-				);
+				throw '';
 			}
-		} catch (e) {
-			await logBoltError(this, {
-				message: `Can't connect to Redis`,
-				cause: e,
-				extra: {},
-				code: 'RedisConnectFailed'
-			});
+		} catch {
+			this.emit(
+				'warning',
+				'not using Redis, things may slow down or be disabled.'
+			);
 			this.redis = undefined;
 		}
+		this.load(this.config.plugins);
 	}
-	private registerPluginEvents() {
-		// TODO: move all code below to bridge folder
-		this.on('messageCreate', async msg => {
-			if (await getBoltBridgedMessage(this, msg.id)) return;
-			bridgeBoltMessage(this, 'create', msg);
+
+	createMsg({
+		text,
+		embeds,
+		uuid
+	}: {
+		text?: string;
+		embeds?: BoltEmbed[];
+		uuid?: string;
+	}): BoltMessage<undefined> & { uuid?: string } {
+		const data = {
+			author: {
+				username: 'Bolt',
+				profile:
+					'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
+				rawname: 'bolt',
+				id: 'bolt'
+			},
+			text,
+			embeds,
+			channel: '',
+			id: '',
+			reply: async () => {},
+			timestamp: Date.now(),
+			platform: {
+				name: 'bolt',
+				message: undefined
+			},
+			uuid
+		};
+		return data;
+	}
+
+	// deno-lint-ignore no-explicit-any
+	async logError(e: Error, extra: Record<string, any> = {}) {
+		const uuid = crypto.randomUUID();
+		console.error(`\x1b[41mBolt Error:\x1b[0m ${uuid}`);
+		console.error(e, extra);
+
+		if (this.config.http.errorURL) {
+			delete extra.msg;
+
+			await fetch(this.config.http.errorURL, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					embeds: [
+						{
+							title: e.message,
+							description: `\`\`\`${e.stack}\`\`\`\n\`\`\`js\n${JSON.stringify({
+								...extra,
+								uuid
+							})}\`\`\``
+						}
+					]
+				})
+			});
+		}
+
+		return this.createMsg({
+			text: `Something went wrong! Check https://williamhorning.dev/bolt/docs/Using/ for help.\n\`${uuid}\``,
+			uuid
 		});
-		this.on('messageUpdate', async msg => {
-			if (await getBoltBridgedMessage(this, msg.id)) return;
-			bridgeBoltMessage(this, 'update', msg);
-		});
-		this.on('messageDelete', async msg => {
-			if (await getBoltBridgedMessage(this, msg.id)) return;
-			bridgeBoltMessage(this, 'delete', msg);
-		});
-		this.on('threadCreate', thread => bridgeBoltThread(this, 'create', thread));
-		this.on('threadDelete', thread => bridgeBoltThread(this, 'delete', thread));
+	}
+
+	async logFatalError(e: Error) {
+		await this.logError(e, { note: 'this is a fatal error, exiting' });
+		Deno.exit(1);
 	}
 }
