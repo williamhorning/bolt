@@ -14,4 +14,4 @@ export {
 	type BoltBridgeMessageArgs,
 	type BoltMessage
 } from '../bolt/mod.ts';
-export { Buffer } from "https://deno.land/std@0.177.0/node/buffer.ts";
+export { Buffer } from "node:buffer";
