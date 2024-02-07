@@ -1,11 +1,15 @@
-import { Bolt } from './bolt.ts';
-import { BoltBridgeMessageArgs, BoltBridgeSentPlatform } from './bridge/mod.ts';
 import {
 	EventEmitter,
 	MongoConnectOptions,
 	RedisConnectOptions
 } from './deps.ts';
-import { BoltMessage, BoltPluginEvents } from './types.ts';
+import {
+	Bolt,
+	BoltMessage,
+	BoltPluginEvents,
+	BoltBridgeMessageArgs,
+	BoltBridgeSentPlatform
+} from './mod.ts';
 
 export interface BoltConfig {
 	prod: boolean;

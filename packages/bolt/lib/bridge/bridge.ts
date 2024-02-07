@@ -1,7 +1,5 @@
 import { bridgecommands } from './bridge_commands.ts';
-import { Collection } from '../deps.ts';
-import { Bolt, BoltMessage, BoltPlugin } from '../mod.ts';
-import { BoltBridgeDocument, BoltBridgePlatform } from './types.ts';
+import { Collection, Bolt, BoltMessage, BoltPlugin } from './deps.ts';
 
 export class BoltBridges {
 	private bolt: Bolt;
@@ -9,6 +7,9 @@ export class BoltBridges {
 
 	constructor(bolt: Bolt) {
 		this.bolt = bolt;
+		this.bolt.on('messageCreate', async msg => {
+			if (!(await this.isBridged(msg))) this.bolt.emit('msgcreate', msg);
+		});
 		this.bolt.on('msgcreate', msg => this.bridgeMessage(msg));
 		this.bolt.cmds.registerCommands(...bridgecommands);
 		this.collection = bolt.mongo.database(bolt.database).collection('bridges');
@@ -50,7 +51,7 @@ export class BoltBridges {
 		platform: BoltBridgePlatform,
 		plugin: BoltPlugin
 	) {
-		if ('status' in e.response && e?.response?.status === 404) {
+		if (e?.response?.status === 404) {
 			const updated_bridge = {
 				...bridge,
 				value: { bridges: bridge.platforms.filter(i => i !== platform) }
@@ -107,3 +108,33 @@ export class BoltBridges {
 		});
 	}
 }
+
+export interface BoltBridgeDocument {
+	_id: string;
+	platforms: BoltBridgePlatform[];
+	settings?: {
+		realnames?: boolean;
+	};
+}
+
+export interface BoltBridgePlatform {
+	channel: string;
+	plugin: string;
+	senddata: unknown;
+}
+
+export interface BoltBridgeSentPlatform extends BoltBridgePlatform {
+	id: string;
+}
+
+export interface BoltBridgeMessage
+	extends Omit<BoltMessage<unknown>, 'replyto'>,
+		BoltBridgePlatform {
+	bolt: Bolt;
+	bridgePlatform: BoltBridgePlatform;
+	replytoId?: string;
+}
+
+export type BoltBridgeMessageArgs = {
+	data: BoltBridgeMessage;
+};

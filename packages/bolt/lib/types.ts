@@ -33,12 +33,7 @@ export interface BoltEmbed {
 	timestamp?: number;
 	title?: string;
 	url?: string;
-	video?: {
-		url?: string;
-		proxy_url?: string;
-		height?: number;
-		width?: number;
-	};
+	video?: Omit<BoltMediaEmbed, 'url'> & { url?: string };
 }
 
 export interface BoltMessage<Message> {
@@ -74,7 +69,9 @@ export interface BoltMessage<Message> {
 }
 
 export type BoltPluginEvents = {
+	/** this is not the one you emit */
 	msgcreate: [BoltMessage<unknown>];
+	/** these are the ones you emit */
 	messageCreate: [BoltMessage<unknown>];
 	error: [Error];
 	warning: [string];

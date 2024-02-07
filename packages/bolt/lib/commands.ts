@@ -1,32 +1,5 @@
-import { Bolt, BoltMessage } from '../mod.ts';
-import { parseArgs } from 'node:util';
-
-export type BoltCommandArguments = {
-	bolt: Bolt;
-	commands: BoltCommands;
-	cmd: string;
-	subcmd?: string;
-	channel: string;
-	platform: string;
-	opts: Record<string, string>;
-	timestamp: number;
-	replyfn: BoltMessage<unknown>['reply'];
-};
-
-export type BoltCommandOptions = {
-	default?: boolean;
-	hasArgument?: boolean;
-	subcommands?: BoltCommand[];
-};
-
-export type BoltCommand = {
-	name: string;
-	description?: string;
-	options?: BoltCommandOptions;
-	execute: (
-		opts: BoltCommandArguments
-	) => Promise<BoltMessage<unknown>> | BoltMessage<unknown>;
-};
+import { Bolt, BoltMessage } from './mod.ts';
+import { parseArgs } from './deps.ts';
 
 export class BoltCommands {
 	private bolt: Bolt;
@@ -138,3 +111,30 @@ export class BoltCommands {
 		);
 	}
 }
+
+export type BoltCommandArguments = {
+	bolt: Bolt;
+	commands: BoltCommands;
+	cmd: string;
+	subcmd?: string;
+	channel: string;
+	platform: string;
+	opts: Record<string, string>;
+	timestamp: number;
+	replyfn: BoltMessage<unknown>['reply'];
+};
+
+export type BoltCommandOptions = {
+	default?: boolean;
+	hasArgument?: boolean;
+	subcommands?: BoltCommand[];
+};
+
+export type BoltCommand = {
+	name: string;
+	description?: string;
+	options?: BoltCommandOptions;
+	execute: (
+		opts: BoltCommandArguments
+	) => Promise<BoltMessage<unknown>> | BoltMessage<unknown>;
+};

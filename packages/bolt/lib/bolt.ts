@@ -1,10 +1,13 @@
-import { BoltCommands } from './bolt_commands/bolt_commands.ts';
+import { BoltBridges } from './bridge/bridge.ts';
+import { BoltCommands } from './commands.ts';
 import { EventEmitter, MongoClient, Redis, connect } from './deps.ts';
-import { BoltPluginEvents } from './types.ts';
-import { BoltConfig, BoltPlugin } from './utils.ts';
-import { BoltBridges } from './bridge/mod.ts';
-import { BoltMessage } from './mod.ts';
-import { BoltEmbed } from './mod.ts';
+import {
+	BoltPluginEvents,
+	BoltEmbed,
+	BoltMessage,
+	BoltPlugin,
+	BoltConfig
+} from './mod.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {
 	bridge = new BoltBridges(this);
@@ -29,28 +32,18 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 	async load(plugins: BoltPlugin[]) {
 		for (const plugin of plugins) {
 			if (plugin.boltversion !== '1') {
-				throw await this.logError(
-					new Error("this plugin isn't supported by bolt"),
-					{ plugin: plugin.name }
+				await this.logFatalError(
+					new Error(`plugin '${plugin.name}' isn't supported by bolt`)
 				);
-			}
-			this.plugins.push(plugin);
-			plugin.start(this);
-		}
-		for (const plugin of plugins) {
-			(async () => {
-				for await (const event of plugin) {
-					if (
-						event.name === 'messageCreate' &&
-						(await this.bridge.isBridged(
-							event.value[0] as BoltMessage<unknown>
-						))
-					) {
-						this.emit('msgcreate', event.value[0] as BoltMessage<unknown>);
+			} else {
+				this.plugins.push(plugin);
+				plugin.start(this);
+				(async () => {
+					for await (const event of plugin) {
+						this.emit(event.name, ...event.value);
 					}
-					this.emit(event.name, ...event.value);
-				}
-			})();
+				})();
+			}
 		}
 	}
 

@@ -9,3 +9,4 @@ export {
 	type Redis,
 	type RedisConnectOptions
 } from 'https://deno.land/x/redis@v0.32.0/mod.ts';
+export { parseArgs } from 'node:util';
