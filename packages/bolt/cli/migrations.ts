@@ -1,9 +1,9 @@
 import {
-	BoltMigrationVersions,
 	applyBoltMigrations,
+	BoltMigrationVersions,
 	getBoltMigrations
 } from '../migrations/mod.ts';
-import { Input, MongoClient, Select, Toggle, colors, prompt } from './deps.ts';
+import { colors, Input, MongoClient, prompt, Select, Toggle } from './deps.ts';
 
 export default async function migrations() {
 	const sharedversionprompt = {

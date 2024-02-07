@@ -22,7 +22,11 @@ export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
 						name: i.name,
 						description: i.description || i.name,
 						type: 1,
-						options: [] as { type: number; name: string; description: string }[]
+						options: [] as {
+							type: number;
+							name: string;
+							description: string;
+						}[]
 					};
 					if (i.options?.hasArgument) {
 						cmd.options.push({

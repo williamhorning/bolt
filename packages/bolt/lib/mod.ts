@@ -10,4 +10,4 @@ export {
 	type BoltMessage,
 	type BoltPluginEvents
 } from './types.ts';
-export { BoltPlugin, defineBoltConfig, type BoltConfig } from './utils.ts';
+export { type BoltConfig, BoltPlugin, defineBoltConfig } from './utils.ts';

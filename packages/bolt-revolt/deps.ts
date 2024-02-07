@@ -10,10 +10,9 @@ export {
 	UserSystemMessage
 } from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
 export {
-	BoltPlugin,
 	type BoltBridgeMessage,
 	type BoltBridgeMessageArgs,
-	type BoltBridgeThreadArgs,
-	type BoltMessage
+	type BoltMessage,
+	BoltPlugin
 } from '../bolt/mod.ts';
 export { EventEmitter } from 'node:events';

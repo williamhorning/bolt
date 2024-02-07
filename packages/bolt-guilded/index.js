@@ -1,4 +1,4 @@
-import { EventEmitter, Client, WebhookClient } from './deps.ts';
+import { Client, EventEmitter, WebhookClient } from './deps.ts';
 import { constructGuildedMsg, constructmsg } from './messages.ts';
 import { bridge_legacy } from './legacybridging.ts';
 
@@ -46,10 +46,12 @@ export default class GuildedPlugin extends EventEmitter {
 	}
 
 	async bridgeSend(msg, senddata) {
-		if (typeof senddata === 'string')
+		if (typeof senddata === 'string') {
 			return bridge_legacy(this, msg, senddata, msg.replyto);
-		if (senddata.token === "shouldn't be null")
+		}
+		if (senddata.token === "shouldn't be null") {
 			throw { response: { status: 404 } };
+		}
 		const hook = new WebhookClient(senddata);
 		const constructed = await constructGuildedMsg(msg);
 		const execute = await hook.send(...constructed);

@@ -1,5 +1,5 @@
 import { bridgecommands } from './bridge_commands.ts';
-import { Collection, Bolt, BoltMessage, BoltPlugin } from './deps.ts';
+import { Bolt, BoltMessage, BoltPlugin, Collection } from './deps.ts';
 
 export class BoltBridges {
 	private bolt: Bolt;
@@ -62,7 +62,12 @@ export class BoltBridges {
 		const err = await this.bolt.logError(e, { msg, bridge });
 		try {
 			return await plugin.bridgeMessage!({
-				data: { ...err, ...platform, bolt: this.bolt, bridgePlatform: platform }
+				data: {
+					...err,
+					...platform,
+					bolt: this.bolt,
+					bridgePlatform: platform
+				}
 			});
 		} catch (e2) {
 			await this.bolt.logError(

@@ -2,8 +2,8 @@ import {
 	BoltBridgeMessageArgs,
 	BoltPlugin,
 	Client,
-	WebhookClient,
-	RESTPostWebhookBody
+	RESTPostWebhookBody,
+	WebhookClient
 } from './deps.ts';
 import { bridge_legacy } from './legacybridging.ts';
 import { coreToMessage, messageToCore } from './messages.ts';

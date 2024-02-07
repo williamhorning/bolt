@@ -3,9 +3,9 @@ import {
 	BoltMessage,
 	Buffer,
 	GatewayMessageUpdateDispatchData,
+	RawFile,
 	RESTPostAPIWebhookWithTokenJSONBody,
-	RESTPostAPIWebhookWithTokenQuery,
-	RawFile
+	RESTPostAPIWebhookWithTokenQuery
 } from './deps.ts';
 
 const asyncFlatMap = <A, B>(arr: A[], f: (a: A) => Promise<B>) =>
@@ -112,7 +112,7 @@ export async function coreToMessage(message: BoltMessage<unknown>): Promise<
 							data: Buffer.from(await (await fetch(a.file)).arrayBuffer())
 						}
 					];
-			  })
+				})
 			: undefined,
 		thread_id: message.threadId,
 		username: message.author.username,

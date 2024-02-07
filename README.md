@@ -14,7 +14,5 @@ Typescript and powered by Deno. To learn more, see the
 | bolt-matrix  | ✓\*\* | X       | X      |
 | bolt-revolt  | ✓     | X       | X      |
 
-\* bolt-guilded's text support doesn't fully support all the stuff other
-platforms do  
-\*\* bolt-matrix's implementation is barely functional and shouldn't be used,
-mostly a POC
+\* bolt-guilded's text support is a bit iffy  
+\*\* bolt-matrix is a POC

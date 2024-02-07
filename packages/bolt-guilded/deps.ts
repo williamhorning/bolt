@@ -3,16 +3,16 @@ export {
 	type APIWebhookMessagePayloadResolvable
 } from 'npm:guilded-api-typings@0.13.2';
 export {
+	Channel,
 	Client,
 	Message,
-	WebhookClient,
-	Channel,
-	type RESTPostWebhookBody
+	type RESTPostWebhookBody,
+	WebhookClient
 } from 'npm:guilded.js@0.23.7';
 export {
-	BoltPlugin,
 	type BoltBridgeMessage,
 	type BoltBridgeMessageArgs,
 	type BoltEmbed,
-	type BoltMessage
+	type BoltMessage,
+	BoltPlugin
 } from '../bolt/mod.ts';

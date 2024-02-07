@@ -1,12 +1,12 @@
 import { BoltBridges } from './bridge/bridge.ts';
 import { BoltCommands } from './commands.ts';
-import { EventEmitter, MongoClient, Redis, connect } from './deps.ts';
+import { connect, EventEmitter, MongoClient, Redis } from './deps.ts';
 import {
-	BoltPluginEvents,
+	BoltConfig,
 	BoltEmbed,
 	BoltMessage,
 	BoltPlugin,
-	BoltConfig
+	BoltPluginEvents
 } from './mod.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {

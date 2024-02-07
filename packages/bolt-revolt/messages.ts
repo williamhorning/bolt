@@ -31,20 +31,20 @@ export async function coreToMessage(
 								).json()
 							).id;
 						})
-				  )
+					)
 				: undefined,
 		content: message.content
 			? message.content
 			: message.embeds
-			? undefined
-			: 'empty message',
+				? undefined
+				: 'empty message',
 		embeds: message.embeds,
 		masquerade: masquerade
 			? {
 					avatar: message.author.profile,
 					name: message.author.username,
 					colour: message.author.color
-			  }
+				}
 			: undefined
 	};
 }

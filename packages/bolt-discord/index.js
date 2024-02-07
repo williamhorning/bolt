@@ -1,4 +1,4 @@
-import { Client, REST, WebSocketManager, EventEmitter } from './deps.ts';
+import { Client, EventEmitter, REST, WebSocketManager } from './deps.ts';
 import { registerEvents } from './handlers.ts';
 import { coreToMessage } from './messages.ts';
 

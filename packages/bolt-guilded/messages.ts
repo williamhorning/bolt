@@ -36,7 +36,7 @@ export async function messageToCore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-					  }
+						}
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,
@@ -109,8 +109,9 @@ function validUsernameCheck(e: string) {
 		e.endsWith(' ') ||
 		e.startsWith(' ') ||
 		e.endsWith(' ')
-	)
+	) {
 		return false;
+	}
 	if (e.length > 32) return false;
 	return Boolean(e.match(/^[a-zA-Z0-9_ ()]*$/gms));
 }

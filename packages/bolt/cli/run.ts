@@ -31,7 +31,6 @@ export default async function run({
 		bolt.on('debug', msg => {
 			console.debug(colors.blue(msg as string));
 		});
-		window.bolt = bolt;
 	}
 
 	await bolt.setup();

@@ -80,9 +80,10 @@ export async function leaveBoltBridge({
 }
 
 export async function resetBoltBridge(args: BoltCommandArguments) {
-	if (!args.opts.name)
+	if (!args.opts.name) {
 		args.opts.name =
 			(await args.bolt.bridge.getBridge(args))?._id.slice(0, 7) || '';
+	}
 	let result = await leaveBoltBridge(args);
 	if (!result.ok) return result;
 	result = await joinBoltBridge(args);
