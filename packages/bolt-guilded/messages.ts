@@ -1,6 +1,6 @@
 import {
 	APIEmbed,
-	APIWebhookMessagePayloadResolvable,
+	APIWebhookMessagePayload,
 	BoltEmbed,
 	BoltMessage,
 	Message
@@ -13,15 +13,14 @@ export async function messageToCore(
 	replybool = true
 ): Promise<BoltMessage<Message> | undefined> {
 	if (!message.serverId) return;
-	const author = await plugin.bot.members.fetch(
-		message.serverId,
-		message.authorId
-	);
+	let author;
+	if (!message.createdByWebhookId)
+		author = await plugin.bot.members.fetch(message.serverId, message.authorId);
 	return {
 		author: {
-			username: author.nickname || author.username || 'user on guilded',
-			rawname: author.username || 'user on guilded',
-			profile: author.user?.avatar || undefined,
+			username: author?.nickname || author?.username || 'user on guilded',
+			rawname: author?.username || 'user on guilded',
+			profile: author?.user?.avatar || undefined,
 			id: message.authorId,
 			color: '#F5C400'
 		},
@@ -36,7 +35,7 @@ export async function messageToCore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-						}
+					  }
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,
@@ -58,9 +57,10 @@ export async function messageToCore(
 		platform: {
 			name: 'bolt-guilded',
 			message,
-			webhookid: message.createdByWebhookId
+			webhookid: message.createdByWebhookId || undefined
 		},
 		reply: async (msg: BoltMessage<unknown>) => {
+			// @ts-ignore: embed type differences
 			await message.reply(coreToMessage(msg));
 		},
 		content: message.content,
@@ -118,7 +118,7 @@ function validUsernameCheck(e: string) {
 
 export function coreToMessage(
 	msg: BoltMessage<unknown>
-): APIWebhookMessagePayloadResolvable {
+): APIWebhookMessagePayload {
 	const message = {
 		content: msg.content,
 		avatar_url: msg.author.profile,

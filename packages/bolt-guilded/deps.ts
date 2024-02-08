@@ -1,6 +1,6 @@
 export {
 	type APIEmbed,
-	type APIWebhookMessagePayloadResolvable
+	type APIWebhookMessagePayload
 } from 'npm:guilded-api-typings@0.13.2';
 export {
 	Channel,

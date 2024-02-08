@@ -1,6 +1,6 @@
 import { BoltBridges } from './bridge/bridge.ts';
 import { BoltCommands } from './commands.ts';
-import { connect, EventEmitter, MongoClient, Redis } from './deps.ts';
+import { connect, EventEmitter, MongoClient, Redis, nanoid } from './deps.ts';
 import {
 	BoltConfig,
 	BoltEmbed,
@@ -10,11 +10,11 @@ import {
 } from './mod.ts';
 
 export class Bolt extends EventEmitter<BoltPluginEvents> {
-	bridge = new BoltBridges(this);
-	cmds = new BoltCommands(this);
 	config: BoltConfig;
+	mongo: MongoClient;
+	cmds!: BoltCommands;
+	bridge!: BoltBridges;
 	database: string;
-	mongo = new MongoClient();
 	plugins: BoltPlugin[] = [];
 	redis?: Redis;
 	version = '0.5.5';
@@ -23,6 +23,11 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		super();
 		this.config = config;
 		this.database = config.database.mongo.database;
+		this.mongo = new MongoClient();
+		this.setup().then(() => {
+			this.cmds = new BoltCommands(this);
+			this.bridge = new BoltBridges(this);
+		});
 	}
 
 	getPlugin(name: string) {
@@ -86,7 +91,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 				rawname: 'bolt',
 				id: 'bolt'
 			},
-			text,
+			content: text,
 			embeds,
 			channel: '',
 			id: '',
@@ -103,7 +108,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 
 	// deno-lint-ignore no-explicit-any
 	async logError(e: Error, extra: Record<string, any> = {}) {
-		const uuid = crypto.randomUUID();
+		const uuid = nanoid();
 		console.error(`\x1b[41mBolt Error:\x1b[0m ${uuid}`);
 		console.error(e, extra);
 
@@ -128,7 +133,7 @@ export class Bolt extends EventEmitter<BoltPluginEvents> {
 		}
 
 		return this.createMsg({
-			text: `Something went wrong! Check https://williamhorning.dev/bolt/docs/Using/ for help.\n\`${uuid}\``,
+			text: `Something went wrong!\nCheck [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`${e.message}\n${uuid}\`\`\``,
 			uuid
 		});
 	}

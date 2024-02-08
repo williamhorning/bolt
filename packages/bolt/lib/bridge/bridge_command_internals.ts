@@ -6,7 +6,7 @@ export async function joinBoltBridge({
 	platform,
 	opts
 }: BoltCommandArguments) {
-	const _id = opts.name?.split(' ')[0];
+	const _id = `bridge-${opts.name?.split(' ')[0]}`;
 	const current = await bolt.bridge.getBridge({ channel });
 	const errorargs = { channel, platform, _id };
 	const plugin = bolt.getPlugin(platform);
@@ -65,7 +65,7 @@ export async function leaveBoltBridge({
 			await bolt.bridge.updateBridge({
 				_id: current._id,
 				platforms: current.platforms.filter(
-					i => i.channel === channel && i.plugin === platform
+					i => i.channel !== channel && i.plugin !== platform
 				)
 			});
 
@@ -79,6 +79,8 @@ export async function leaveBoltBridge({
 	}
 }
 
+// TODO: actually fix this so that args.opts.name is always correctly defined and not in a way leading
+// to something like `bridge-bridge-*`
 export async function resetBoltBridge(args: BoltCommandArguments) {
 	if (!args.opts.name) {
 		args.opts.name =

@@ -10,3 +10,4 @@ export {
 	type RedisConnectOptions
 } from 'https://deno.land/x/redis@v0.32.0/mod.ts';
 export { parseArgs } from 'node:util';
+export { nanoid } from 'https://deno.land/x/nanoid@v3.0.0/mod.ts';

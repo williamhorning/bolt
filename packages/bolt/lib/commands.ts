@@ -6,7 +6,7 @@ export class BoltCommands {
 	public commands = new Map<string, BoltCommand>();
 	private fallback: BoltCommand = {
 		name: 'help',
-		execute: this.runHelpCommand
+		execute: this.runHelpCommand.bind(this)
 	};
 
 	constructor(bolt: Bolt) {

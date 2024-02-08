@@ -32,6 +32,4 @@ export default async function run({
 			console.debug(colors.blue(msg as string));
 		});
 	}
-
-	await bolt.setup();
 }

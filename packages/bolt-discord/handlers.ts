@@ -1,4 +1,8 @@
-import { Bolt, GatewayDispatchEvents } from './deps.ts';
+import {
+	Bolt,
+	GatewayDispatchEvents,
+	ApplicationCommandOptionType
+} from './deps.ts';
 import { coreToMessage, messageToCore } from './messages.ts';
 import { default as DiscordPlugin } from './mod.ts';
 
@@ -13,21 +17,20 @@ export function registerEvents(plugin: DiscordPlugin, bolt: Bolt) {
 		plugin.emit('messageCreate', await messageToCore(message.api, message.data))
 	);
 	plugin.bot.on(GatewayDispatchEvents.InteractionCreate, async interaction => {
-		// TODO: redo this
 		if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;
-		const opts = interaction.data.data.options;
-		let arg = '';
-		if (opts && opts[0]) {
-			const opt = opts[0];
-			arg += opt.name;
-			if (opt.type === 1) {
-				for (const i of opt.options || []) {
-					arg += ` ${i.value}`;
-				}
-			}
+		const opts = {} as Record<string, string>;
+		let subcmd = '';
+
+		for (const opt of interaction.data.data.options || []) {
+			if (opt.type === ApplicationCommandOptionType.Subcommand)
+				subcmd = opt.name;
+			if (opt.type === ApplicationCommandOptionType.String)
+				opts[opt.name] = opt.value;
 		}
+
 		await bolt.cmds.runCommand({
 			cmd: interaction.data.data.name,
+			subcmd,
 			replyfn: async msg => {
 				await interaction.api.interactions.reply(
 					interaction.data.id,
@@ -37,8 +40,10 @@ export function registerEvents(plugin: DiscordPlugin, bolt: Bolt) {
 			},
 			channel: interaction.data.channel.id,
 			platform: 'bolt-discord',
-			arg,
-			timestamp: Date.now()
+			opts,
+			timestamp: new Date(
+				Number(BigInt(interaction.data.id) >> 22n) + 1420070400000
+			).getTime()
 		});
 	});
 }

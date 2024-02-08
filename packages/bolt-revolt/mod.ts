@@ -65,7 +65,12 @@ export default class RevoltPlugin extends BoltPlugin {
 			};
 		} catch (_e) {
 			// TODO: proper error handling
-			return {};
+			return {
+				id: 'error',
+				plugin: 'bolt-revolt',
+				senddata: dat.channel,
+				channel: dat.channel
+			};
 		}
 	}
 }

@@ -11,7 +11,7 @@ export const bridgecommands = [
 		description: 'bridge this channel to somewhere else',
 		execute: ({ bolt }) => {
 			return bolt.createMsg({
-				text: `Try running \`!bolt help\` for help`
+				text: `Try running \`!bolt help\` for help with bridges`
 			});
 		},
 		options: {
