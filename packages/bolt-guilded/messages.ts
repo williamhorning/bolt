@@ -1,8 +1,8 @@
 import {
 	APIEmbed,
 	APIWebhookMessagePayload,
-	BoltEmbed,
-	BoltMessage,
+	embed,
+	message,
 	Message
 } from './deps.ts';
 import GuildedPlugin from './mod.ts';
@@ -11,7 +11,7 @@ export async function messageToCore(
 	message: Message,
 	plugin: GuildedPlugin,
 	replybool = true
-): Promise<BoltMessage<Message> | undefined> {
+): Promise<message<Message> | undefined> {
 	if (!message.serverId) return;
 	let author;
 	if (!message.createdByWebhookId)
@@ -26,7 +26,9 @@ export async function messageToCore(
 		},
 		channel: message.channelId,
 		id: message.id,
-		timestamp: message.createdAt.getTime(),
+		timestamp: Temporal.Instant.fromEpochMilliseconds(
+			message.createdAt.valueOf()
+		),
 		embeds: message.embeds?.map(embed => {
 			return {
 				...embed,
@@ -59,12 +61,11 @@ export async function messageToCore(
 			message,
 			webhookid: message.createdByWebhookId || undefined
 		},
-		reply: async (msg: BoltMessage<unknown>) => {
+		reply: async (msg: message<unknown>) => {
 			// @ts-ignore: embed type differences
 			await message.reply(coreToMessage(msg));
 		},
 		content: message.content,
-		guild: message.serverId,
 		replyto: (await replyto(message, plugin, replybool)) || undefined
 	};
 }
@@ -92,7 +93,7 @@ async function replyto(
 	}
 }
 
-function chooseValidGuildedUsername(msg: BoltMessage<unknown>) {
+function chooseValidGuildedUsername(msg: message<unknown>) {
 	if (validUsernameCheck(msg.author.username)) {
 		return msg.author.username;
 	} else if (validUsernameCheck(msg.author.rawname)) {
@@ -116,25 +117,19 @@ function validUsernameCheck(e: string) {
 	return Boolean(e.match(/^[a-zA-Z0-9_ ()]*$/gms));
 }
 
-export function coreToMessage(
-	msg: BoltMessage<unknown>
-): APIWebhookMessagePayload {
+export function coreToMessage(msg: message<unknown>): APIWebhookMessagePayload {
 	const message = {
 		content: msg.content,
 		avatar_url: msg.author.profile,
 		username: chooseValidGuildedUsername(msg),
 		embeds: msg.embeds?.map(embed => {
 			Object.keys(embed).forEach(key => {
-				embed[key as keyof BoltEmbed] === null
-					? (embed[key as keyof BoltEmbed] = undefined)
-					: embed[key as keyof BoltEmbed];
+				embed[key as keyof embed] === null
+					? (embed[key as keyof embed] = undefined)
+					: embed[key as keyof embed];
 			});
 			return {
 				...embed,
-				author: {
-					...embed.author,
-					icon_url: embed.author?.iconUrl
-				},
 				timestamp: embed.timestamp ? new Date(embed.timestamp) : undefined
 			};
 		}) as APIEmbed[] | undefined
@@ -153,7 +148,7 @@ export function coreToMessage(
 	return message;
 }
 
-export function idTransform(msg: BoltMessage<unknown>) {
+export function idTransform(msg: message<unknown>) {
 	const senddat = {
 		embeds: [
 			{

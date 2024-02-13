@@ -1,6 +1,6 @@
 import {
-	BoltBridgeMessage,
-	BoltMessage,
+	bridge_message,
+	message,
 	getBoltBridge,
 	updateBoltBridge
 } from './deps.ts';
@@ -9,9 +9,9 @@ import GuildedPlugin from './mod.ts';
 
 export async function bridge_legacy(
 	guilded: GuildedPlugin,
-	dat: BoltBridgeMessage,
+	dat: bridge_message,
 	senddata: string,
-	replyto?: BoltMessage<unknown>
+	replyto?: message<unknown>
 ) {
 	const channel = await guilded.bot.channels.fetch(senddata);
 	const idtrsnd = idTransform({ ...dat, replyto });
@@ -36,7 +36,7 @@ export async function bridge_legacy(
 }
 
 async function migrate_bridge(
-	dat: BoltBridgeMessage,
+	dat: bridge_message,
 	senddata: string,
 	guilded: GuildedPlugin
 ) {

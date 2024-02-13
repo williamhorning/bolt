@@ -1,6 +1,6 @@
 import {
-	BoltBridgeMessageArgs,
-	BoltPlugin,
+	bridge_message_arguments,
+	bolt_plugin,
 	Client,
 	RESTPostWebhookBody,
 	WebhookClient
@@ -8,10 +8,10 @@ import {
 // import { bridge_legacy } from './legacybridging.ts';
 import { coreToMessage, messageToCore } from './messages.ts';
 
-export default class GuildedPlugin extends BoltPlugin {
+export default class GuildedPlugin extends bolt_plugin {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.5.4';
+	version = '0.5.5';
 
 	constructor(config: { token: string }) {
 		super();
@@ -64,7 +64,7 @@ export default class GuildedPlugin extends BoltPlugin {
 
 	async bridgeMessage({
 		data: dat
-	}: BoltBridgeMessageArgs & {
+	}: bridge_message_arguments & {
 		data: { senddata: string | { id: string; token: string } };
 	}) {
 		let replyto;

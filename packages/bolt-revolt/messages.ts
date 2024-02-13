@@ -1,18 +1,8 @@
-import {
-	API,
-	BoltMessage,
-	ChannelEditSystemMessage,
-	ChannelOwnershipChangeSystemMessage,
-	Message,
-	TextEmbed,
-	TextSystemMessage,
-	User,
-	UserSystemMessage
-} from './deps.ts';
+import { API, message, Message, TextEmbed } from './deps.ts';
 import RevoltPlugin from './mod.ts';
 
 export async function coreToMessage(
-	message: BoltMessage<unknown>,
+	message: message<unknown>,
 	masquerade = true
 ): Promise<Omit<API.DataMessageSend, 'nonce'>> {
 	return {
@@ -31,20 +21,20 @@ export async function coreToMessage(
 								).json()
 							).id;
 						})
-					)
+				  )
 				: undefined,
 		content: message.content
 			? message.content
 			: message.embeds
-				? undefined
-				: 'empty message',
+			? undefined
+			: 'empty message',
 		embeds: message.embeds,
 		masquerade: masquerade
 			? {
 					avatar: message.author.profile,
 					name: message.author.username,
 					colour: message.author.color
-				}
+			  }
 			: undefined
 	};
 }
@@ -53,12 +43,11 @@ export async function messageToCore(
 	plugin: RevoltPlugin,
 	message: Message,
 	getReply = true
-): Promise<BoltMessage<Message>> {
-	const content = systemMessages(message);
+): Promise<message<Message>> {
 	return {
 		author: {
 			username:
-				message.member?.nickname ||
+				message.member?.displayName ||
 				message.author?.username ||
 				`${message.authorId || 'unknown user'} on revolt`,
 			rawname:
@@ -66,11 +55,13 @@ export async function messageToCore(
 				`${message.authorId || 'unknown user'} on revolt`,
 			profile: message.author?.avatarURL,
 			id: message.authorId || 'unknown',
-			color: '#ff4654'
+			color: '#FF4654'
 		},
 		channel: message.channelId,
 		id: message.id,
-		timestamp: message.createdAt.valueOf(),
+		timestamp: Temporal.Instant.fromEpochMilliseconds(
+			message.createdAt.valueOf()
+		),
 		embeds: (message.embeds as TextEmbed[] | undefined)?.map(i => {
 			return {
 				...i,
@@ -80,7 +71,7 @@ export async function messageToCore(
 			};
 		}),
 		platform: { name: 'bolt-revolt', message },
-		reply: async (msg: BoltMessage<unknown>, masquerade = true) => {
+		reply: async (msg: message<unknown>, masquerade = true) => {
 			message.reply(await coreToMessage(msg, masquerade as boolean));
 		},
 		attachments: message.attachments?.map(
@@ -93,58 +84,9 @@ export async function messageToCore(
 				};
 			}
 		),
-		content: content !== null ? content : undefined,
-		guild: String(message.channel?.serverId),
+		content: message.content,
 		replyto: await replyto(plugin, message, getReply)
 	};
-}
-
-function systemMessages(message: Message) {
-	let content = message.content;
-	const systemMessage = message.systemMessage;
-	function user<T>(type: 'user' | 'from' | 'to') {
-		return (
-			((systemMessage as T)[type as keyof T] as User | null)?.username ||
-			(systemMessage as T)[`${type}Id` as keyof T]
-		);
-	}
-	if (systemMessage) {
-		const type = systemMessage.type;
-		const rest = type.split('_');
-		rest.shift();
-		const action = rest.join(' ');
-		if (type === 'text') {
-			content = (systemMessage as TextSystemMessage).content;
-		} else if (
-			[
-				'user_added',
-				'user_remove',
-				'user_joined',
-				'user_left',
-				'user_kicked',
-				'user_banned'
-			].includes(type)
-		) {
-			content = `${user<UserSystemMessage>('user')} ${action}`;
-		} else if (type === 'channel_ownership_changed') {
-			content = `${user<ChannelOwnershipChangeSystemMessage>(
-				'from'
-			)} transfered this to ${user('to')}`;
-		} else if (
-			[
-				'channel_description_changed',
-				'channel_icon_changed',
-				'channel_renamed'
-			].includes(type)
-		) {
-			content = `channel ${action} by ${user<ChannelEditSystemMessage>(
-				'from'
-			)}`;
-		} else {
-			content = 'unknown system message';
-		}
-	}
-	return content;
 }
 
 async function replyto(

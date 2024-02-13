@@ -1,21 +1,24 @@
 import {
-	BoltBridgeMessage,
-	BoltBridgeMessageArgs,
-	BoltPlugin,
-	Client
+	bridge_message,
+	bridge_message_arguments,
+	message,
+	bolt_plugin,
+	Client,
+	Message
 } from './deps.ts';
 import { coreToMessage, messageToCore } from './messages.ts';
 
-export default class RevoltPlugin extends BoltPlugin {
+export default class RevoltPlugin extends bolt_plugin implements bolt_plugin {
 	bot: Client;
 	token: string;
 	name = 'bolt-revolt';
-	version = '0.5.4';
+	version = '0.5.5';
 	constructor(config: { token: string }) {
 		super();
 		this.bot = new Client();
 		this.token = config.token;
 		this.bot.on('messageCreate', async message => {
+			if (message.systemMessage) return;
 			this.emit('messageCreate', await messageToCore(this, message));
 		});
 		this.bot.on('ready', () => {
@@ -26,8 +29,10 @@ export default class RevoltPlugin extends BoltPlugin {
 		await this.bot.loginBot(this.token);
 	}
 
-	isBridged(msg) {
-		return msg.author.id === this.bot.user?.id && msg.masquerade;
+	isBridged(msg: message<Message>) {
+		return Boolean(
+			msg.author.id === this.bot.user?.id && msg.platform.message.masquerade
+		);
 	}
 
 	bridgeSupport = { text: true };
@@ -40,8 +45,8 @@ export default class RevoltPlugin extends BoltPlugin {
 		return ch.id;
 	}
 
-	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		const dat = data.data as BoltBridgeMessage;
+	async bridgeMessage(data: bridge_message_arguments) {
+		const dat = data.data as bridge_message;
 		const channel = await this.bot.channels.fetch(dat.channel);
 		let replyto;
 		try {
@@ -54,23 +59,13 @@ export default class RevoltPlugin extends BoltPlugin {
 		} catch {
 			replyto = undefined;
 		}
-		try {
-			const msg = await coreToMessage({ ...dat, replyto });
-			const result = await channel.sendMessage(msg);
-			return {
-				channel: dat.channel,
-				id: result.id,
-				plugin: 'bolt-revolt',
-				senddata: dat.channel
-			};
-		} catch (_e) {
-			// TODO: proper error handling
-			return {
-				id: 'error',
-				plugin: 'bolt-revolt',
-				senddata: dat.channel,
-				channel: dat.channel
-			};
-		}
+		const msg = await coreToMessage({ ...dat, replyto });
+		const result = await channel.sendMessage(msg);
+		return {
+			channel: dat.channel,
+			id: result.id,
+			plugin: 'bolt-revolt',
+			senddata: dat.channel
+		};
 	}
 }

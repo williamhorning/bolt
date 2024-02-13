@@ -1,9 +1,9 @@
 import { registerCommands } from './commands.ts';
 import {
 	Bolt,
-	BoltBridgeMessage,
-	BoltBridgeMessageArgs,
-	BoltPlugin,
+	bridge_message,
+	bridge_message_arguments,
+	bolt_plugin,
 	Client,
 	GatewayIntentBits as Intents,
 	REST,
@@ -18,13 +18,13 @@ type DiscordConfig = {
 	registerSlashCommands?: boolean;
 };
 
-export default class DiscordPlugin extends BoltPlugin {
+export default class DiscordPlugin extends bolt_plugin {
 	bot: Client;
 	config: DiscordConfig;
 	gateway: WebSocketManager;
 	rest: REST;
 	name = 'bolt-discord';
-	version = '0.5.4';
+	version = '0.5.5';
 	constructor(config: DiscordConfig) {
 		super();
 		this.config = config;
@@ -37,7 +37,7 @@ export default class DiscordPlugin extends BoltPlugin {
 		this.bot = new Client({ rest: this.rest, gateway: this.gateway });
 	}
 	async start(bolt: Bolt) {
-		registerEvents(this, bolt);
+		registerEvents(this);
 		await this.gateway.connect();
 		if (this.config.registerSlashCommands) {
 			registerCommands(this, bolt);
@@ -59,8 +59,8 @@ export default class DiscordPlugin extends BoltPlugin {
 			name: 'Bolt Bridge'
 		});
 	}
-	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		const dat = data.data as BoltBridgeMessage;
+	async bridgeMessage(data: bridge_message_arguments) {
+		const dat = data.data as bridge_message;
 		let replyto;
 
 		try {

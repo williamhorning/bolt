@@ -4,7 +4,9 @@ FROM docker.io/lukechannings/deno:${DENO_VERSION}
 
 # add bolt to the image
 WORKDIR /app
+ADD ./packages /app
+RUN deno install -A -n bolt /app/packages/bolt-cli/mod.ts
 
 # set bolt as the entrypoint and use the run command by default
-# TODO: switch this once merge done
-CMD [ "deno", "run", "-A", "app/index.js"]
+ENTRYPOINT [ "bolt" ]
+CMD [ "run", "--config", "data/config.ts"]

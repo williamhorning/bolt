@@ -10,9 +10,9 @@ export {
 	WebhookClient
 } from 'npm:guilded.js@0.23.7';
 export {
-	type BoltBridgeMessage,
-	type BoltBridgeMessageArgs,
-	type BoltEmbed,
-	type BoltMessage,
-	BoltPlugin
+	type bridge_message,
+	type bridge_message_arguments,
+	type embed,
+	type message,
+	bolt_plugin
 } from '../bolt/mod.ts';

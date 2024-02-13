@@ -18,9 +18,8 @@ export { type RawFile, REST } from 'npm:@discordjs/rest@2.2.0';
 export { WebSocketManager } from 'npm:@discordjs/ws@1.0.2';
 export {
 	Bolt,
-	type BoltBridgeMessage,
-	type BoltBridgeMessageArgs,
-	type BoltMessage,
-	BoltPlugin
+	type bridge_message,
+	type bridge_message_arguments,
+	type message,
+	bolt_plugin
 } from '../bolt/mod.ts';
-export { EventEmitter } from 'node:events';

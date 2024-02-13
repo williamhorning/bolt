@@ -1,25 +1,28 @@
 import {
-	applyBoltMigrations,
-	BoltMigrationVersions,
-	getBoltMigrations
-} from '../migrations/mod.ts';
-import { colors, Input, MongoClient, prompt, Select, Toggle } from './deps.ts';
+	versions,
+	Input,
+	MongoClient,
+	Select,
+	Toggle,
+	apply_migrations,
+	colors,
+	get_migrations,
+	prompt
+} from './deps.ts';
 
 export default async function migrations() {
-	const sharedversionprompt = {
-		type: Select,
-		options: Object.values(BoltMigrationVersions)
-	};
 	const promptdata = await prompt([
 		{
 			name: 'from',
 			message: 'what version of bolt is the DB currently set up for?',
-			...sharedversionprompt
+			type: Select,
+			options: Object.values(versions)
 		},
 		{
 			name: 'to',
 			message: 'what version of bolt do you want to move to?',
-			...sharedversionprompt
+			type: Select,
+			options: Object.values(versions)
 		},
 		{
 			name: 'mongo',
@@ -37,7 +40,7 @@ export default async function migrations() {
 
 	if (!promptdata.from || !promptdata.to || !promptdata.mongo) Deno.exit();
 
-	const migrationlist = getBoltMigrations(promptdata.from, promptdata.to);
+	const migrationlist = get_migrations(promptdata.from, promptdata.to);
 
 	if (migrationlist.length < 1) Deno.exit();
 
@@ -48,7 +51,7 @@ export default async function migrations() {
 	console.log(colors.blue(`Downloading your data...`));
 
 	const dumped = await database
-		.collection(migrationlist[0].collectionNames.fromDB)
+		.collection(migrationlist[0].from_db)
 		.find()
 		.toArray();
 
@@ -56,7 +59,7 @@ export default async function migrations() {
 		colors.blue(`Downloaded data from the DB! Migrating your data...`)
 	);
 
-	const data = applyBoltMigrations(migrationlist, dumped);
+	const data = apply_migrations(migrationlist, dumped);
 
 	const filepath = Deno.makeTempFileSync({ suffix: 'bolt-db-migration' });
 	Deno.writeTextFileSync(filepath, JSON.stringify(data));
@@ -67,9 +70,7 @@ export default async function migrations() {
 
 	if (!writeconfirm) Deno.exit();
 
-	const tocollection = database.collection(
-		migrationlist.slice(-1)[0].collectionNames.toDB
-	);
+	const tocollection = database.collection(migrationlist.slice(-1)[0].to_db);
 
 	await Promise.all(
 		data.map(i => {

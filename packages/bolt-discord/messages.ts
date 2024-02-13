@@ -1,6 +1,6 @@
 import {
 	API,
-	BoltMessage,
+	message,
 	Buffer,
 	GatewayMessageUpdateDispatchData,
 	RawFile,
@@ -15,16 +15,8 @@ export async function messageToCore(
 	api: API,
 	message: GatewayMessageUpdateDispatchData,
 	excludeReply?: boolean
-): Promise<BoltMessage<GatewayMessageUpdateDispatchData>> {
+): Promise<message<GatewayMessageUpdateDispatchData>> {
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
-	let color = '#FFFFFF';
-	if (message.guild_id && message.member) {
-		const roles = await api.guilds.getRoles(message.guild_id);
-		const role = roles.find(i => message.member!.roles.includes(i.id));
-		if (role) {
-			color = `#${role.color.toString(16)}`;
-		}
-	}
 	return {
 		author: {
 			profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
@@ -32,21 +24,21 @@ export async function messageToCore(
 				message.member?.nick || message.author?.username || 'discord user',
 			rawname: message.author?.username || 'discord user',
 			id: message.author?.id || message.webhook_id || '',
-			color
+			color: '#5865F2'
 		},
 		channel: message.channel_id,
 		content: message.content,
 		id: message.id,
-		timestamp: new Date(
-			message.edited_timestamp || message.timestamp || Date.now()
-		).getTime(),
+		timestamp: Temporal.Instant.fromEpochMilliseconds(
+			Number(message.edited_timestamp) || Number(message.timestamp) || 0
+		),
 		embeds: message.embeds?.map(i => {
 			return {
 				...i,
 				timestamp: i.timestamp ? Number(i.timestamp) : undefined
 			};
 		}),
-		reply: async (msg: BoltMessage<unknown>) => {
+		reply: async (msg: message<unknown>) => {
 			await api.channels.createMessage(message.channel_id, {
 				...(await coreToMessage(msg)),
 				message_reference: {
@@ -67,9 +59,7 @@ export async function messageToCore(
 				size: i.size / 1000000
 			};
 		}),
-		guild: message.guild_id,
-		replyto: await replyto(message, api, excludeReply),
-		threadId: message.thread?.id
+		replyto: await replyto(message, api, excludeReply)
 	};
 }
 
@@ -86,7 +76,7 @@ async function replyto(
 	}
 }
 
-export async function coreToMessage(message: BoltMessage<unknown>): Promise<
+export async function coreToMessage(message: message<unknown>): Promise<
 	RESTPostAPIWebhookWithTokenJSONBody &
 		RESTPostAPIWebhookWithTokenQuery & {
 			files?: RawFile[];
@@ -112,9 +102,8 @@ export async function coreToMessage(message: BoltMessage<unknown>): Promise<
 							data: Buffer.from(await (await fetch(a.file)).arrayBuffer())
 						}
 					];
-				})
+			  })
 			: undefined,
-		thread_id: message.threadId,
 		username: message.author.username,
 		wait: true
 	};

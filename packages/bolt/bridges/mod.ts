@@ -1,21 +1,20 @@
-import { bridgecommands } from './bridge_commands.ts';
-import { Bolt, BoltMessage, BoltPlugin, Collection } from './deps.ts';
+import { bridge_commands } from './_commands.ts';
+import { bridge_document, bridge_platform } from './types.ts';
+import { message, bolt_plugin, Bolt, Collection } from './_deps.ts';
 
-export class BoltBridges {
-	private bolt: Bolt;
-	private collection: Collection<BoltBridgeDocument>;
+export class bolt_bridges {
+	private collection: Collection<bridge_document>;
 
 	constructor(bolt: Bolt) {
-		this.bolt = bolt;
-		this.bolt.on('messageCreate', async msg => {
-			if (!(await this.isBridged(msg))) this.bolt.emit('msgcreate', msg);
+		bolt.on('messageCreate', async msg => {
+			if (!(await this.isBridged(msg, bolt))) bolt.emit('msgcreate', msg);
 		});
-		this.bolt.on('msgcreate', msg => this.bridgeMessage(msg));
-		this.bolt.cmds.registerCommands(...bridgecommands);
+		bolt.on('msgcreate', msg => this.bridgeMessage(msg, bolt));
+		bolt.cmds.register(bridge_commands(bolt));
 		this.collection = bolt.mongo.database(bolt.database).collection('bridges');
 	}
 
-	private async bridgeMessage(msg: BoltMessage<unknown>) {
+	private async bridgeMessage(msg: message<unknown>, bolt: Bolt) {
 		const bridge = await this.getBridge(msg);
 		if (!bridge) return;
 
@@ -26,19 +25,20 @@ export class BoltBridges {
 		if (!platforms || platforms.length < 1) return;
 
 		for (const platform of platforms) {
-			const plugin = this.bolt.getPlugin(platform.plugin);
+			const plugin = bolt.getPlugin(platform.plugin);
 			if (!platform?.senddata || !plugin?.bridgeMessage) continue;
 			try {
 				await plugin.bridgeMessage({
+					type: 'create',
 					data: {
 						...msg,
 						...platform,
-						bolt: this.bolt,
+						bolt,
 						bridgePlatform: platform
 					}
 				});
 			} catch (e) {
-				await this.handleBridgeError(e, msg, bridge, platform, plugin);
+				await this.handleBridgeError(e, msg, bridge, platform, plugin, bolt);
 			}
 		}
 	}
@@ -46,10 +46,11 @@ export class BoltBridges {
 	private async handleBridgeError(
 		// deno-lint-ignore no-explicit-any
 		e: Error & Record<string, any>,
-		msg: BoltMessage<unknown>,
-		bridge: BoltBridgeDocument,
-		platform: BoltBridgePlatform,
-		plugin: BoltPlugin
+		msg: message<unknown>,
+		bridge: bridge_document,
+		platform: bridge_platform,
+		plugin: bolt_plugin,
+		bolt: Bolt
 	) {
 		if (e?.response?.status === 404) {
 			const updated_bridge = {
@@ -59,18 +60,19 @@ export class BoltBridges {
 			await this.updateBridge(updated_bridge);
 			return;
 		}
-		const err = await this.bolt.logError(e, { msg, bridge });
+		const err = await bolt.logError(e, { msg, bridge });
 		try {
 			return await plugin.bridgeMessage!({
+				type: 'create',
 				data: {
 					...err,
 					...platform,
-					bolt: this.bolt,
+					bolt,
 					bridgePlatform: platform
 				}
 			});
 		} catch (e2) {
-			await this.bolt.logError(
+			await bolt.logError(
 				new Error(`sending error message for ${err.uuid} failed`, {
 					cause: [e2]
 				})
@@ -78,10 +80,8 @@ export class BoltBridges {
 		}
 	}
 
-	async isBridged(msg: BoltMessage<unknown>) {
-		const platform_says = this.bolt.getPlugin(msg.platform.name)!.isBridged!(
-			msg
-		);
+	async isBridged(msg: message<unknown>, bolt: Bolt) {
+		const platform_says = bolt.getPlugin(msg.platform.name)!.isBridged!(msg);
 
 		if (platform_says !== 'query') return platform_says;
 		if (!msg.platform.webhookid) return false;
@@ -107,39 +107,11 @@ export class BoltBridges {
 		return (await this.collection.findOne(query)) || undefined;
 	}
 
-	async updateBridge(bridge: BoltBridgeDocument) {
+	async updateBridge(bridge: bridge_document) {
 		return await this.collection.replaceOne({ _id: bridge._id }, bridge, {
 			upsert: true
 		});
 	}
 }
 
-export interface BoltBridgeDocument {
-	_id: string;
-	platforms: BoltBridgePlatform[];
-	settings?: {
-		realnames?: boolean;
-	};
-}
-
-export interface BoltBridgePlatform {
-	channel: string;
-	plugin: string;
-	senddata: unknown;
-}
-
-export interface BoltBridgeSentPlatform extends BoltBridgePlatform {
-	id: string;
-}
-
-export interface BoltBridgeMessage
-	extends Omit<BoltMessage<unknown>, 'replyto'>,
-		BoltBridgePlatform {
-	bolt: Bolt;
-	bridgePlatform: BoltBridgePlatform;
-	replytoId?: string;
-}
-
-export type BoltBridgeMessageArgs = {
-	data: BoltBridgeMessage;
-};
+export * from './types.ts';

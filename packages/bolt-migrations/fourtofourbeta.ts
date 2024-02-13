@@ -1,13 +1,11 @@
 import { Document } from './deps.ts';
-import { isChannel } from './utils.ts';
+import { _is_channel } from './mod.ts';
 
 export default {
-	versionfrom: '0.4',
-	versionto: '0.4-beta',
-	collectionNames: {
-		fromDB: 'bridge',
-		toDB: 'bridgev1'
-	},
+	from: '0.4',
+	to: '0.4-beta',
+	from_db: 'bridge',
+	to_db: 'bridgev1',
 	translate: (
 		items: (Document | { _id: string; value: string | unknown })[]
 	) => {
@@ -22,7 +20,7 @@ export default {
 		for (const item of items) {
 			const [platform, ...join] = item._id.split('-');
 			const name = join.join('-');
-			if (isChannel(name)) continue;
+			if (_is_channel(name)) continue;
 			const _id = items.find(i => {
 				return i._id.startsWith(platform) && i.value === name;
 			})?._id;
@@ -40,7 +38,7 @@ export default {
 		for (const _id in obj) {
 			const value = obj[_id];
 			if (!value) continue;
-			if (isChannel(_id)) continue;
+			if (_is_channel(_id)) continue;
 			if (value.length < 2) continue;
 			documents.push({
 				_id,

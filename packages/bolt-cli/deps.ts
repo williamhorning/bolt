@@ -6,8 +6,10 @@ export {
 	Select,
 	Toggle
 } from 'https://deno.land/x/cliffy@v1.0.0-rc.3/prompt/mod.ts';
+export { MongoClient } from 'https://deno.land/x/mongo@v0.32.0/mod.ts';
 export {
-	type ConnectOptions as MongoConnectOptions,
-	type Document,
-	MongoClient
-} from 'https://deno.land/x/mongo@v0.32.0/mod.ts';
+	apply_migrations,
+	versions,
+	get_migrations
+} from '../bolt-migrations/mod.ts';
+export { Bolt } from '../bolt/mod.ts';

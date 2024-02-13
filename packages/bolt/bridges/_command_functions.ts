@@ -1,11 +1,10 @@
-import { BoltCommandArguments } from './deps.ts';
+import { command_arguments, Bolt, create_message } from './_deps.ts';
 
-export async function joinBoltBridge({
-	bolt,
-	channel,
-	platform,
-	opts
-}: BoltCommandArguments) {
+/** join a bridge */
+export async function join(
+	{ channel, platform, opts }: command_arguments,
+	bolt: Bolt
+) {
 	const _id = `bridge-${opts.name?.split(' ')[0]}`;
 	const current = await bolt.bridge.getBridge({ channel });
 	const errorargs = { channel, platform, _id };
@@ -13,7 +12,7 @@ export async function joinBoltBridge({
 
 	if (current || !_id) {
 		return {
-			text: bolt.createMsg({
+			text: create_message({
 				text: "to do this, you can't be in a bridge and need to name your bridge, see `!bolt help`"
 			})
 		};
@@ -37,7 +36,7 @@ export async function joinBoltBridge({
 			});
 			await bolt.bridge.updateBridge(bridge);
 			return {
-				text: bolt.createMsg({ text: 'Joined a bridge!' }),
+				text: create_message({ text: 'Joined a bridge!' }),
 				ok: true
 			};
 		} catch (e) {
@@ -46,16 +45,16 @@ export async function joinBoltBridge({
 	}
 }
 
-export async function leaveBoltBridge({
-	bolt,
-	channel,
-	platform
-}: BoltCommandArguments) {
+/** leave a bridge */
+export async function leave(
+	{ channel, platform }: command_arguments,
+	bolt: Bolt
+) {
 	const current = await bolt.bridge.getBridge({ channel });
 
 	if (!current) {
 		return {
-			text: bolt.createMsg({
+			text: create_message({
 				text: 'To run this command you need to be in a bridge. To learn more, run `!bolt help`.'
 			}),
 			ok: true
@@ -70,7 +69,7 @@ export async function leaveBoltBridge({
 			});
 
 			return {
-				text: bolt.createMsg({ text: 'Left a bridge!' }),
+				text: create_message({ text: 'Left a bridge!' }),
 				ok: true
 			};
 		} catch (e) {
@@ -79,16 +78,17 @@ export async function leaveBoltBridge({
 	}
 }
 
-// TODO: actually fix this so that args.opts.name is always correctly defined and not in a way leading
-// to something like `bridge-bridge-*`
-export async function resetBoltBridge(args: BoltCommandArguments) {
+/** reset a bridge (leave then join) */
+export async function reset(args: command_arguments, bolt: Bolt) {
 	if (!args.opts.name) {
-		args.opts.name =
-			(await args.bolt.bridge.getBridge(args))?._id.slice(0, 7) || '';
+		const [_, ...rest] = ((await bolt.bridge.getBridge(args))?._id || '').split(
+			'bridge-'
+		);
+		args.opts.name = rest.join('bridge-');
 	}
-	let result = await leaveBoltBridge(args);
+	let result = await leave(args, bolt);
 	if (!result.ok) return result;
-	result = await joinBoltBridge(args);
+	result = await join(args, bolt);
 	if (!result.ok) return result;
-	return { text: args.bolt.createMsg({ text: 'Reset this bridge!' }) };
+	return { text: create_message({ text: 'Reset this bridge!' }) };
 }
