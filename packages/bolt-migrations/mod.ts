@@ -1,8 +1,8 @@
-import { Document } from './deps.ts';
-import BoltFourToFive from './fourbetatofive.ts';
+import { Document } from './_deps.ts';
+import BoltFourToFourBeta from './fourtofourbeta.ts';
 import BoltFourBetaToFive from './fourtofourbeta.ts';
 
-const list_migrations = [BoltFourBetaToFive, BoltFourToFive];
+const list_migrations = [BoltFourBetaToFive, BoltFourToFourBeta];
 
 export type migration = (typeof list_migrations)[number];
 

@@ -1,4 +1,4 @@
-import { Document } from './deps.ts';
+import { Document } from './_deps.ts';
 import { _is_channel } from './mod.ts';
 
 export default {

@@ -1,4 +1,4 @@
-import { Document } from './deps.ts';
+import { Document } from './_deps.ts';
 import { _map_plugins } from './mod.ts';
 
 export default {
@@ -22,14 +22,12 @@ export default {
 			return [
 				{
 					_id,
-					name: `bridge-migrated-${_id}`,
 					platforms: value.bridges.map(
 						(i: { platform: string; channel: string; senddata: unknown }) => {
 							return {
 								plugin: _map_plugins(i.platform),
 								channel: i.channel,
-								senddata: i.senddata,
-								name: `${i.channel} on ${i.platform}`
+								senddata: i.senddata
 							};
 						}
 					)
