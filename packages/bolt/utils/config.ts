@@ -24,13 +24,8 @@ export function define_config(config?: Partial<config>): config {
 		config.database.redis = { hostname: 'localhost' };
 	}
 	if (!config.http) {
-		config.http = {
-			apiURL: 'http://localhost:9090',
-			dashURL: 'http://localhost:9091'
-		};
+		config.http = {};
 	}
-	if (!config.http.apiURL) config.http.apiURL = 'http://localhost:9090';
-	if (!config.http.dashURL) config.http.dashURL = 'http://localhost:9091';
 	return config as config;
 }
 
@@ -44,5 +39,5 @@ export interface config {
 		};
 		redis: RedisConnectOptions;
 	};
-	http: { dashURL?: string; apiURL?: string; errorURL?: string };
+	http: { errorURL?: string };
 }

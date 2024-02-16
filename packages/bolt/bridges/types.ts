@@ -1,5 +1,4 @@
-import { Bolt } from '../bolt.ts';
-import { message } from '../utils/messages.ts';
+import { message, Bolt } from './_deps.ts';
 
 export interface bridge_document {
 	_id: string;
