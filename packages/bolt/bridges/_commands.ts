@@ -15,7 +15,7 @@ export function bridge_commands(bolt: Bolt): command {
 					name: 'join',
 					description: 'join a bridge',
 					execute: async opts => (await join(opts, bolt)).text,
-					options: { hasArgument: true }
+					options: { argument_name: 'name', argument_required: true }
 				},
 				{
 					name: 'leave',
@@ -26,7 +26,7 @@ export function bridge_commands(bolt: Bolt): command {
 					name: 'reset',
 					description: 'reset a bridge',
 					execute: async opts => (await reset(opts, bolt)).text,
-					options: { hasArgument: true }
+					options: { argument_name: 'name' }
 				},
 				{
 					name: 'status',

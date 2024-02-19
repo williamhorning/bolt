@@ -15,7 +15,8 @@ export type command = {
 	description?: string;
 	options?: {
 		default?: boolean;
-		hasArgument?: boolean;
+		argument_name?: string;
+		argument_required?: boolean;
 		subcommands?: command[];
 	};
 	execute: (

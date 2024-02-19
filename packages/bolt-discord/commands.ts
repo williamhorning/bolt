@@ -7,11 +7,12 @@ export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
 	].map(command => {
 		const opts = [];
 
-		if (command.options?.hasArgument) {
+		if (command.options?.argument_name) {
 			opts.push({
-				name: 'options',
+				name: command.options.argument_name,
 				description: 'option to pass to this command',
-				type: 3
+				type: 3,
+				required: command.options.argument_required
 			});
 		}
 
@@ -26,13 +27,15 @@ export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
 							type: number;
 							name: string;
 							description: string;
+							required: boolean;
 						}[]
 					};
-					if (i.options?.hasArgument) {
+					if (i.options?.argument_name) {
 						cmd.options.push({
-							name: 'options',
+							name: i.options.argument_name,
 							description: 'option to pass to this command',
-							type: 3
+							type: 3,
+							required: i.options.argument_required || false
 						});
 					}
 					return cmd;
