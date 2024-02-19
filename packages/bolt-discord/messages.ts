@@ -16,6 +16,7 @@ export async function messageToCore(
 	message: GatewayMessageUpdateDispatchData,
 	excludeReply?: boolean
 ): Promise<message<GatewayMessageUpdateDispatchData>> {
+	console.log(message);
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
 	return {
 		author: {
@@ -29,8 +30,10 @@ export async function messageToCore(
 		channel: message.channel_id,
 		content: message.content,
 		id: message.id,
-		timestamp: Temporal.Instant.fromEpochMilliseconds(
-			Number(message.edited_timestamp) || Number(message.timestamp) || 0
+		timestamp: Temporal.Instant.from(
+			message.edited_timestamp ||
+				message.timestamp ||
+				String(Number(BigInt(message.id) >> 22n) + 1420070400000)
 		),
 		embeds: message.embeds?.map(i => {
 			return {
