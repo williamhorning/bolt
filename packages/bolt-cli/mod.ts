@@ -37,15 +37,6 @@ const cli = new CliffyApp()
 
 			const bolt = await Bolt.setup(cfg);
 
-			bolt.on('error', msg => {
-				console.error(colors.red(`Bolt Error - '${msg.uuid}'`));
-				console.error(msg.e, msg.extra);
-			});
-
-			bolt.on('warning', msg => {
-				console.warn(colors.yellow(msg));
-			});
-
 			if (debug) {
 				bolt.on('debug', msg => {
 					console.debug(colors.blue(msg as string));

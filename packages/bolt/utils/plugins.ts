@@ -1,7 +1,10 @@
-import { Bolt } from '../bolt.ts';
-import { bridge_platform, bridge_message_arguments } from '../bridges/mod.ts';
-import { EventEmitter } from '../deps.ts';
-import { command_arguments } from '../cmds/mod.ts';
+import {
+	Bolt,
+	EventEmitter,
+	command_arguments,
+	bridge_message_arguments,
+	bridge_platform
+} from './_deps.ts';
 import { message } from './messages.ts';
 
 export abstract class bolt_plugin extends EventEmitter<plugin_events> {
@@ -23,9 +26,6 @@ export type plugin_events = {
 	msgcreate: [message<unknown>];
 	commandCreate: [Omit<command_arguments, 'bolt'>];
 	messageCreate: [message<unknown>];
-	// deno-lint-ignore no-explicit-any
-	error: [Error & { uuid?: string; e: Error; extra?: Record<string, any> }];
-	warning: [string];
 	ready: [unknown?];
 	debug: [unknown];
 };

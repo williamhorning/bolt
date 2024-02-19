@@ -1,4 +1,4 @@
-import { command_arguments, Bolt, create_message } from './_deps.ts';
+import { command_arguments, Bolt, create_message, log_error } from './_deps.ts';
 
 /** join a bridge */
 export async function join(
@@ -18,10 +18,9 @@ export async function join(
 		};
 	} else if (!plugin || !plugin.createSenddata) {
 		return {
-			text: await bolt.logError(
-				new Error(`can't find plugin.senddata`),
-				errorargs
-			)
+			text: (
+				await log_error(new Error(`can't find plugin.senddata`), errorargs)
+			).message
 		};
 	} else {
 		const bridge = (await bolt.bridge.getBridge({ _id })) || {
@@ -40,7 +39,7 @@ export async function join(
 				ok: true
 			};
 		} catch (e) {
-			return { text: await bolt.logError(e, errorargs) };
+			return { text: (await log_error(e, errorargs)).message };
 		}
 	}
 }
@@ -73,7 +72,9 @@ export async function leave(
 				ok: true
 			};
 		} catch (e) {
-			return { text: await bolt.logError(e, { channel, platform, current }) };
+			return {
+				text: (await log_error(e, { channel, platform, current })).message
+			};
 		}
 	}
 }

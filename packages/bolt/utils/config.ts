@@ -1,4 +1,4 @@
-import { MongoConnectOptions, RedisConnectOptions } from '../deps.ts';
+import { MongoConnectOptions, RedisConnectOptions } from './_deps.ts';
 import { bolt_plugin } from './plugins.ts';
 
 export function define_config(config?: Partial<config>): config {

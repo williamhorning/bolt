@@ -1,4 +1,4 @@
-import { parseArgs, Bolt } from './_deps.ts';
+import { parseArgs, Bolt, log_error } from './_deps.ts';
 import { default_commands } from './_default.ts';
 import { command, command_arguments } from './types.ts';
 
@@ -16,27 +16,24 @@ export class bolt_commands {
 			if (msg.content?.startsWith('!bolt')) {
 				const args = parseArgs(msg.content.split(' '));
 				args._.shift();
-				this.run(
-					{
-						channel: msg.channel,
-						cmd: args._.shift() as string,
-						subcmd: args._.shift() as string,
-						opts: args as Record<string, string>,
-						platform: msg.platform.name,
-						timestamp: msg.timestamp,
-						replyfn: msg.reply
-					},
-					bolt
-				);
+				this.run({
+					channel: msg.channel,
+					cmd: args._.shift() as string,
+					subcmd: args._.shift() as string,
+					opts: args as Record<string, string>,
+					platform: msg.platform.name,
+					timestamp: msg.timestamp,
+					replyfn: msg.reply
+				});
 			}
 		});
 
 		bolt.on('commandCreate', async cmd => {
-			await this.run(cmd, bolt);
+			await this.run(cmd);
 		});
 	}
 
-	async run(opts: command_arguments, bolt: Bolt) {
+	async run(opts: command_arguments) {
 		const cmd = this.commands.get(opts.cmd) || this.commands.get('help')!;
 		const cmd_opts = { ...opts, commands: this };
 		let reply;
@@ -50,12 +47,12 @@ export class bolt_commands {
 			if (!execute) execute = cmd.execute;
 			reply = await execute(cmd_opts);
 		} catch (e) {
-			reply = await bolt.logError(e, { ...opts, reply: undefined });
+			reply = (await log_error(e, { ...opts, reply: undefined })).message;
 		}
 		try {
 			await opts.replyfn(reply, false);
 		} catch (e) {
-			await bolt.logError(e, { ...opts, reply: undefined });
+			await log_error(e, { ...opts, reply: undefined });
 		}
 	}
 }

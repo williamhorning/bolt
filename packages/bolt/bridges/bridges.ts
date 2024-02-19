@@ -1,6 +1,6 @@
 import { bridge_commands } from './_commands.ts';
 import { bridge_document, bridge_platform } from './types.ts';
-import { message, bolt_plugin, Bolt, Collection } from './_deps.ts';
+import { message, bolt_plugin, Bolt, Collection, log_error } from './_deps.ts';
 
 export class bolt_bridges {
 	private collection: Collection<bridge_document>;
@@ -60,7 +60,7 @@ export class bolt_bridges {
 			await this.updateBridge(updated_bridge);
 			return;
 		}
-		const err = await bolt.logError(e, { msg, bridge });
+		const err = (await log_error(e, { msg, bridge })).message;
 		try {
 			return await plugin.bridgeMessage!({
 				type: 'create',
@@ -72,7 +72,7 @@ export class bolt_bridges {
 				}
 			});
 		} catch (e2) {
-			await bolt.logError(
+			await log_error(
 				new Error(`sending error message for ${err.uuid} failed`, {
 					cause: [e2]
 				})
