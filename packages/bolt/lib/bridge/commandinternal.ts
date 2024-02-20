@@ -37,7 +37,7 @@ export async function joinBoltBridge(
 			extra: { plugin, channel, platform, name, current }
 		});
 	}
-	const bridge = (await getBoltBridge(bolt, { _id: name })) || {
+	const bridge = (await getBoltBridge(bolt, { _id: `bridge-${name}` })) || {
 		_id: `bridge-${name}`,
 		name,
 		platforms: []

@@ -48,11 +48,7 @@ export default class RevoltPlugin extends BoltPlugin {
 			case 'create':
 			case 'update': {
 				const dat = data.data as BoltBridgeMessage;
-				const channel = await this.bot.channels.fetch(dat.id);
-				const handler =
-					data.type === 'update'
-						? (await channel.fetchMessage(dat.id)).edit
-						: channel.sendMessage;
+				const channel = await this.bot.channels.fetch(dat.channel);
 				let replyto;
 				try {
 					if (dat.replytoId) {
