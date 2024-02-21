@@ -14,7 +14,7 @@ export class BoltCommands {
 		this.bolt = bolt;
 		this.registerCommands(...defaultcommands);
 		bolt.on('messageCreate', async msg => {
-			if (await getBoltBridgedMessage(bolt, msg.id)) return;
+			if (await getBoltBridgedMessage(bolt, true, msg.id)) return;
 			if (msg.content?.startsWith('!bolt')) {
 				let [_, name, ...arg] = msg.content.split(' ');
 				this.runCommand({

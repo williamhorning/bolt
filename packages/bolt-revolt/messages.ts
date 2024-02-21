@@ -58,7 +58,7 @@ export async function messageToCore(
 	return {
 		author: {
 			username:
-				message.member?.nickname ||
+				message.member?.displayName ||
 				message.author?.username ||
 				`${message.authorId || 'unknown user'} on revolt`,
 			rawname:

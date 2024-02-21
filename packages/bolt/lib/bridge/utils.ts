@@ -1,8 +1,8 @@
 import { Bolt } from '../bolt.ts';
 import { BoltBridgeDocument, BoltBridgeSentPlatform } from './types.ts';
 
-export async function getBoltBridgedMessage(bolt: Bolt, id?: string) {
-	return JSON.parse((await bolt.redis?.get(`message-${id}`)) || 'false') as
+export async function getBoltBridgedMessage(bolt: Bolt, bCheck: Boolean, id?: string) {
+	return JSON.parse((await bolt.redis?.get(`message${bCheck ? "-temp" : ""}-${id}`)) || 'false') as
 		| BoltBridgeSentPlatform[]
 		| false;
 }

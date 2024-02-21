@@ -21,7 +21,7 @@ export async function bridgeBoltMessage(
 	const platforms: (BoltBridgePlatform | BoltBridgeSentPlatform)[] | false =
 		type === 'create'
 			? bridge.platforms.filter(i => i.channel !== message.channel)
-			: await getBoltBridgedMessage(bolt, message.id);
+			: await getBoltBridgedMessage(bolt, false, message.id);
 
 	if (!platforms || platforms.length < 1) return;
 
@@ -46,7 +46,7 @@ export async function bridgeBoltMessage(
 				: (platform as BoltBridgeSentPlatform).thread?.id
 			: undefined;
 
-		const replyto = await getBoltBridgedMessage(bolt, message.replyto?.id);
+		const replyto = await getBoltBridgedMessage(bolt, false, message.replyto?.id);
 
 		if (bridge.settings?.realnames && 'author' in message) {
 			message.author.username = message.author.rawname;
@@ -110,7 +110,7 @@ export async function bridgeBoltMessage(
 	if (type !== 'delete') {
 		for (const i of data) {
 			// since this key is used to prevent echo, 15 sec expiry should be enough
-			await bolt.redis?.set(`message-${i.id}`, JSON.stringify(data), {
+			await bolt.redis?.set(`message-temp-${i.id}`, JSON.stringify(data), {
 				ex: 15
 			});
 		}

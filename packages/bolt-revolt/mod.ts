@@ -61,8 +61,8 @@ export default class RevoltPlugin extends BoltPlugin {
 				try {
 					const msg = await coreToMessage({ ...dat, replyto });
 					const result = data.type === 'update'
-						? (await channel.fetchMessage(dat.id)).edit(msg) // TODO
-						: channel.sendMessage(msg);
+						? await (await channel.fetchMessage(dat.id)).edit(msg) // TODO
+						: await channel.sendMessage(msg);
 					return {
 						channel: dat.channel,
 						id: 'id' in result ? result.id : result._id,
@@ -76,7 +76,8 @@ export default class RevoltPlugin extends BoltPlugin {
 			}
 			case 'delete': {
 				const channel = await this.bot.channels.fetch(data.data.channel);
-				await channel.deleteMessages([data.data.id]);
+				const msg = await channel.fetchMessage(data.data.id);
+				await msg.delete();
 				return { ...data.data.bridgePlatform, id: data.data.id };
 			}
 		}
