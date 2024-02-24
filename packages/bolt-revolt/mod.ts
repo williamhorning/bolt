@@ -59,7 +59,7 @@ export default class RevoltPlugin extends bolt_plugin implements bolt_plugin {
 		} catch {
 			replyto = undefined;
 		}
-		const msg = await coreToMessage({ ...dat, replyto });
+		const msg = await coreToMessage({ ...dat, replyto }, true);
 		const result = await channel.sendMessage(msg);
 		return {
 			channel: dat.channel,

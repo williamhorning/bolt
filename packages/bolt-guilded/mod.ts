@@ -57,7 +57,6 @@ export default class GuildedPlugin extends bolt_plugin {
 			name: 'Bolt Bridge',
 			channelId: channel
 		});
-		console.log(wh);
 		if (!wh.token) throw new Error('No token!');
 		return { id: wh.id, token: wh.token };
 	}

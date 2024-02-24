@@ -144,7 +144,7 @@ export function coreToMessage(msg: message<unknown>): APIWebhookMessagePayload {
 			description: msg.replyto.content
 		});
 	}
-	if (message.embeds?.length == 0) delete message.embeds;
+	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
 	return message;
 }
 

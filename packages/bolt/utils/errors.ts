@@ -66,7 +66,7 @@ export async function log_error(
 		uuid,
 		extra,
 		message: create_message({
-			text: `Something went wrong!\nCheck [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`${e.message}\n${uuid}\`\`\``,
+			text: `Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
 			uuid
 		})
 	};

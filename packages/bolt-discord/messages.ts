@@ -16,7 +16,6 @@ export async function messageToCore(
 	message: GatewayMessageUpdateDispatchData,
 	excludeReply?: boolean
 ): Promise<message<GatewayMessageUpdateDispatchData>> {
-	console.log(message);
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
 	return {
 		author: {
@@ -56,7 +55,7 @@ export async function messageToCore(
 		},
 		attachments: message.attachments?.map(i => {
 			return {
-				file: i.proxy_url,
+				file: i.url,
 				alt: i.description,
 				name: i.filename,
 				size: i.size / 1000000

@@ -8,6 +8,7 @@ export {
 	bolt_plugin,
 	create_message,
 	define_config,
+	log_error,
 	type config,
 	type embed_media,
 	type embed,
