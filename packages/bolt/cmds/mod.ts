@@ -2,17 +2,13 @@ import { parseArgs, Bolt, log_error } from './_deps.ts';
 import { default_commands } from './_default.ts';
 import { command, command_arguments } from './types.ts';
 
-export class bolt_commands {
-	commands = new Map<string, command>(default_commands);
-
-	register(...cmds: command[]) {
-		for (const cmd of cmds) {
-			this.commands.set(cmd.name, cmd);
-		}
+export class bolt_commands extends Map<string, command> {
+	constructor() {
+		super(default_commands);
 	}
 
 	listen(bolt: Bolt) {
-		bolt.on('msgcreate', msg => {
+		bolt.on('create_nonbridged_message', msg => {
 			if (msg.content?.startsWith('!bolt')) {
 				const args = parseArgs(msg.content.split(' '));
 				args._.shift();
@@ -28,13 +24,13 @@ export class bolt_commands {
 			}
 		});
 
-		bolt.on('commandCreate', async cmd => {
+		bolt.on('create_command', async cmd => {
 			await this.run(cmd);
 		});
 	}
 
 	async run(opts: command_arguments) {
-		const cmd = this.commands.get(opts.cmd) || this.commands.get('help')!;
+		const cmd = this.get(opts.cmd) || this.get('help')!;
 		const cmd_opts = { ...opts, commands: this };
 		let reply;
 		try {

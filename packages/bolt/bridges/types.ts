@@ -15,9 +15,7 @@ export interface bridge_platform {
 	id?: string;
 }
 
-export interface bridge_message
-	extends Omit<message<unknown>, 'replyto'>,
-		Omit<bridge_platform, 'id'> {
+export interface bridge_message extends Omit<message<unknown>, 'replyto'> {
 	bolt: Bolt;
 	bridgePlatform: bridge_platform;
 	replytoId?: string;

@@ -66,6 +66,7 @@ export interface message<t> {
 	embeds?: embed[];
 	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
 	replyto?: Omit<message<unknown>, 'replyto'>;
+	replytoid?: string;
 	id: string;
 	platform: {
 		name: string;
@@ -73,5 +74,15 @@ export interface message<t> {
 		webhookid?: string;
 	};
 	channel: string;
+	timestamp: Temporal.Instant;
+}
+
+export interface deleted_message<t> {
+	id: string;
+	channel: string;
+	platform: {
+		name: string;
+		message: t;
+	};
 	timestamp: Temporal.Instant;
 }

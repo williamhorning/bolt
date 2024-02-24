@@ -64,7 +64,9 @@ export default class GuildedPlugin extends bolt_plugin {
 	async bridgeMessage({
 		data: dat
 	}: bridge_message_arguments & {
-		data: { senddata: string | { id: string; token: string } };
+		data: {
+			bridgePlatform: { senddata: string | { id: string; token: string } };
+		};
 	}) {
 		let replyto;
 		try {
@@ -77,25 +79,30 @@ export default class GuildedPlugin extends bolt_plugin {
 		} catch {
 			replyto = undefined;
 		}
-		if (typeof dat.senddata === 'string') {
-			return await bridge_legacy(this, dat, dat.senddata, replyto);
+		if (typeof dat.bridgePlatform.senddata === 'string') {
+			return await bridge_legacy(
+				this,
+				dat,
+				dat.bridgePlatform.senddata,
+				replyto
+			);
 		} else {
 			const msgd = coreToMessage({ ...dat, replyto });
 			try {
-				const resp = await new WebhookClient(dat.senddata).send(
+				const resp = await new WebhookClient(dat.bridgePlatform.senddata).send(
 					msgd as RESTPostWebhookBody
 				);
 				return {
 					channel: resp.channelId,
 					id: resp.id,
 					plugin: 'bolt-guilded',
-					senddata: dat.senddata
+					senddata: dat.bridgePlatform.senddata
 				};
 			} catch {
 				return await bridge_legacy(
 					this,
 					dat,
-					dat.senddata as unknown as string,
+					dat.bridgePlatform.senddata as unknown as string,
 					replyto
 				);
 			}

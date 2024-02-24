@@ -13,10 +13,12 @@ export class Bolt extends EventEmitter<plugin_events> {
 	bridge: bolt_bridges;
 	cmds = new bolt_commands();
 	config: config;
-	database: string;
-	mongo: MongoClient;
-	plugins: bolt_plugin[] = [];
-	redis: Awaited<ReturnType<typeof connect>>;
+	db: {
+		mongo: MongoClient;
+		redis: Awaited<ReturnType<typeof connect>>;
+		name: string;
+	};
+	plugins = new Map<string, bolt_plugin>();
 
 	static async setup(cfg: Partial<config>) {
 		const config = define_config(cfg);
@@ -24,7 +26,8 @@ export class Bolt extends EventEmitter<plugin_events> {
 		Deno.env.set('BOLT_ERROR_HOOK', config.http.errorURL || '');
 
 		const mongo = new MongoClient();
-		let redis: Bolt['redis'] | undefined;
+
+		let redis: Bolt['db']['redis'] | undefined;
 
 		try {
 			await mongo.connect(config.database.mongo.connection);
@@ -40,32 +43,25 @@ export class Bolt extends EventEmitter<plugin_events> {
 	private constructor(
 		config: config,
 		mongo: MongoClient,
-		redis: Bolt['redis']
+		redis: Bolt['db']['redis']
 	) {
 		super();
 		this.config = config;
-		this.mongo = mongo;
-		this.redis = redis;
-		this.database = config.database.mongo.database;
+		this.db = { mongo, redis, name: config.database.mongo.database };
 		this.bridge = new bolt_bridges(this);
 		this.cmds.listen(this);
 		this.load(this.config.plugins);
 	}
 
-	getPlugin(name: string) {
-		return this.plugins.find(i => i.name === name);
-	}
-
 	async load(plugins: bolt_plugin[]) {
 		for (const plugin of plugins) {
-			if (plugin.boltversion !== '1') {
+			if (!plugin.support.includes('0.5.5')) {
 				await log_error(
-					new Error(`plugin '${plugin.name}' isn't supported by bolt`)
+					new Error(`plugin '${plugin.name}' doesn't support bolt 0.5.5`)
 				);
 				Deno.exit(1);
 			} else {
-				this.plugins.push(plugin);
-				plugin.start(this);
+				this.plugins.set(plugin.name, plugin);
 				(async () => {
 					for await (const event of plugin) {
 						this.emit(event.name, ...event.value);

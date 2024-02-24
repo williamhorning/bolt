@@ -47,13 +47,16 @@ export default class RevoltPlugin extends bolt_plugin implements bolt_plugin {
 
 	async bridgeMessage(data: bridge_message_arguments) {
 		const dat = data.data as bridge_message;
-		const channel = await this.bot.channels.fetch(dat.channel);
+		const channel = await this.bot.channels.fetch(dat.bridgePlatform.channel);
 		let replyto;
 		try {
 			if (dat.replytoId) {
 				replyto = await messageToCore(
 					this,
-					await this.bot.messages.fetch(dat.channel, dat.replytoId)
+					await this.bot.messages.fetch(
+						dat.bridgePlatform.channel,
+						dat.replytoId
+					)
 				);
 			}
 		} catch {
@@ -62,10 +65,10 @@ export default class RevoltPlugin extends bolt_plugin implements bolt_plugin {
 		const msg = await coreToMessage({ ...dat, replyto }, true);
 		const result = await channel.sendMessage(msg);
 		return {
-			channel: dat.channel,
+			channel: dat.bridgePlatform.channel,
 			id: result.id,
 			plugin: 'bolt-revolt',
-			senddata: dat.channel
+			senddata: dat.bridgePlatform.channel
 		};
 	}
 }

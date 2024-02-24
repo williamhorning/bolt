@@ -7,38 +7,33 @@ export class bolt_bridges {
 
 	constructor(bolt: Bolt) {
 		bolt.on('messageCreate', async msg => {
-			if (!(await this.isBridged(msg, bolt))) bolt.emit('msgcreate', msg);
+			if (!(await this.isBridged(msg, bolt)))
+				bolt.emit('create_nonbridged_message', msg);
 		});
-		bolt.on('msgcreate', msg => this.bridgeMessage(msg, bolt));
-		bolt.cmds.register(bridge_commands(bolt));
-		this.collection = bolt.mongo.database(bolt.database).collection('bridges');
+		bolt.on('create_nonbridged_message', msg => this.bridgeMessage(msg, bolt));
+		bolt.cmds.set('bridge', bridge_commands(bolt));
+		this.collection = bolt.db.mongo
+			.database(bolt.db.name)
+			.collection('bridges');
 	}
 
 	private async bridgeMessage(msg: message<unknown>, bolt: Bolt) {
 		const bridge = await this.getBridge(msg);
 		if (!bridge) return;
 
-		const platforms = bridge.platforms.filter(i => {
+		const platforms: bridge_platform[] = bridge.platforms.filter(i => {
 			return !(i.plugin == msg.platform.name && i.channel == msg.channel);
 		});
 
-		if (!platforms || platforms.length < 1) return;
+		if (platforms.length < 1) return;
 
 		for (const platform of platforms) {
-			const plugin = bolt.getPlugin(platform.plugin);
-			if (!platform?.senddata || !plugin?.bridgeMessage) continue;
+			const plugin = bolt.plugins.get(platform.plugin);
+			if (!plugin || !platform?.senddata || !plugin?.create_message) continue;
 			try {
-				await plugin.bridgeMessage({
-					type: 'create',
-					data: {
-						...msg,
-						...platform,
-						bolt,
-						bridgePlatform: platform
-					}
-				});
+				await plugin.create_message(msg, platform);
 			} catch (e) {
-				await this.handleBridgeError(e, msg, bridge, platform, plugin, bolt);
+				await this.handleBridgeError(e, msg, bridge, platform, plugin);
 			}
 		}
 	}
@@ -49,8 +44,7 @@ export class bolt_bridges {
 		msg: message<unknown>,
 		bridge: bridge_document,
 		platform: bridge_platform,
-		plugin: bolt_plugin,
-		bolt: Bolt
+		plugin: bolt_plugin
 	) {
 		if (e?.response?.status === 404) {
 			const updated_bridge = {
@@ -62,15 +56,7 @@ export class bolt_bridges {
 		}
 		const err = (await log_error(e, { msg, bridge })).message;
 		try {
-			return await plugin.bridgeMessage!({
-				type: 'create',
-				data: {
-					...err,
-					...platform,
-					bolt,
-					bridgePlatform: platform
-				}
-			});
+			return await plugin.bridgeMessage!(err, platform);
 		} catch (e2) {
 			await log_error(
 				new Error(`sending error message for ${err.uuid} failed`, {
@@ -81,7 +67,7 @@ export class bolt_bridges {
 	}
 
 	async isBridged(msg: message<unknown>, bolt: Bolt) {
-		const platform_says = bolt.getPlugin(msg.platform.name)!.isBridged!(msg);
+		const platform_says = bolt.plugins.get(msg.platform.name)!.is_bridged!(msg);
 
 		if (platform_says !== 'query') return platform_says;
 		if (!msg.platform.webhookid) return false;

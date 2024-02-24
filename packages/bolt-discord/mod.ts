@@ -75,7 +75,10 @@ export default class DiscordPlugin extends bolt_plugin {
 		}
 
 		const msgd = await coreToMessage({ ...dat, replyto });
-		const senddata = dat.senddata as { token: string; id: string };
+		const senddata = dat.bridgePlatform.senddata as {
+			token: string;
+			id: string;
+		};
 		const wh = await this.bot.api.webhooks.execute(
 			senddata.id,
 			senddata.token,

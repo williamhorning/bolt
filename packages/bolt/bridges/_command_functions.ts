@@ -8,7 +8,7 @@ export async function join(
 	const _id = `bridge-${opts.name?.split(' ')[0]}`;
 	const current = await bolt.bridge.getBridge({ channel });
 	const errorargs = { channel, platform, _id };
-	const plugin = bolt.getPlugin(platform);
+	const plugin = bolt.plugins.get(platform);
 
 	if (current || !_id) {
 		return {
@@ -16,10 +16,10 @@ export async function join(
 				text: "to do this, you can't be in a bridge and need to name your bridge, see `!bolt help`"
 			})
 		};
-	} else if (!plugin || !plugin.createSenddata) {
+	} else if (!plugin || !plugin.create_bridge) {
 		return {
 			text: (
-				await log_error(new Error(`can't find plugin.senddata`), errorargs)
+				await log_error(new Error(`can't find plugin#create_bridge`), errorargs)
 			).message
 		};
 	} else {
@@ -31,7 +31,7 @@ export async function join(
 			bridge.platforms.push({
 				channel,
 				plugin: platform,
-				senddata: await plugin.createSenddata(channel)
+				senddata: await plugin.create_bridge(channel)
 			});
 			await bolt.bridge.updateBridge(bridge);
 			return {

@@ -13,5 +13,6 @@ export {
 	type embed_media,
 	type embed,
 	type message,
+	type deleted_message,
 	type plugin_events
 } from './utils/mod.ts';

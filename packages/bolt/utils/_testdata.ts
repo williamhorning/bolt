@@ -21,7 +21,7 @@ export const msg = {
 
 export const cfg = {
 	prod: false,
-	plugins: [],
+	platforms: [],
 	database: {
 		mongo: {
 			connection: 'mongodb://localhost:27017',
