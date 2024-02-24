@@ -9,8 +9,6 @@ import {
 	log_error
 } from './utils/mod.ts';
 
-type Redis = Awaited<ReturnType<typeof connect>>;
-
 export class Bolt extends EventEmitter<plugin_events> {
 	bridge: bolt_bridges;
 	cmds = new bolt_commands();
@@ -18,7 +16,7 @@ export class Bolt extends EventEmitter<plugin_events> {
 	database: string;
 	mongo: MongoClient;
 	plugins: bolt_plugin[] = [];
-	redis: Redis;
+	redis: Awaited<ReturnType<typeof connect>>;
 
 	static async setup(cfg: Partial<config>) {
 		const config = define_config(cfg);
@@ -26,7 +24,7 @@ export class Bolt extends EventEmitter<plugin_events> {
 		Deno.env.set('BOLT_ERROR_HOOK', config.http.errorURL || '');
 
 		const mongo = new MongoClient();
-		let redis: Redis | undefined;
+		let redis: Bolt['redis'] | undefined;
 
 		try {
 			await mongo.connect(config.database.mongo.connection);
@@ -39,7 +37,11 @@ export class Bolt extends EventEmitter<plugin_events> {
 		return new Bolt(config, mongo, redis);
 	}
 
-	private constructor(config: config, mongo: MongoClient, redis: Redis) {
+	private constructor(
+		config: config,
+		mongo: MongoClient,
+		redis: Bolt['redis']
+	) {
 		super();
 		this.config = config;
 		this.mongo = mongo;

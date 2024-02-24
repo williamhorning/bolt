@@ -1,10 +1,4 @@
-import {
-	bridge_message,
-	message,
-	getBoltBridge,
-	updateBoltBridge
-} from './deps.ts';
-import { idTransform } from './messages.ts';
+import { bridge_message, message } from './deps.ts';
 import GuildedPlugin from './mod.ts';
 
 export async function bridge_legacy(
@@ -35,28 +29,58 @@ export async function bridge_legacy(
 	}
 }
 
+function idTransform(msg: message<unknown>) {
+	const senddat = {
+		embeds: [
+			{
+				author: {
+					name: msg.author.username,
+					icon_url: msg.author.profile
+				},
+				description: msg.content,
+				footer: {
+					text: 'please migrate to webhook bridges'
+				}
+			},
+			...(msg.embeds || []).map(i => {
+				return {
+					...i,
+					timestamp: i.timestamp ? new Date(i.timestamp) : undefined
+				};
+			})
+		]
+	};
+	if (msg.replyto) {
+		senddat.embeds[0].description += `\n**In response to ${msg.replyto.author.username}'s message:**\n${msg.replyto.content}`;
+	}
+	if (msg.attachments?.length) {
+		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
+			.map(a => {
+				return `![${a.alt || a.name}](${a.file})`;
+			})
+			.join('\n')}`;
+	}
+	return senddat;
+}
+
 async function migrate_bridge(
 	dat: bridge_message,
 	senddata: string,
 	guilded: GuildedPlugin
 ) {
-	if (!(await dat.bolt.redis?.get(`guilded-embed-migration-${senddata}`))) {
-		await dat.bolt.redis?.set(`guilded-embed-migration-${senddata}`, 'true');
-		// TODO: redo this
-		const currentbridge = await getBoltBridge(dat.bolt, {
-			channel: senddata
-		})!;
-		const senddata = await guilded.createSenddata(senddata);
-		if (currentbridge) {
-			const index = currentbridge.platforms.findIndex(
-				i => (i.channel = senddata)
-			);
-			currentbridge.platforms[index] = {
+	if (!dat.bolt.redis.get(`guilded-embed-migration-${senddata}`)) {
+		await dat.bolt.redis.set(`guilded-embed-migration-${senddata}`, 'true');
+		const current = await dat.bolt.bridge.getBridge({ channel: senddata });
+		const webhook = await guilded.createSenddata(senddata);
+		if (current) {
+			current.platforms[
+				current.platforms.findIndex(i => i.channel === senddata)
+			] = {
 				channel: senddata,
 				plugin: 'bolt-guilded',
-				senddata
+				senddata: webhook
 			};
-			await updateBoltBridge(dat.bolt, currentbridge);
+			await dat.bolt.bridge.updateBridge(current);
 		}
 	}
 }

@@ -147,37 +147,3 @@ export function coreToMessage(msg: message<unknown>): APIWebhookMessagePayload {
 	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
 	return message;
 }
-
-export function idTransform(msg: message<unknown>) {
-	const senddat = {
-		embeds: [
-			{
-				author: {
-					name: msg.author.username,
-					icon_url: msg.author.profile
-				},
-				description: msg.content,
-				footer: {
-					text: 'please migrate to webhook bridges'
-				}
-			},
-			...(msg.embeds || []).map(i => {
-				return {
-					...i,
-					timestamp: i.timestamp ? new Date(i.timestamp) : undefined
-				};
-			})
-		]
-	};
-	if (msg.replyto) {
-		senddat.embeds[0].description += `\n**In response to ${msg.replyto.author.username}'s message:**\n${msg.replyto.content}`;
-	}
-	if (msg.attachments?.length) {
-		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
-			.map(a => {
-				return `![${a.alt || a.name}](${a.file})`;
-			})
-			.join('\n')}`;
-	}
-	return senddat;
-}

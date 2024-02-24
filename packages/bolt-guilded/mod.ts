@@ -5,7 +5,7 @@ import {
 	RESTPostWebhookBody,
 	WebhookClient
 } from './deps.ts';
-// import { bridge_legacy } from './legacybridging.ts';
+import { bridge_legacy } from './legacybridging.ts';
 import { coreToMessage, messageToCore } from './messages.ts';
 
 export default class GuildedPlugin extends bolt_plugin {
@@ -78,8 +78,7 @@ export default class GuildedPlugin extends bolt_plugin {
 			replyto = undefined;
 		}
 		if (typeof dat.senddata === 'string') {
-			throw "can't legacy bridge";
-			// return await bridge_legacy(this, dat, dat.senddata, replyto);
+			return await bridge_legacy(this, dat, dat.senddata, replyto);
 		} else {
 			const msgd = coreToMessage({ ...dat, replyto });
 			try {
@@ -93,13 +92,12 @@ export default class GuildedPlugin extends bolt_plugin {
 					senddata: dat.senddata
 				};
 			} catch {
-				throw "can't legacy bridge";
-				// return await bridge_legacy(
-				// 	this,
-				// 	dat,
-				// 	dat.senddata as unknown as string,
-				// 	replyto
-				// );
+				return await bridge_legacy(
+					this,
+					dat,
+					dat.senddata as unknown as string,
+					replyto
+				);
 			}
 		}
 	}
