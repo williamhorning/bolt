@@ -6,7 +6,9 @@ import {
 } from './_deps.ts';
 import { message, deleted_message } from './messages.ts';
 
-export abstract class bolt_plugin extends EventEmitter<plugin_events> {
+export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
+	config: t;
+
 	/** the name of your plugin (like bolt-discord) */
 	abstract name: string;
 
@@ -18,8 +20,9 @@ export abstract class bolt_plugin extends EventEmitter<plugin_events> {
 
 	/** constructor */
 	// deno-lint-ignore no-unused-vars
-	constructor(bolt: Bolt, config: unknown) {
+	constructor(bolt: Bolt, config: t) {
 		super();
+		this.config = config;
 	}
 	/** create data needed to bridge */
 	abstract create_bridge(channel: string): Promise<unknown>;

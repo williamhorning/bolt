@@ -1,95 +1,101 @@
-import { registerCommands } from './commands.ts';
+import { register_commands } from './slashcmds.ts';
 import {
 	Bolt,
-	bridge_message,
-	bridge_message_arguments,
 	bolt_plugin,
 	Client,
-	GatewayIntentBits as Intents,
 	REST,
-	WebSocketManager
+	WebSocketManager,
+	message,
+	bridge_platform,
+	deleted_message
 } from './deps.ts';
-import { registerEvents } from './handlers.ts';
-import { coreToMessage, messageToCore } from './messages.ts';
+import { register_events } from './events.ts';
+import { coreToMessage } from './messages.ts';
 
-type DiscordConfig = {
-	appId: string;
+export type discord_config = {
+	app_id: string;
 	token: string;
-	registerSlashCommands?: boolean;
+	slash_cmds?: boolean;
 };
 
-export default class DiscordPlugin extends bolt_plugin {
+export class discord_plugin extends bolt_plugin<discord_config> {
 	bot: Client;
-	config: DiscordConfig;
 	gateway: WebSocketManager;
 	rest: REST;
 	name = 'bolt-discord';
 	version = '0.5.5';
-	constructor(config: DiscordConfig) {
-		super();
+	support = ['0.5.5'];
+
+	constructor(bolt: Bolt, config: discord_config) {
+		super(bolt, config);
 		this.config = config;
 		this.rest = new REST({ version: '10' }).setToken(config.token);
 		this.gateway = new WebSocketManager({
 			rest: this.rest,
 			token: config.token,
-			intents: Intents.Guilds | Intents.GuildMessages | Intents.MessageContent
+			intents: 0 | 33281
 		});
 		this.bot = new Client({ rest: this.rest, gateway: this.gateway });
+		this.gateway.connect();
+		register_events(this);
+		register_commands(this.config, this.bot.api, bolt);
 	}
-	async start(bolt: Bolt) {
-		registerEvents(this);
-		await this.gateway.connect();
-		if (this.config.registerSlashCommands) {
-			registerCommands(this, bolt);
-		}
-	}
-	async stop() {
-		await this.gateway.destroy();
-	}
-	isBridged() {
-		return 'query' as const;
-	}
-	bridgeSupport = {
-		text: true,
-		threads: true,
-		forum: true
-	};
-	async createSenddata(channel: string) {
+
+	async create_bridge(channel: string) {
 		return await this.bot.api.channels.createWebhook(channel, {
-			name: 'Bolt Bridge'
+			name: 'bolt bridge'
 		});
 	}
-	async bridgeMessage(data: bridge_message_arguments) {
-		const dat = data.data as bridge_message;
-		let replyto;
 
-		try {
-			if (dat.replytoId) {
-				replyto = await messageToCore(
-					this.bot.api,
-					await this.bot.api.channels.getMessage(dat.channel, dat.replytoId)
-				);
-			}
-		} catch {
-			replyto = undefined;
-		}
+	is_bridged() {
+		return 'query' as const;
+	}
 
-		const msgd = await coreToMessage({ ...dat, replyto });
-		const senddata = dat.bridgePlatform.senddata as {
-			token: string;
-			id: string;
-		};
+	async create_message(
+		message: message<unknown>,
+		bridge: bridge_platform
+	): Promise<bridge_platform> {
+		const msg = await coreToMessage(message);
+		const senddata = bridge.senddata as { token: string; id: string };
 		const wh = await this.bot.api.webhooks.execute(
 			senddata.id,
 			senddata.token,
-			msgd
+			msg
 		);
-
 		return {
-			channel: wh.channel_id,
-			id: wh.id,
-			plugin: 'bolt-discord',
-			senddata
+			...bridge,
+			id: wh.id
 		};
+	}
+
+	async edit_message(
+		message: message<unknown>,
+		bridge: bridge_platform
+	): Promise<bridge_platform> {
+		const msg = await coreToMessage(message);
+		const senddata = bridge.senddata as { token: string; id: string };
+		const wh = await this.bot.api.webhooks.editMessage(
+			senddata.id,
+			senddata.token,
+			message.id,
+			msg
+		);
+		return {
+			...bridge,
+			id: wh.id
+		};
+	}
+
+	async delete_message(
+		message: deleted_message<unknown>,
+		bridge: bridge_platform
+	) {
+		const senddata = bridge.senddata as { token: string; id: string };
+		await this.bot.api.webhooks.deleteMessage(
+			senddata.id,
+			senddata.token,
+			message.id
+		);
+		return bridge;
 	}
 }

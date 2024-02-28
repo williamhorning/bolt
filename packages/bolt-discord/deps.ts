@@ -2,13 +2,9 @@ export { Buffer } from 'node:buffer';
 export {
 	API,
 	type APIApplicationCommandInteractionDataOption,
-	ApplicationCommandOptionType,
 	Client,
 	GatewayDispatchEvents,
-	GatewayIntentBits,
 	type GatewayMessageUpdateDispatchData,
-	type GatewayThreadDeleteDispatchData,
-	type GatewayThreadUpdateDispatchData,
 	type RESTPostAPIWebhookWithTokenJSONBody,
 	type RESTPostAPIWebhookWithTokenQuery,
 	type RESTPutAPIApplicationCommandsJSONBody,
@@ -21,5 +17,7 @@ export {
 	type bridge_message,
 	type bridge_message_arguments,
 	type message,
-	bolt_plugin
+	bolt_plugin,
+	type bridge_platform,
+	type deleted_message
 } from '../bolt/mod.ts';

@@ -1,7 +1,8 @@
 export { Bolt } from './bolt.ts';
 export {
 	type bridge_message,
-	type bridge_message_arguments
+	type bridge_message_arguments,
+	type bridge_platform
 } from './bridges/mod.ts';
 export { type command, type command_arguments } from './cmds/mod.ts';
 export {

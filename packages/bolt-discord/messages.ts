@@ -11,11 +11,10 @@ import {
 const asyncFlatMap = <A, B>(arr: A[], f: (a: A) => Promise<B>) =>
 	Promise.all(arr.map(f)).then(arr => arr.flat());
 
-export async function messageToCore(
+export function messageToCore(
 	api: API,
-	message: GatewayMessageUpdateDispatchData,
-	excludeReply?: boolean
-): Promise<message<GatewayMessageUpdateDispatchData>> {
+	message: GatewayMessageUpdateDispatchData
+): message<GatewayMessageUpdateDispatchData> {
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
 	return {
 		author: {
@@ -61,21 +60,8 @@ export async function messageToCore(
 				size: i.size / 1000000
 			};
 		}),
-		replyto: await replyto(message, api, excludeReply)
+		replytoid: message.referenced_message?.id
 	};
-}
-
-async function replyto(
-	message: GatewayMessageUpdateDispatchData,
-	api: API,
-	excludeReply?: boolean
-) {
-	if (!message.referenced_message || excludeReply) return;
-	try {
-		return await messageToCore(api, message.referenced_message, true);
-	} catch {
-		return;
-	}
 }
 
 export async function coreToMessage(message: message<unknown>): Promise<

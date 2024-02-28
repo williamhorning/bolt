@@ -65,7 +65,6 @@ export interface message<t> {
 	content?: string;
 	embeds?: embed[];
 	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
-	replyto?: Omit<message<unknown>, 'replyto'>;
 	replytoid?: string;
 	id: string;
 	platform: {

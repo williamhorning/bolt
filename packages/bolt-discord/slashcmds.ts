@@ -1,9 +1,14 @@
-import { Bolt, RESTPutAPIApplicationCommandsJSONBody } from './deps.ts';
-import DiscordPlugin from './mod.ts';
+import { Bolt, API, RESTPutAPIApplicationCommandsJSONBody } from './deps.ts';
+import { discord_config } from './mod.ts';
 
-export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
+export async function register_commands(
+	config: discord_config,
+	api: API,
+	bolt: Bolt
+) {
+	if (!config.slash_cmds) return;
 	const data: RESTPutAPIApplicationCommandsJSONBody = [
-		...bolt.cmds.commands.values()
+		...bolt.cmds.values()
 	].map(command => {
 		const opts = [];
 
@@ -51,13 +56,10 @@ export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
 		};
 	});
 
-	await discord.bot.api.applicationCommands.bulkOverwriteGlobalCommands(
-		discord.config.appId,
-		[]
-	);
+	await api.applicationCommands.bulkOverwriteGlobalCommands(config.app_id, []);
 
-	await discord.bot.api.applicationCommands.bulkOverwriteGlobalCommands(
-		discord.config.appId,
+	await api.applicationCommands.bulkOverwriteGlobalCommands(
+		config.app_id,
 		data
 	);
 }
