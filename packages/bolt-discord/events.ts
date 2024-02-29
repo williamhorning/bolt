@@ -1,31 +1,21 @@
-import { GatewayDispatchEvents } from './deps.ts';
-import { coreToMessage, messageToCore } from './messages.ts';
+import { events } from './_deps.ts';
+import { id_to_temporal, tocore, todiscord } from './messages.ts';
 import { discord_plugin } from './mod.ts';
 
 export function register_events(plugin: discord_plugin) {
-	plugin.bot.on(GatewayDispatchEvents.Ready, () => {
+	plugin.bot.on(events.Ready, () => {
 		plugin.emit('ready');
 	});
-	plugin.bot.on(GatewayDispatchEvents.Resumed, () => {
-		plugin.emit('ready');
+	plugin.bot.on(events.MessageCreate, msg => {
+		plugin.emit('create_message', tocore(msg.api, msg.data));
 	});
-	plugin.bot.on(GatewayDispatchEvents.MessageCreate, msg => {
-		plugin.emit('create_message', messageToCore(msg.api, msg.data));
+	plugin.bot.on(events.MessageUpdate, msg => {
+		plugin.emit('edit_message', tocore(msg.api, msg.data));
 	});
-	plugin.bot.on(GatewayDispatchEvents.MessageUpdate, msg => {
-		plugin.emit('edit_message', messageToCore(msg.api, msg.data));
+	plugin.bot.on(events.MessageDelete, msg => {
+		plugin.emit('delete_message', tocore(msg.api, msg.data));
 	});
-	plugin.bot.on(GatewayDispatchEvents.MessageDelete, msg => {
-		plugin.emit('delete_message', {
-			channel: msg.data.channel_id,
-			id: msg.data.id,
-			platform: { name: 'bolt-discord', message: msg },
-			timestamp: Temporal.Instant.fromEpochMilliseconds(
-				Number(BigInt(msg.data.id) >> 22n) + 1420070400000
-			)
-		});
-	});
-	plugin.bot.on(GatewayDispatchEvents.InteractionCreate, interaction => {
+	plugin.bot.on(events.InteractionCreate, interaction => {
 		if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;
 		const opts = {} as Record<string, string>;
 		let subcmd = '';
@@ -42,15 +32,13 @@ export function register_events(plugin: discord_plugin) {
 				await interaction.api.interactions.reply(
 					interaction.data.id,
 					interaction.data.token,
-					await coreToMessage(msg)
+					await todiscord(msg)
 				);
 			},
 			channel: interaction.data.channel.id,
 			platform: 'bolt-discord',
 			opts,
-			timestamp: Temporal.Instant.fromEpochMilliseconds(
-				Number(BigInt(interaction.data.id) >> 22n) + 1420070400000
-			)
+			timestamp: id_to_temporal(interaction.data.id)
 		});
 	});
 }

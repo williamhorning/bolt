@@ -55,6 +55,5 @@ export type plugin_events = {
 	create_nonbridged_message: [message<unknown>];
 	edit_message: [message<unknown>];
 	delete_message: [deleted_message<unknown>];
-	ready: [unknown?];
-	debug: [unknown];
+	ready: [];
 };

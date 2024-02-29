@@ -1,16 +1,16 @@
-import { register_commands } from './slashcmds.ts';
 import {
 	Bolt,
-	bolt_plugin,
 	Client,
-	REST,
-	WebSocketManager,
-	message,
+	bolt_plugin,
 	bridge_platform,
-	deleted_message
-} from './deps.ts';
+	deleted_message,
+	message,
+	rest,
+	socket
+} from './_deps.ts';
+import { register_commands } from './commands.ts';
 import { register_events } from './events.ts';
-import { coreToMessage } from './messages.ts';
+import { todiscord } from './messages.ts';
 
 export type discord_config = {
 	app_id: string;
@@ -20,8 +20,6 @@ export type discord_config = {
 
 export class discord_plugin extends bolt_plugin<discord_config> {
 	bot: Client;
-	gateway: WebSocketManager;
-	rest: REST;
 	name = 'bolt-discord';
 	version = '0.5.5';
 	support = ['0.5.5'];
@@ -29,16 +27,16 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 	constructor(bolt: Bolt, config: discord_config) {
 		super(bolt, config);
 		this.config = config;
-		this.rest = new REST({ version: '10' }).setToken(config.token);
-		this.gateway = new WebSocketManager({
-			rest: this.rest,
+		const rest_client = new rest({ version: '10' }).setToken(config.token);
+		const gateway = new socket({
+			rest: rest_client,
 			token: config.token,
 			intents: 0 | 33281
 		});
-		this.bot = new Client({ rest: this.rest, gateway: this.gateway });
-		this.gateway.connect();
+		this.bot = new Client({ rest: rest_client, gateway });
 		register_events(this);
 		register_commands(this.config, this.bot.api, bolt);
+		gateway.connect();
 	}
 
 	async create_bridge(channel: string) {
@@ -55,7 +53,7 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 		message: message<unknown>,
 		bridge: bridge_platform
 	): Promise<bridge_platform> {
-		const msg = await coreToMessage(message);
+		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
 		const wh = await this.bot.api.webhooks.execute(
 			senddata.id,
@@ -72,7 +70,7 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 		message: message<unknown>,
 		bridge: bridge_platform
 	): Promise<bridge_platform> {
-		const msg = await coreToMessage(message);
+		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
 		const wh = await this.bot.api.webhooks.editMessage(
 			senddata.id,

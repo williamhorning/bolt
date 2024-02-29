@@ -1,4 +1,4 @@
-import { Bolt, API, RESTPutAPIApplicationCommandsJSONBody } from './deps.ts';
+import { API, Bolt, cmd_body } from './_deps.ts';
 import { discord_config } from './mod.ts';
 
 export async function register_commands(
@@ -7,9 +7,8 @@ export async function register_commands(
 	bolt: Bolt
 ) {
 	if (!config.slash_cmds) return;
-	const data: RESTPutAPIApplicationCommandsJSONBody = [
-		...bolt.cmds.values()
-	].map(command => {
+
+	const data: cmd_body = [...bolt.cmds.values()].map(command => {
 		const opts = [];
 
 		if (command.options?.argument_name) {
@@ -24,26 +23,21 @@ export async function register_commands(
 		if (command.options?.subcommands) {
 			opts.push(
 				...command.options.subcommands.map(i => {
-					const cmd = {
+					return {
 						name: i.name,
 						description: i.description || i.name,
 						type: 1,
-						options: [] as {
-							type: number;
-							name: string;
-							description: string;
-							required: boolean;
-						}[]
+						options: i.options?.argument_name
+							? [
+									{
+										name: i.options.argument_name,
+										description: i.options.argument_name,
+										type: 3,
+										required: i.options.argument_required || false
+									}
+							  ]
+							: undefined
 					};
-					if (i.options?.argument_name) {
-						cmd.options.push({
-							name: i.options.argument_name,
-							description: 'option to pass to this command',
-							type: 3,
-							required: i.options.argument_required || false
-						});
-					}
-					return cmd;
 				})
 			);
 		}
@@ -55,8 +49,6 @@ export async function register_commands(
 			options: opts
 		};
 	});
-
-	await api.applicationCommands.bulkOverwriteGlobalCommands(config.app_id, []);
 
 	await api.applicationCommands.bulkOverwriteGlobalCommands(
 		config.app_id,
