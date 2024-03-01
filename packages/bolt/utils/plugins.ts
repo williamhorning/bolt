@@ -28,9 +28,6 @@ export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
 	/** create data needed to bridge */
 	abstract create_bridge(channel: string): Promise<unknown>;
 
-	/** checks if message is bridged */
-	abstract is_bridged(message: message<unknown>): boolean | 'query';
-
 	/** bridge a message */
 	abstract create_message(
 		message: message<unknown>,

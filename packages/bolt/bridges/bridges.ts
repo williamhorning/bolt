@@ -1,87 +1,129 @@
 import { bridge_commands } from './_commands.ts';
-import { Bolt, Collection, bolt_plugin, log_error, message } from './_deps.ts';
+import {
+	Bolt,
+	Collection,
+	message,
+	deleted_message,
+	log_error
+} from './_deps.ts';
 import { bridge_document, bridge_platform } from './types.ts';
 
 export class bolt_bridges {
 	private collection: Collection<bridge_document>;
+	private bolt: Bolt;
 
 	constructor(bolt: Bolt) {
-		bolt.on('create_message', async msg => {
-			if (!(await this.isBridged(msg, bolt)))
+		this.bolt = bolt;
+		this.bolt.on('create_message', async msg => {
+			if (!(await this.get_bridge_message(msg.id))) {
 				bolt.emit('create_nonbridged_message', msg);
+				this.create_message(msg, 'create_message');
+			}
 		});
-		bolt.on('create_nonbridged_message', msg => this.bridgeMessage(msg, bolt));
-		bolt.cmds.set('bridge', bridge_commands(bolt));
+		this.bolt.on('edit_message', async msg => {
+			if (!(await this.get_bridge_message(msg.id))) {
+				await this.create_message(msg, 'edit_message');
+			}
+		});
+		this.bolt.on('delete_message', async msg => {
+			await this.delete_message(msg);
+		});
+		this.bolt.cmds.set('bridge', bridge_commands(bolt));
 		this.collection = bolt.db.mongo
 			.database(bolt.config.mongo_database)
 			.collection('bridges');
 	}
 
-	private async bridgeMessage(msg: message<unknown>, bolt: Bolt) {
-		const bridge = await this.getBridge(msg);
+	private async get_platforms(msg: deleted_message<unknown>, a: 'new' | 'not') {
+		const bridge = await this.get_bridge(msg);
 		if (!bridge) return;
+		const p =
+			a === 'new'
+				? bridge.platforms.filter(i => i.channel !== msg.channel)
+				: await this.get_bridge_message(msg.id);
+		if (!p || p.length < 1) return;
+		return p;
+	}
 
-		const platforms: bridge_platform[] = bridge.platforms.filter(i => {
-			return !(i.plugin == msg.platform.name && i.channel == msg.channel);
-		});
-
-		if (platforms.length < 1) return;
+	private async create_message(
+		msg: message<unknown>,
+		action: 'create_message' | 'edit_message'
+	) {
+		const data = [];
+		const platforms = await this.get_platforms(
+			msg,
+			action === 'create_message' ? 'new' : 'not'
+		);
+		if (!platforms) return;
 
 		for (const platform of platforms) {
-			const plugin = bolt.plugins.get(platform.plugin);
-			if (!plugin || !platform?.senddata || !plugin?.create_message) continue;
+			const plugin = this.bolt.plugins.get(platform.plugin);
+			if (
+				!platform.senddata ||
+				!plugin ||
+				!plugin[action] ||
+				(action === 'edit_message' && !platform.id)
+			)
+				continue;
 			try {
-				await plugin.create_message(msg, platform);
+				data.push(await plugin[action](msg, platform));
 			} catch (e) {
-				await this.handleBridgeError(e, msg, bridge, platform, plugin);
+				try {
+					data.push(
+						await plugin[action](
+							(
+								await log_error(e, {
+									platform,
+									action,
+									platforms
+								})
+							).message,
+							platform
+						)
+					);
+				} catch (e) {
+					await log_error(
+						new Error('logging a bridge error failed', { cause: e })
+					);
+				}
+			}
+		}
+
+		for (const i of data) {
+			await this.bolt.db.redis.set(`message-${i.id}`, JSON.stringify(data));
+		}
+
+		await this.bolt.db.redis.set(`message-${msg.id}`, JSON.stringify(data));
+	}
+
+	private async delete_message(msg: deleted_message<unknown>) {
+		const platforms = await this.get_platforms(msg, 'not');
+		if (!platforms) return;
+
+		for (const platform of platforms) {
+			const plugin = this.bolt.plugins.get(platform.plugin);
+			if (
+				!platform.id ||
+				!platform.senddata ||
+				!plugin ||
+				!plugin.delete_message
+			)
+				continue;
+			try {
+				await plugin.delete_message(msg, platform);
+			} catch (_e) {
+				continue;
 			}
 		}
 	}
 
-	private async handleBridgeError(
-		// deno-lint-ignore no-explicit-any
-		e: Error & Record<string, any>,
-		msg: message<unknown>,
-		bridge: bridge_document,
-		platform: bridge_platform,
-		plugin: bolt_plugin<unknown>
-	) {
-		if (e?.response?.status === 404) {
-			const updated_bridge = {
-				...bridge,
-				value: { bridges: bridge.platforms.filter(i => i !== platform) }
-			};
-			await this.updateBridge(updated_bridge);
-			return;
-		}
-		const err = (await log_error(e, { msg, bridge })).message;
-		try {
-			return await plugin.create_message!(err, platform);
-		} catch (e2) {
-			await log_error(
-				new Error(`sending error message for ${err.uuid} failed`, {
-					cause: [e2]
-				})
-			);
-		}
+	async get_bridge_message(id: string) {
+		return JSON.parse(
+			(await this.bolt.db.redis.get(`message-${id}`)) || 'false'
+		) as bridge_platform[] | false;
 	}
 
-	async isBridged(msg: message<unknown>, bolt: Bolt) {
-		const platform_says = bolt.plugins.get(msg.platform.name)!.is_bridged!(msg);
-
-		if (platform_says !== 'query') return platform_says;
-		if (!msg.platform.webhookid) return false;
-
-		const query = {
-			plugin: msg.platform.name,
-			channel: msg.channel,
-			'senddata.id': msg.platform.webhookid
-		};
-
-		return await this.collection.findOne({ platforms: { $elemMatch: query } });
-	}
-
-	async getBridge({ _id, channel }: { _id?: string; channel?: string }) {
+	async get_bridge({ _id, channel }: { _id?: string; channel?: string }) {
 		const query = {} as Record<string, string>;
 
 		if (_id) {
@@ -93,7 +135,7 @@ export class bolt_bridges {
 		return (await this.collection.findOne(query)) || undefined;
 	}
 
-	async updateBridge(bridge: bridge_document) {
+	async update_bridge(bridge: bridge_document) {
 		return await this.collection.replaceOne({ _id: bridge._id }, bridge, {
 			upsert: true
 		});

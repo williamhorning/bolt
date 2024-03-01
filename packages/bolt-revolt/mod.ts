@@ -1,11 +1,4 @@
-import {
-	Bolt,
-	Client,
-	Message,
-	bolt_plugin,
-	bridge_platform,
-	message
-} from './deps.ts';
+import { Bolt, Client, bolt_plugin, bridge_platform, message } from './deps.ts';
 import { tocore, torevolt } from './messages.ts';
 
 export class revolt_plugin extends bolt_plugin<{ token: string }> {
@@ -33,12 +26,6 @@ export class revolt_plugin extends bolt_plugin<{ token: string }> {
 			throw new Error('Please enable masquerade permissions!');
 		}
 		return ch.id;
-	}
-
-	is_bridged(msg: message<Message>) {
-		return Boolean(
-			msg.author.id === this.bot.user?.id && msg.platform.message.masquerade
-		);
 	}
 
 	async create_message(msg: message<unknown>, bridge: bridge_platform) {

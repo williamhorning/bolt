@@ -53,13 +53,6 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 		return { id: wh.id, token: wh.token };
 	}
 
-	is_bridged(msg: message<unknown>) {
-		if (msg.author.id === this.bot.user?.id && msg.embeds && !msg.replytoid) {
-			return true;
-		}
-		return 'query';
-	}
-
 	async create_message(message: message<unknown>, platform: bridge_platform) {
 		if (typeof platform.senddata === 'string') {
 			return await bridge_legacy(this, message, platform.senddata);
@@ -80,7 +73,6 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 		}
 	}
 
-	// TODO: edit support
 	// deno-lint-ignore require-await
 	async edit_message(message: message<unknown>, bridge: bridge_platform) {
 		return { id: message.id, ...bridge };
@@ -90,13 +82,8 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 		_message: deleted_message<unknown>,
 		bridge: bridge_platform
 	) {
-		try {
-			const msg = await this.bot.messages.fetch(bridge.channel, bridge.id!);
-			await msg.delete();
-			return bridge;
-		} catch {
-			// TODO: better handling
-			return bridge;
-		}
+		const msg = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+		await msg.delete();
+		return bridge;
 	}
 }

@@ -5,5 +5,6 @@ export {
 	bolt_plugin,
 	create_message,
 	log_error,
-	type message
+	type message,
+	type deleted_message
 } from '../utils/mod.ts';

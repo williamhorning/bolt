@@ -45,10 +45,6 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 		});
 	}
 
-	is_bridged() {
-		return 'query' as const;
-	}
-
 	async create_message(
 		message: message<unknown>,
 		bridge: bridge_platform

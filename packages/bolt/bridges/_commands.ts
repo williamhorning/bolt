@@ -32,7 +32,7 @@ export function bridge_commands(bolt: Bolt): command {
 					name: 'status',
 					description: "see what bridges you're in",
 					execute: async ({ channel }) => {
-						const data = await bolt.bridge.getBridge({ channel });
+						const data = await bolt.bridge.get_bridge({ channel });
 						const text = data?._id
 							? `This channel is connected to \`${data._id}\``
 							: "You're not in any bridges right now.";

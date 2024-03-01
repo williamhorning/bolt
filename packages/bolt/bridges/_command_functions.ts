@@ -6,7 +6,7 @@ export async function join(
 	bolt: Bolt
 ) {
 	const _id = `bridge-${opts.name?.split(' ')[0]}`;
-	const current = await bolt.bridge.getBridge({ channel });
+	const current = await bolt.bridge.get_bridge({ channel });
 	const errorargs = { channel, platform, _id };
 	const plugin = bolt.plugins.get(platform);
 
@@ -23,7 +23,7 @@ export async function join(
 			).message
 		};
 	} else {
-		const bridge = (await bolt.bridge.getBridge({ _id })) || {
+		const bridge = (await bolt.bridge.get_bridge({ _id })) || {
 			_id,
 			platforms: []
 		};
@@ -33,7 +33,7 @@ export async function join(
 				plugin: platform,
 				senddata: await plugin.create_bridge(channel)
 			});
-			await bolt.bridge.updateBridge(bridge);
+			await bolt.bridge.update_bridge(bridge);
 			return {
 				text: create_message({ text: 'Joined a bridge!' }),
 				ok: true
@@ -49,7 +49,7 @@ export async function leave(
 	{ channel, platform }: command_arguments,
 	bolt: Bolt
 ) {
-	const current = await bolt.bridge.getBridge({ channel });
+	const current = await bolt.bridge.get_bridge({ channel });
 
 	if (!current) {
 		return {
@@ -60,7 +60,7 @@ export async function leave(
 		};
 	} else {
 		try {
-			await bolt.bridge.updateBridge({
+			await bolt.bridge.update_bridge({
 				_id: current._id,
 				platforms: current.platforms.filter(
 					i => i.channel !== channel && i.plugin !== platform
@@ -82,9 +82,9 @@ export async function leave(
 /** reset a bridge (leave then join) */
 export async function reset(args: command_arguments, bolt: Bolt) {
 	if (!args.opts.name) {
-		const [_, ...rest] = ((await bolt.bridge.getBridge(args))?._id || '').split(
-			'bridge-'
-		);
+		const [_, ...rest] = (
+			(await bolt.bridge.get_bridge(args))?._id || ''
+		).split('bridge-');
 		args.opts.name = rest.join('bridge-');
 	}
 	let result = await leave(args, bolt);
