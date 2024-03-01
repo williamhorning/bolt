@@ -6,13 +6,16 @@ export {
 	Channel,
 	Client,
 	Message,
-	type RESTPostWebhookBody,
-	WebhookClient
+	WebhookClient,
+	type EmbedPayload,
+	type RESTPostWebhookBody
 } from 'npm:guilded.js@0.23.7';
 export {
-	type bridge_message,
-	type bridge_message_arguments,
+	Bolt,
+	bolt_plugin,
+	create_message,
+	type bridge_platform,
+	type deleted_message,
 	type embed,
-	type message,
-	bolt_plugin
+	type message
 } from '../bolt/mod.ts';

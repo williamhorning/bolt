@@ -1,7 +1,6 @@
 import { API, message, Message, TextEmbed } from './deps.ts';
-import RevoltPlugin from './mod.ts';
 
-export async function coreToMessage(
+export async function torevolt(
 	message: message<unknown>,
 	masquerade = true
 ): Promise<Omit<API.DataMessageSend, 'nonce'>> {
@@ -51,6 +50,9 @@ export async function coreToMessage(
 					name: message.author.username,
 					colour: message.author.color
 			  }
+			: undefined,
+		replies: message.replytoid
+			? [{ id: message.replytoid, mention: true }]
 			: undefined
 	};
 
@@ -62,11 +64,7 @@ export async function coreToMessage(
 	return dat;
 }
 
-export async function messageToCore(
-	plugin: RevoltPlugin,
-	message: Message,
-	getReply = true
-): Promise<message<Message>> {
+export function tocore(message: Message): message<Message> {
 	return {
 		author: {
 			username:
@@ -96,7 +94,7 @@ export async function messageToCore(
 		}),
 		platform: { name: 'bolt-revolt', message },
 		reply: async (msg: message<unknown>, masquerade = true) => {
-			message.reply(await coreToMessage(msg, masquerade as boolean));
+			message.reply(await torevolt(msg, masquerade as boolean));
 		},
 		attachments: message.attachments?.map(
 			({ filename, size, downloadURL, isSpoiler }) => {
@@ -109,25 +107,6 @@ export async function messageToCore(
 			}
 		),
 		content: message.content,
-		replyto: await replyto(plugin, message, getReply)
+		replytoid: message.replyIds ? message.replyIds[0] : undefined
 	};
-}
-
-async function replyto(
-	plugin: RevoltPlugin,
-	message: Message,
-	getReply: boolean
-) {
-	if (message.replyIds && message.replyIds.length > 0 && getReply) {
-		try {
-			return await messageToCore(
-				plugin,
-				await plugin.bot.messages.fetch(message.channelId, message.replyIds[0]),
-				false
-			);
-		} catch {
-			return;
-		}
-	}
-	return;
 }

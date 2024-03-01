@@ -1,14 +1,14 @@
 import { assertEquals } from 'https://deno.land/std@0.216.0/assert/mod.ts';
-import { create_message, define_config, log_error } from './mod.ts';
 import {
 	cfg,
-	msg,
 	err,
-	extra,
+	err_hook,
 	err_id,
 	err_return,
-	err_hook
+	extra,
+	msg
 } from './_testdata.ts';
+import { create_message, define_config, log_error } from './mod.ts';
 
 const temporal_instant = Temporal.Instant.from('2021-01-01T00:00:00Z');
 

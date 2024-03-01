@@ -1,9 +1,2 @@
-* redo all of the plugins
-  * finish rewriting bolt-discord
-  * bolt-guilded
-  * bolt-revolt
-  * update them to match conventions
-  * also have edit/delete support
-* redo config file to work with new plugin system
 * redo bridge system stuff to support edit/delete and actual replies
 * redo is_bridged to deal with always present redis

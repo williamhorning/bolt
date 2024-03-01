@@ -1,5 +1,5 @@
-import { parseArgs, Bolt, log_error } from './_deps.ts';
 import { default_commands } from './_default.ts';
+import { Bolt, log_error, parseArgs } from './_deps.ts';
 import { command, command_arguments } from './types.ts';
 
 export class bolt_commands extends Map<string, command> {

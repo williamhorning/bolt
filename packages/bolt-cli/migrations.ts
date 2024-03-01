@@ -1,5 +1,4 @@
 import {
-	versions,
 	Input,
 	MongoClient,
 	Select,
@@ -7,7 +6,8 @@ import {
 	apply_migrations,
 	colors,
 	get_migrations,
-	prompt
+	prompt,
+	versions
 } from './deps.ts';
 
 export default async function migrations() {

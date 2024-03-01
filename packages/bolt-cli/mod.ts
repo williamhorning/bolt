@@ -1,4 +1,4 @@
-import { CliffyApp, colors, Bolt } from './deps.ts';
+import { Bolt, CliffyApp, colors } from './deps.ts';
 import migration from './migrations.ts';
 
 const cli = new CliffyApp()
@@ -18,31 +18,17 @@ const cli = new CliffyApp()
 		'path to config file relative to the current directory'
 	)
 	.option('--debug', 'enables debug mode')
-	.action(
-		async ({
-			config,
-			debug
-		}: {
-			config?: string;
-			debug?: true | undefined;
-		}) => {
-			let cfg;
+	.action(async ({ config }: { config?: string }) => {
+		let cfg;
 
-			try {
-				cfg = (await import(config || `${Deno.cwd()}/config.ts`))?.default;
-			} catch (e) {
-				console.error(colors.red(`Can't load your config, exiting...\n`), e);
-				Deno.exit(1);
-			}
-
-			const bolt = await Bolt.setup(cfg);
-
-			if (debug) {
-				bolt.on('debug', msg => {
-					console.debug(colors.blue(msg as string));
-				});
-			}
+		try {
+			cfg = (await import(config || `${Deno.cwd()}/config.ts`))?.default;
+		} catch (e) {
+			console.error(colors.red(`Can't load your config, exiting...\n`), e);
+			Deno.exit(1);
 		}
-	);
+
+		await Bolt.setup(cfg);
+	});
 
 cli.parse(Deno.args);

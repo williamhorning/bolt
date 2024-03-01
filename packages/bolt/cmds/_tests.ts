@@ -1,7 +1,7 @@
 import { assertEquals } from 'https://deno.land/std@0.216.0/assert/mod.ts';
-import { bolt_commands } from './mod.ts';
 import { message } from './_deps.ts';
 import { help_output } from './_testdata.ts';
+import { bolt_commands } from './mod.ts';
 
 const temporal_instant = Temporal.Instant.from('2021-01-01T00:00:00Z');
 

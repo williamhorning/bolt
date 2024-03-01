@@ -1,111 +1,102 @@
 import {
-	bridge_message_arguments,
-	bolt_plugin,
+	Bolt,
 	Client,
-	RESTPostWebhookBody,
-	WebhookClient
-} from './deps.ts';
+	WebhookClient,
+	bolt_plugin,
+	bridge_platform,
+	deleted_message,
+	message
+} from './_deps.ts';
 import { bridge_legacy } from './legacybridging.ts';
-import { coreToMessage, messageToCore } from './messages.ts';
+import { tocore, toguilded } from './messages.ts';
 
-export default class GuildedPlugin extends bolt_plugin {
+export class guilded_plugin extends bolt_plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
 	version = '0.5.5';
+	support = ['0.5.5'];
 
-	constructor(config: { token: string }) {
-		super();
+	constructor(bolt: Bolt, config: { token: string }) {
+		super(bolt, config);
 		this.bot = new Client(config);
-		this.bot.on('debug', (data: unknown) => {
-			this.emit('debug', data);
-		});
 		this.bot.on('ready', () => {
 			this.emit('ready');
 		});
 		this.bot.on('messageCreated', async message => {
-			const msg = await messageToCore(message, this);
-			if (msg) this.emit('messageCreate', msg);
+			const msg = await tocore(message, this);
+			if (msg) this.emit('create_message', msg);
+		});
+		this.bot.on('messageUpdated', async message => {
+			const msg = await tocore(message, this);
+			if (msg) this.emit('create_message', msg);
+		});
+		this.bot.on('messageDeleted', del => {
+			this.emit('delete_message', {
+				channel: del.channelId,
+				id: del.id,
+				platform: { message: del, name: 'bolt-guilded' },
+				timestamp: Temporal.Instant.from(del.deletedAt)
+			});
 		});
 		this.bot.ws.emitter.on('exit', () => {
 			this.bot.ws.connect();
 		});
 	}
 
-	start() {
-		this.bot.login();
-	}
-
-	stop() {
-		this.bot.disconnect();
-	}
-
-	isBridged(msg) {
-		if (msg.author.id === this.bot.user?.id && msg.embeds && !msg.replyto) {
-			return true;
-		} else {
-			return 'query';
-		}
-	}
-
-	bridgeSupport = {
-		text: true
-	};
-
-	async createSenddata(channel: string) {
+	async create_bridge(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
 		const wh = await this.bot.webhooks.create(ch.serverId, {
-			name: 'Bolt Bridge',
+			name: 'Bolt Bridges',
 			channelId: channel
 		});
-		if (!wh.token) throw new Error('No token!');
+		if (!wh.token) throw new Error('No token!!!');
 		return { id: wh.id, token: wh.token };
 	}
 
-	async bridgeMessage({
-		data: dat
-	}: bridge_message_arguments & {
-		data: {
-			bridgePlatform: { senddata: string | { id: string; token: string } };
-		};
-	}) {
-		let replyto;
-		try {
-			if (dat.replytoId) {
-				replyto = await messageToCore(
-					await this.bot.messages.fetch(dat.channel, dat.replytoId),
-					this
-				);
-			}
-		} catch {
-			replyto = undefined;
+	is_bridged(msg: message<unknown>) {
+		if (msg.author.id === this.bot.user?.id && msg.embeds && !msg.replytoid) {
+			return true;
 		}
-		if (typeof dat.bridgePlatform.senddata === 'string') {
-			return await bridge_legacy(
-				this,
-				dat,
-				dat.bridgePlatform.senddata,
-				replyto
-			);
+		return 'query';
+	}
+
+	async create_message(message: message<unknown>, platform: bridge_platform) {
+		if (typeof platform.senddata === 'string') {
+			return await bridge_legacy(this, message, platform.senddata);
 		} else {
-			const msgd = coreToMessage({ ...dat, replyto });
 			try {
-				const resp = await new WebhookClient(dat.bridgePlatform.senddata).send(
-					msgd as RESTPostWebhookBody
-				);
+				const resp = await new WebhookClient(
+					platform.senddata as { token: string; id: string }
+				).send(toguilded(message));
 				return {
 					channel: resp.channelId,
 					id: resp.id,
 					plugin: 'bolt-guilded',
-					senddata: dat.bridgePlatform.senddata
+					senddata: platform.senddata
 				};
 			} catch {
-				return await bridge_legacy(
-					this,
-					dat,
-					dat.bridgePlatform.senddata as unknown as string,
-					replyto
-				);
+				return await bridge_legacy(this, message, platform.channel);
 			}
+		}
+	}
+
+	// TODO: edit support
+	// deno-lint-ignore require-await
+	async edit_message(message: message<unknown>, bridge: bridge_platform) {
+		return { id: message.id, ...bridge };
+	}
+
+	async delete_message(
+		_message: deleted_message<unknown>,
+		bridge: bridge_platform
+	) {
+		try {
+			const msg = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+			await msg.delete();
+			return bridge;
+		} catch {
+			// TODO: better handling
+			return bridge;
 		}
 	}
 }

@@ -1,43 +1,33 @@
 import {
-	bridge_message,
-	bridge_message_arguments,
-	message,
-	bolt_plugin,
+	Bolt,
 	Client,
-	Message
+	Message,
+	bolt_plugin,
+	bridge_platform,
+	message
 } from './deps.ts';
-import { coreToMessage, messageToCore } from './messages.ts';
+import { tocore, torevolt } from './messages.ts';
 
-export default class RevoltPlugin extends bolt_plugin implements bolt_plugin {
+export class revolt_plugin extends bolt_plugin<{ token: string }> {
 	bot: Client;
-	token: string;
 	name = 'bolt-revolt';
 	version = '0.5.5';
-	constructor(config: { token: string }) {
-		super();
+	support = ['0.5.5'];
+
+	constructor(bolt: Bolt, config: { token: string }) {
+		super(bolt, config);
 		this.bot = new Client();
-		this.token = config.token;
-		this.bot.on('messageCreate', async message => {
+		this.bot.on('messageCreate', message => {
 			if (message.systemMessage) return;
-			this.emit('messageCreate', await messageToCore(this, message));
+			this.emit('create_message', tocore(message));
 		});
 		this.bot.on('ready', () => {
 			this.emit('ready');
 		});
-	}
-	async start() {
-		await this.bot.loginBot(this.token);
+		this.bot.loginBot(this.config.token);
 	}
 
-	isBridged(msg: message<Message>) {
-		return Boolean(
-			msg.author.id === this.bot.user?.id && msg.platform.message.masquerade
-		);
-	}
-
-	bridgeSupport = { text: true };
-
-	async createSenddata(channel: string) {
+	async create_bridge(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
 		if (!ch.havePermission('Masquerade')) {
 			throw new Error('Please enable masquerade permissions!');
@@ -45,30 +35,30 @@ export default class RevoltPlugin extends bolt_plugin implements bolt_plugin {
 		return ch.id;
 	}
 
-	async bridgeMessage(data: bridge_message_arguments) {
-		const dat = data.data as bridge_message;
-		const channel = await this.bot.channels.fetch(dat.bridgePlatform.channel);
-		let replyto;
-		try {
-			if (dat.replytoId) {
-				replyto = await messageToCore(
-					this,
-					await this.bot.messages.fetch(
-						dat.bridgePlatform.channel,
-						dat.replytoId
-					)
-				);
-			}
-		} catch {
-			replyto = undefined;
-		}
-		const msg = await coreToMessage({ ...dat, replyto }, true);
-		const result = await channel.sendMessage(msg);
+	is_bridged(msg: message<Message>) {
+		return Boolean(
+			msg.author.id === this.bot.user?.id && msg.platform.message.masquerade
+		);
+	}
+
+	async create_message(msg: message<unknown>, bridge: bridge_platform) {
+		const channel = await this.bot.channels.fetch(bridge.channel);
+		const result = await channel.sendMessage(await torevolt(msg));
 		return {
-			channel: dat.bridgePlatform.channel,
-			id: result.id,
-			plugin: 'bolt-revolt',
-			senddata: dat.bridgePlatform.channel
+			...bridge,
+			id: result.id
 		};
+	}
+
+	async edit_message(msg: message<unknown>, bridge: bridge_platform) {
+		const message = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+		await message.edit(await torevolt(msg));
+		return bridge;
+	}
+
+	async delete_message(_msg: message<unknown>, bridge: bridge_platform) {
+		const message = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+		await message.delete();
+		return bridge;
 	}
 }

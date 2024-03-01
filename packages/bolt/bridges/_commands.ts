@@ -1,5 +1,5 @@
-import { command, create_message, Bolt } from './_deps.ts';
 import { join, leave, reset } from './_command_functions.ts';
+import { Bolt, command, create_message } from './_deps.ts';
 
 export function bridge_commands(bolt: Bolt): command {
 	return {

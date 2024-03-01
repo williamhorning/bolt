@@ -1,19 +1,19 @@
 import { bridge_commands } from './_commands.ts';
+import { Bolt, Collection, bolt_plugin, log_error, message } from './_deps.ts';
 import { bridge_document, bridge_platform } from './types.ts';
-import { message, bolt_plugin, Bolt, Collection, log_error } from './_deps.ts';
 
 export class bolt_bridges {
 	private collection: Collection<bridge_document>;
 
 	constructor(bolt: Bolt) {
-		bolt.on('messageCreate', async msg => {
+		bolt.on('create_message', async msg => {
 			if (!(await this.isBridged(msg, bolt)))
 				bolt.emit('create_nonbridged_message', msg);
 		});
 		bolt.on('create_nonbridged_message', msg => this.bridgeMessage(msg, bolt));
 		bolt.cmds.set('bridge', bridge_commands(bolt));
 		this.collection = bolt.db.mongo
-			.database(bolt.db.name)
+			.database(bolt.config.mongo_database)
 			.collection('bridges');
 	}
 
@@ -44,7 +44,7 @@ export class bolt_bridges {
 		msg: message<unknown>,
 		bridge: bridge_document,
 		platform: bridge_platform,
-		plugin: bolt_plugin
+		plugin: bolt_plugin<unknown>
 	) {
 		if (e?.response?.status === 404) {
 			const updated_bridge = {
@@ -56,7 +56,7 @@ export class bolt_bridges {
 		}
 		const err = (await log_error(e, { msg, bridge })).message;
 		try {
-			return await plugin.bridgeMessage!(err, platform);
+			return await plugin.create_message!(err, platform);
 		} catch (e2) {
 			await log_error(
 				new Error(`sending error message for ${err.uuid} failed`, {

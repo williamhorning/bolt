@@ -12,8 +12,6 @@ export { WebSocketManager as socket } from 'npm:@discordjs/ws@1.0.2';
 export {
 	Bolt,
 	bolt_plugin,
-	type bridge_message,
-	type bridge_message_arguments,
 	type bridge_platform,
 	type deleted_message,
 	type message

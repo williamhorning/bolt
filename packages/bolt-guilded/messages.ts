@@ -1,16 +1,16 @@
 import {
 	APIEmbed,
-	APIWebhookMessagePayload,
 	embed,
+	EmbedPayload,
 	message,
-	Message
-} from './deps.ts';
+	Message,
+	RESTPostWebhookBody
+} from './_deps.ts';
 import GuildedPlugin from './mod.ts';
 
-export async function messageToCore(
+export async function tocore(
 	message: Message,
-	plugin: GuildedPlugin,
-	replybool = true
+	plugin: GuildedPlugin
 ): Promise<message<Message> | undefined> {
 	if (!message.serverId) return;
 	let author;
@@ -62,48 +62,71 @@ export async function messageToCore(
 			webhookid: message.createdByWebhookId || undefined
 		},
 		reply: async (msg: message<unknown>) => {
-			// @ts-ignore: embed type differences
-			await message.reply(coreToMessage(msg));
+			await message.reply(toguilded(msg));
 		},
 		content: message.content,
-		replyto: (await replyto(message, plugin, replybool)) || undefined
+		replytoid: message.isReply ? message.replyMessageIds[0] : undefined
 	};
 }
 
-async function replyto(
-	message: Message,
-	plugin: GuildedPlugin,
-	replybool: boolean
-) {
-	if (message.isReply && replybool) {
-		try {
-			return await messageToCore(
-				await plugin.bot.messages.fetch(
-					message.channelId,
-					message.replyMessageIds[0]
-				),
-				plugin,
-				false
-			);
-		} catch {
-			return;
-		}
-	} else {
-		return;
-	}
+export function toguilded(msg: message<unknown>): guilded_msg {
+	const message: guilded_msg = {
+		content: msg.content,
+		avatar_url: msg.author.profile,
+		username: get_valid_username(msg),
+		embeds: fix_embed<string>(msg.embeds, String)
+	};
+	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
+	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+	return message;
 }
 
-function chooseValidGuildedUsername(msg: message<unknown>) {
-	if (validUsernameCheck(msg.author.username)) {
+export function toguildedid(msg: message<unknown>) {
+	const senddat: guilded_msg & {
+		embeds: APIEmbed[];
+	} = {
+		embeds: [
+			{
+				author: {
+					name: msg.author.username,
+					icon_url: msg.author.profile
+				},
+				description: msg.content,
+				footer: {
+					text: 'please migrate to webhook bridges'
+				}
+			},
+			...fix_embed<Date>(msg.embeds, d => {
+				return new Date(d);
+			})
+		]
+	};
+	if (msg.replytoid) {
+		senddat.replyMessageIds = [msg.replytoid];
+	}
+	if (msg.attachments?.length) {
+		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
+			.map(a => {
+				return `![${a.alt || a.name}](${a.file})`;
+			})
+			.join('\n')}`;
+	}
+	return senddat;
+}
+
+type guilded_msg = RESTPostWebhookBody & { replyMessageIds?: string[] };
+
+function get_valid_username(msg: message<unknown>) {
+	if (check_username(msg.author.username)) {
 		return msg.author.username;
-	} else if (validUsernameCheck(msg.author.rawname)) {
+	} else if (check_username(msg.author.rawname)) {
 		return msg.author.rawname;
 	} else {
 		return `${msg.author.id}`;
 	}
 }
 
-function validUsernameCheck(e: string) {
+function check_username(e: string) {
 	if (!e || e.length === 0) return false;
 	if (
 		e.startsWith(' ') ||
@@ -117,33 +140,16 @@ function validUsernameCheck(e: string) {
 	return Boolean(e.match(/^[a-zA-Z0-9_ ()]*$/gms));
 }
 
-export function coreToMessage(msg: message<unknown>): APIWebhookMessagePayload {
-	const message = {
-		content: msg.content,
-		avatar_url: msg.author.profile,
-		username: chooseValidGuildedUsername(msg),
-		embeds: msg.embeds?.map(embed => {
-			Object.keys(embed).forEach(key => {
-				embed[key as keyof embed] === null
-					? (embed[key as keyof embed] = undefined)
-					: embed[key as keyof embed];
-			});
-			return {
-				...embed,
-				timestamp: embed.timestamp ? new Date(embed.timestamp) : undefined
-			};
-		}) as APIEmbed[] | undefined
-	};
-	if (msg.replyto) {
-		if (!message.embeds) message.embeds = [];
-		message.embeds.push({
-			author: {
-				name: `replying to: ${msg.replyto.author.username}`,
-				icon_url: msg.replyto.author.profile
-			},
-			description: msg.replyto.content
+function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {
+	return embeds.map(embed => {
+		Object.keys(embed).forEach(key => {
+			embed[key as keyof embed] === null
+				? (embed[key as keyof embed] = undefined)
+				: embed[key as keyof embed];
 		});
-	}
-	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
-	return message;
+		return {
+			...embed,
+			timestamp: embed.timestamp ? timestamp_fix(embed.timestamp) : undefined
+		};
+	}) as (EmbedPayload & { timestamp: t })[];
 }

@@ -1,43 +1,22 @@
-import { MongoConnectOptions, RedisConnectOptions } from './_deps.ts';
-import { bolt_plugin } from './plugins.ts';
+import { create_plugin } from './plugins.ts';
 
 export function define_config(config?: Partial<config>): config {
 	if (!config) config = {};
 	if (!config.prod) config.prod = false;
 	if (!config.plugins) config.plugins = [];
-	if (!config.database) {
-		config.database = {
-			mongo: {
-				connection: 'mongodb://localhost:27017',
-				database: 'bolt-testing'
-			},
-			redis: { hostname: 'localhost' }
-		};
-	}
-	if (!config.database.mongo) {
-		config.database.mongo = {
-			connection: 'mongodb://localhost:27017',
-			database: config.prod ? 'bolt' : 'bolt-testing'
-		};
-	}
-	if (!config.database.redis) {
-		config.database.redis = { hostname: 'localhost' };
-	}
-	if (!config.http) {
-		config.http = {};
-	}
+	if (!config.mongo_uri) config.mongo_uri = 'mongodb://localhost:27017';
+	if (!config.mongo_database)
+		config.mongo_database = config.prod ? 'bolt' : 'bolt-testing';
+	if (!config.redis_host) config.redis_host = 'localhost';
 	return config as config;
 }
 
 export interface config {
 	prod: boolean;
-	plugins: bolt_plugin[];
-	database: {
-		mongo: {
-			connection: MongoConnectOptions | string;
-			database: string;
-		};
-		redis: RedisConnectOptions;
-	};
-	http: { errorURL?: string };
+	plugins: { type: create_plugin; config: unknown }[];
+	mongo_uri: string;
+	mongo_database: string;
+	redis_host: string;
+	redis_port?: number;
+	errorURL?: string;
 }

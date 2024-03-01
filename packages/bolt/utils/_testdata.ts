@@ -21,15 +21,10 @@ export const msg = {
 
 export const cfg = {
 	prod: false,
-	platforms: [],
-	database: {
-		mongo: {
-			connection: 'mongodb://localhost:27017',
-			database: 'bolt-testing'
-		},
-		redis: { hostname: 'localhost' }
-	},
-	http: {}
+	plugins: [],
+	mongo_uri: 'mongodb://localhost:27017',
+	mongo_database: 'bolt-testing',
+	redis_host: 'localhost'
 };
 
 export const err = new Error('test');
@@ -50,7 +45,7 @@ export const err_return = {
 			rawname: 'bolt',
 			id: 'bolt'
 		},
-		content: `Something went wrong!\nCheck [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`test\ntest\`\`\``,
+		content: `Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`\ntest\ntest\n\`\`\``,
 		channel: '',
 		embeds: undefined,
 		id: '',

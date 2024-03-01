@@ -1,12 +1,13 @@
 import {
 	Bolt,
 	EventEmitter,
-	command_arguments,
-	bridge_platform
+	bridge_platform,
+	command_arguments
 } from './_deps.ts';
-import { message, deleted_message } from './messages.ts';
+import { deleted_message, message } from './messages.ts';
 
 export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
+	bolt: Bolt;
 	config: t;
 
 	/** the name of your plugin (like bolt-discord) */
@@ -19,9 +20,9 @@ export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
 	abstract support: string[];
 
 	/** constructor */
-	// deno-lint-ignore no-unused-vars
 	constructor(bolt: Bolt, config: t) {
 		super();
+		this.bolt = bolt;
 		this.config = config;
 	}
 	/** create data needed to bridge */
@@ -57,3 +58,9 @@ export type plugin_events = {
 	delete_message: [deleted_message<unknown>];
 	ready: [];
 };
+
+export interface create_plugin {
+	// deno-lint-ignore no-explicit-any
+	new (bolt: Bolt, config: any): bolt_plugin<unknown>;
+	readonly prototype: bolt_plugin<unknown>;
+}
