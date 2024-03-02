@@ -28,6 +28,9 @@ export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
 	/** create data needed to bridge */
 	abstract create_bridge(channel: string): Promise<unknown>;
 
+	/** checks if message is bridged */
+	abstract is_bridged(message: deleted_message<unknown>): boolean | 'query';
+
 	/** bridge a message */
 	abstract create_message(
 		message: message<unknown>,
@@ -37,13 +40,13 @@ export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
 	/** edit a bridged message */
 	abstract edit_message(
 		new_message: message<unknown>,
-		bridge: bridge_platform
+		bridge: bridge_platform & { id: string }
 	): Promise<bridge_platform>;
 
 	/** delete a bridged message */
 	abstract delete_message(
 		message: deleted_message<unknown>,
-		bridge: bridge_platform
+		bridge: bridge_platform & { id: string }
 	): Promise<bridge_platform>;
 }
 

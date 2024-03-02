@@ -40,9 +40,14 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 	}
 
 	async create_bridge(channel: string) {
-		return await this.bot.api.channels.createWebhook(channel, {
+		const wh = await this.bot.api.channels.createWebhook(channel, {
 			name: 'bolt bridge'
 		});
+		return { id: wh.id, token: wh.token };
+	}
+
+	is_bridged() {
+		return 'query' as const;
 	}
 
 	async create_message(
@@ -64,14 +69,14 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 
 	async edit_message(
 		message: message<unknown>,
-		bridge: bridge_platform
+		bridge: bridge_platform & { id: string }
 	): Promise<bridge_platform> {
 		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
 		const wh = await this.bot.api.webhooks.editMessage(
 			senddata.id,
 			senddata.token,
-			message.id,
+			bridge.id,
 			msg
 		);
 		return {
@@ -81,14 +86,14 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 	}
 
 	async delete_message(
-		message: deleted_message<unknown>,
-		bridge: bridge_platform
+		_msg: deleted_message<unknown>,
+		bridge: bridge_platform & { id: string }
 	) {
 		const senddata = bridge.senddata as { token: string; id: string };
 		await this.bot.api.webhooks.deleteMessage(
 			senddata.id,
 			senddata.token,
-			message.id
+			bridge.id
 		);
 		return bridge;
 	}

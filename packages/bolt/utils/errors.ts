@@ -47,7 +47,8 @@ export async function log_error(
 										...extra,
 										uuid
 									},
-									get_replacer()
+									get_replacer(),
+									2
 								)}\`\`\``
 							}
 						]

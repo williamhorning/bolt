@@ -97,9 +97,9 @@ export function tocore(message: Message): message<Message> {
 			message.reply(await torevolt(msg, masquerade as boolean));
 		},
 		attachments: message.attachments?.map(
-			({ filename, size, downloadURL, isSpoiler }) => {
+			({ filename, size, isSpoiler, id, tag }) => {
 				return {
-					file: downloadURL,
+					file: `https://autumn.revolt.chat/${tag}/${id}/${filename}`,
 					name: filename,
 					spoiler: isSpoiler,
 					size: (size || 1) / 1000000

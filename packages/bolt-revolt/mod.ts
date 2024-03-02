@@ -1,4 +1,11 @@
-import { Bolt, Client, bolt_plugin, bridge_platform, message } from './deps.ts';
+import {
+	Bolt,
+	Client,
+	Message,
+	bolt_plugin,
+	bridge_platform,
+	message
+} from './deps.ts';
 import { tocore, torevolt } from './messages.ts';
 
 export class revolt_plugin extends bolt_plugin<{ token: string }> {
@@ -28,6 +35,12 @@ export class revolt_plugin extends bolt_plugin<{ token: string }> {
 		return ch.id;
 	}
 
+	is_bridged(msg: message<Message>) {
+		return Boolean(
+			msg.author.id === this.bot.user?.id && msg.platform.message.masquerade
+		);
+	}
+
 	async create_message(msg: message<unknown>, bridge: bridge_platform) {
 		const channel = await this.bot.channels.fetch(bridge.channel);
 		const result = await channel.sendMessage(await torevolt(msg));
@@ -37,14 +50,20 @@ export class revolt_plugin extends bolt_plugin<{ token: string }> {
 		};
 	}
 
-	async edit_message(msg: message<unknown>, bridge: bridge_platform) {
-		const message = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+	async edit_message(
+		msg: message<unknown>,
+		bridge: bridge_platform & { id: string }
+	) {
+		const message = await this.bot.messages.fetch(bridge.channel, bridge.id);
 		await message.edit(await torevolt(msg));
 		return bridge;
 	}
 
-	async delete_message(_msg: message<unknown>, bridge: bridge_platform) {
-		const message = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+	async delete_message(
+		_msg: message<unknown>,
+		bridge: bridge_platform & { id: string }
+	) {
+		const message = await this.bot.messages.fetch(bridge.channel, bridge.id);
 		await message.delete();
 		return bridge;
 	}

@@ -6,11 +6,11 @@ import {
 	Message,
 	RESTPostWebhookBody
 } from './_deps.ts';
-import GuildedPlugin from './mod.ts';
+import { guilded_plugin } from './mod.ts';
 
 export async function tocore(
 	message: Message,
-	plugin: GuildedPlugin
+	plugin: guilded_plugin
 ): Promise<message<Message> | undefined> {
 	if (!message.serverId) return;
 	let author;
@@ -127,17 +127,8 @@ function get_valid_username(msg: message<unknown>) {
 }
 
 function check_username(e: string) {
-	if (!e || e.length === 0) return false;
-	if (
-		e.startsWith(' ') ||
-		e.endsWith(' ') ||
-		e.startsWith(' ') ||
-		e.endsWith(' ')
-	) {
-		return false;
-	}
-	if (e.length > 32) return false;
-	return Boolean(e.match(/^[a-zA-Z0-9_ ()]*$/gms));
+	if (!e || e.length === 0 || e.length > 32) return false;
+	return /^[a-zA-Z0-9_ ()]*$/gms.test(e);
 }
 
 function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {

@@ -41,6 +41,7 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 		this.bot.ws.emitter.on('exit', () => {
 			this.bot.ws.connect();
 		});
+		this.bot.login();
 	}
 
 	async create_bridge(channel: string) {
@@ -51,6 +52,13 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 		});
 		if (!wh.token) throw new Error('No token!!!');
 		return { id: wh.id, token: wh.token };
+	}
+
+	is_bridged(msg: message<unknown>) {
+		if (msg.author.id === this.bot.user?.id && msg.embeds && !msg.replytoid) {
+			return true;
+		}
+		return 'query';
 	}
 
 	async create_message(message: message<unknown>, platform: bridge_platform) {
