@@ -17,11 +17,37 @@ export function id_to_temporal(id: string) {
 	);
 }
 
-export function tocore(
+export async function tocore(
 	api: API,
 	message: Omit<update_data, 'mentions'>
-): message<Omit<update_data, 'mentions'>> {
+): Promise<message<Omit<update_data, 'mentions'>>> {
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
+	if (message.type === 7) message.content = '*joined on discord*';
+	if (message.sticker_items) {
+		if (!message.attachments) message.attachments = [];
+		for (const sticker of message.sticker_items) {
+			let type;
+			if (sticker.format_type === 1) type = 'png';
+			if (sticker.format_type === 2) type = 'apng';
+			if (sticker.format_type === 3) type = 'lottie';
+			if (sticker.format_type === 4) type = 'gif';
+			console.log(sticker, type);
+			const url = `https://media.discordapp.net/stickers/${sticker.id}.${type}`;
+			const req = await fetch(url, { method: 'HEAD' });
+			if (req.ok) {
+				message.attachments.push({
+					url,
+					description: sticker.name,
+					filename: `${sticker.name}.${type}`,
+					size: 0,
+					id: sticker.id,
+					proxy_url: url
+				});
+			} else {
+				message.content = '*used sticker*';
+			}
+		}
+	}
 	const data = {
 		author: {
 			profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,

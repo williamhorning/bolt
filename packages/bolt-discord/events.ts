@@ -6,14 +6,14 @@ export function register_events(plugin: discord_plugin) {
 	plugin.bot.on(events.Ready, () => {
 		plugin.emit('ready');
 	});
-	plugin.bot.on(events.MessageCreate, msg => {
-		plugin.emit('create_message', tocore(msg.api, msg.data));
+	plugin.bot.on(events.MessageCreate, async msg => {
+		plugin.emit('create_message', await tocore(msg.api, msg.data));
 	});
-	plugin.bot.on(events.MessageUpdate, msg => {
-		plugin.emit('edit_message', tocore(msg.api, msg.data));
+	plugin.bot.on(events.MessageUpdate, async msg => {
+		plugin.emit('edit_message', await tocore(msg.api, msg.data));
 	});
-	plugin.bot.on(events.MessageDelete, msg => {
-		plugin.emit('delete_message', tocore(msg.api, msg.data));
+	plugin.bot.on(events.MessageDelete, async msg => {
+		plugin.emit('delete_message', await tocore(msg.api, msg.data));
 	});
 	plugin.bot.on(events.InteractionCreate, interaction => {
 		if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;

@@ -8,7 +8,7 @@ export async function torevolt(
 		attachments:
 			message.attachments && message.attachments.length > 0
 				? await Promise.all(
-						message.attachments.map(async ({ file, name }) => {
+						message.attachments.slice(0, 5).map(async ({ file, name }) => {
 							const formdata = new FormData();
 							formdata.append(
 								'file',
