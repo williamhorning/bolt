@@ -50,7 +50,10 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 			name: 'Bolt Bridges',
 			channelId: channel
 		});
-		if (!wh.token) throw new Error('No token!!!');
+		if (!wh.token) {
+			await this.bot.webhooks.delete(ch.serverId, wh.id);
+			throw new Error('No token!!!');
+		}
 		return { id: wh.id, token: wh.token };
 	}
 

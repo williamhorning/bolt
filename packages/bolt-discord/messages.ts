@@ -31,7 +31,6 @@ export async function tocore(
 			if (sticker.format_type === 2) type = 'apng';
 			if (sticker.format_type === 3) type = 'lottie';
 			if (sticker.format_type === 4) type = 'gif';
-			console.log(sticker, type);
 			const url = `https://media.discordapp.net/stickers/${sticker.id}.${type}`;
 			const req = await fetch(url, { method: 'HEAD' });
 			if (req.ok) {

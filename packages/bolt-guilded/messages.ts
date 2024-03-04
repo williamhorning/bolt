@@ -64,7 +64,7 @@ export async function tocore(
 		reply: async (msg: message<unknown>) => {
 			await message.reply(toguilded(msg));
 		},
-		content: message.content,
+		content: message.content.replaceAll('\n```\n```\n', '\n'),
 		replytoid: message.isReply ? message.replyMessageIds[0] : undefined
 	};
 }
@@ -106,6 +106,7 @@ export function toguildedid(msg: message<unknown>) {
 	}
 	if (msg.attachments?.length) {
 		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
+			.slice(0, 5)
 			.map(a => {
 				return `![${a.alt || a.name}](${a.file})`;
 			})
