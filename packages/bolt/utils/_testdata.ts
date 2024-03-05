@@ -63,10 +63,14 @@ export const err_hook = {
 	embeds: [
 		{
 			title: err.message,
-			description: `\`\`\`${err.stack}\`\`\`\n\`\`\`js\n${JSON.stringify({
-				...extra,
-				uuid: 'test'
-			})}\`\`\``
+			description: `\`\`\`${err.stack}\`\`\`\n\`\`\`js\n${JSON.stringify(
+				{
+					...extra,
+					uuid: 'test'
+				},
+				null,
+				2
+			)}\`\`\``
 		}
 	]
 };
