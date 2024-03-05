@@ -9,4 +9,4 @@ RUN deno install -A --unstable-temporal -n bolt /app/cli.ts
 
 # set bolt as the entrypoint and use the run command by default
 ENTRYPOINT [ "bolt" ]
-CMD [ "--run", "--config", "data/config.ts"]
+CMD [ "--run", "--config", "./data/config.ts"]
