@@ -10,9 +10,8 @@ export {
 	UserSystemMessage
 } from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
 export {
-	BoltPlugin,
-	type BoltBridgeMessage,
-	type BoltBridgeMessageArgs,
-	type BoltBridgeThreadArgs,
-	type BoltMessage
+	Bolt,
+	bolt_plugin,
+	type bridge_platform,
+	type message
 } from '../bolt/mod.ts';
