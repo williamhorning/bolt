@@ -1,7 +1,7 @@
 # bolt 0.5
 
 bolt is a cross-platform chat bot that bridges communities that's written in
-typescript. to learn more, see the [docs](https://williamhorning.dev/bolt/docs).
+typescript. to learn more, see the [docs](https://williamhorning.dev/bolt).
 
 ## feature support matrix
 
