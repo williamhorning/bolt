@@ -1,33 +1,35 @@
 import {
 	APIEmbed,
-	APIWebhookMessagePayloadResolvable,
-	BoltEmbed,
-	BoltMessage,
-	Message
-} from './deps.ts';
-import GuildedPlugin from './mod.ts';
+	embed,
+	EmbedPayload,
+	message,
+	Message,
+	RESTPostWebhookBody
+} from './_deps.ts';
+import { guilded_plugin } from './mod.ts';
 
-export async function messageToCore(
+export async function tocore(
 	message: Message,
-	plugin: GuildedPlugin,
-	replybool = true
-): Promise<BoltMessage<Message> | undefined> {
+	plugin: guilded_plugin
+): Promise<message<Message> | undefined> {
 	if (!message.serverId) return;
-	const author = await plugin.bot.members.fetch(
-		message.serverId,
-		message.authorId
-	);
+	let author;
+	if (!message.createdByWebhookId)
+		author = await plugin.bot.members.fetch(message.serverId, message.authorId);
+	const update_content = message.content.replaceAll('\n```\n```\n', '\n');
 	return {
 		author: {
-			username: author.nickname || author.username || 'user on guilded',
-			rawname: author.username || 'user on guilded',
-			profile: author.user?.avatar || undefined,
+			username: author?.nickname || author?.username || 'user on guilded',
+			rawname: author?.username || 'user on guilded',
+			profile: author?.user?.avatar || undefined,
 			id: message.authorId,
 			color: '#F5C400'
 		},
 		channel: message.channelId,
 		id: message.id,
-		timestamp: message.createdAt.getTime(),
+		timestamp: Temporal.Instant.fromEpochMilliseconds(
+			message.createdAt.valueOf()
+		),
 		embeds: message.embeds?.map(embed => {
 			return {
 				...embed,
@@ -55,98 +57,48 @@ export async function messageToCore(
 				video: embed.video || undefined
 			};
 		}),
-		platform: { name: 'bolt-guilded', message },
-		reply: async (msg: BoltMessage<unknown>) => {
-			// @ts-ignore
-			await message.reply(coreToMessage(msg));
+		platform: {
+			name: 'bolt-guilded',
+			message,
+			webhookid: message.createdByWebhookId || undefined
 		},
-		content: message.content,
-		guild: message.serverId,
-		replyto: (await replyto(message, plugin, replybool)) || undefined
+		reply: async (msg: message<unknown>) => {
+			await message.reply(toguilded(msg));
+		},
+		content: update_content,
+		replytoid: message.isReply ? message.replyMessageIds[0] : undefined
 	};
 }
 
-async function replyto(
-	message: Message,
-	plugin: GuildedPlugin,
-	replybool: boolean
-) {
-	if (message.isReply && replybool) {
-		try {
-			return await messageToCore(
-				await plugin.bot.messages.fetch(
-					message.channelId,
-					message.replyMessageIds[0]
-				),
-				plugin,
-				false
-			);
-		} catch {
-			return;
-		}
-	} else {
-		return;
-	}
-}
-
-function chooseValidGuildedUsername(msg: BoltMessage<unknown>) {
-	if (validUsernameCheck(msg.author.username)) {
-		return msg.author.username;
-	} else if (validUsernameCheck(msg.author.rawname)) {
-		return msg.author.rawname;
-	} else {
-		return `${msg.author.id} on ${msg.platform.name}`;
-	}
-}
-
-// FIXME: this logic is WRONG
-function validUsernameCheck(username: string) {
-	return (
-		username.length > 1 &&
-		username.length < 32 &&
-		username.match(/^[a-zA-Z0-9_ ()]*$/gms)
-	);
-}
-
-export function coreToMessage(
-	msg: BoltMessage<unknown>
-): APIWebhookMessagePayloadResolvable {
-	const message = {
+export function toguilded(msg: message<unknown>): guilded_msg {
+	const message: guilded_msg = {
 		content: msg.content,
 		avatar_url: msg.author.profile,
-		username: chooseValidGuildedUsername(msg),
-		embeds: msg.embeds?.map(embed => {
-			Object.keys(embed).forEach(key => {
-				embed[key as keyof BoltEmbed] === null
-					? (embed[key as keyof BoltEmbed] = undefined)
-					: embed[key as keyof BoltEmbed];
-			});
-			return {
-				...embed,
-				author: {
-					...embed.author,
-					icon_url: embed.author?.iconUrl
-				},
-				timestamp: embed.timestamp ? new Date(embed.timestamp) : undefined
-			};
-		}) as APIEmbed[] | undefined
+		username: get_valid_username(msg),
+		embeds: fix_embed<string>(msg.embeds, String)
 	};
-	if (msg.replyto) {
+	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
+	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+	if (msg.attachments?.length) {
 		if (!message.embeds) message.embeds = [];
 		message.embeds.push({
-			author: {
-				name: `replying to: ${msg.replyto.author.username}`,
-				icon_url: msg.replyto.author.profile
-			},
-			description: msg.replyto.content
+			title: 'attachments',
+			description: msg.attachments
+				.slice(0, 5)
+				.map(a => {
+					return `![${a.alt || a.name}](${a.file})`;
+				})
+				.join('\n')
 		});
 	}
-	if (message.embeds?.length == 0) delete message.embeds;
+
 	return message;
 }
 
-export function idTransform(msg: BoltMessage<unknown>) {
-	const senddat = {
+export function toguildedid(msg: message<unknown>) {
+	const senddat: guilded_msg & {
+		embeds: APIEmbed[];
+	} = {
 		embeds: [
 			{
 				author: {
@@ -155,26 +107,53 @@ export function idTransform(msg: BoltMessage<unknown>) {
 				},
 				description: msg.content,
 				footer: {
-					text: 'Please run `!bolt resetbridge` to migrate to Webhook bridges'
+					text: 'please migrate to webhook bridges'
 				}
 			},
-			...(msg.embeds || []).map(i => {
-				return {
-					...i,
-					timestamp: i.timestamp ? new Date(i.timestamp) : undefined
-				};
+			...fix_embed<Date>(msg.embeds, d => {
+				return new Date(d);
 			})
-		]
+		],
+		replyMessageIds: msg.replytoid ? [msg.replytoid] : undefined
 	};
-	if (msg.replyto) {
-		senddat.embeds[0].description += `\n**In response to ${msg.replyto.author.username}'s message:**\n${msg.replyto.content}`;
-	}
 	if (msg.attachments?.length) {
 		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
+			.slice(0, 5)
 			.map(a => {
 				return `![${a.alt || a.name}](${a.file})`;
 			})
 			.join('\n')}`;
 	}
 	return senddat;
+}
+
+type guilded_msg = RESTPostWebhookBody & { replyMessageIds?: string[] };
+
+function get_valid_username(msg: message<unknown>) {
+	if (is_valid_username(msg.author.username)) {
+		return msg.author.username;
+	} else if (is_valid_username(msg.author.rawname)) {
+		return msg.author.rawname;
+	} else {
+		return `${msg.author.id}`;
+	}
+}
+
+function is_valid_username(e: string) {
+	if (!e || e.length === 0 || e.length > 32) return false;
+	return /^[a-zA-Z0-9_ ()]*$/gms.test(e);
+}
+
+function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {
+	return embeds.map(embed => {
+		Object.keys(embed).forEach(key => {
+			embed[key as keyof embed] === null
+				? (embed[key as keyof embed] = undefined)
+				: embed[key as keyof embed];
+		});
+		return {
+			...embed,
+			timestamp: embed.timestamp ? timestamp_fix(embed.timestamp) : undefined
+		};
+	}) as (EmbedPayload & { timestamp: t })[];
 }
