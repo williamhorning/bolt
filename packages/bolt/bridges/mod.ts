@@ -13,7 +13,7 @@ export class bolt_bridges {
 	private bolt: Bolt;
 	private bridge_collection: Collection<bridge_document>;
 	// TODO: find a better way to do this, maps work BUT don't't scale well
-	private bridged_message_id_map = new Map<string, string>();
+	private bridged_message_id_map = new Map<string, boolean>();
 
 	constructor(bolt: Bolt) {
 		this.bolt = bolt;
@@ -49,11 +49,7 @@ export class bolt_bridges {
 		if (!platform) return false;
 		const platsays = platform.is_bridged(msg);
 		if (platsays !== 'query') return platsays;
-		const val = this.bridged_message_id_map.get(
-			`${msg.platform.name}-${msg.id}`
-		);
-		this.bridged_message_id_map.delete(`${msg.platform.name}-${msg.id}`);
-		return Boolean(val);
+		return Boolean(this.bridged_message_id_map.get(msg.id));
 	}
 
 	async get_bridge({ _id, channel }: { _id?: string; channel?: string }) {
@@ -127,7 +123,7 @@ export class bolt_bridges {
 					continue;
 				}
 			}
-			this.bridged_message_id_map.set(`${msg.platform.name}-${msg.id}`, msg.id);
+			this.bridged_message_id_map.set(dat.id!, true);
 			data.push(dat as bridge_platform & { id: string });
 		}
 
