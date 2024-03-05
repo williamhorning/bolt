@@ -1,37 +1,43 @@
-import { Bolt, RESTPutAPIApplicationCommandsJSONBody } from './deps.ts';
-import DiscordPlugin from './mod.ts';
+import { API, Bolt, cmd_body } from './_deps.ts';
+import { discord_config } from './mod.ts';
 
-export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
-	const data: RESTPutAPIApplicationCommandsJSONBody = [
-		...bolt.cmds.commands.values()
-	].map(command => {
+export async function register_commands(
+	config: discord_config,
+	api: API,
+	bolt: Bolt
+) {
+	if (!config.slash_cmds) return;
+
+	const data: cmd_body = [...bolt.cmds.values()].map(command => {
 		const opts = [];
 
-		if (command.options?.hasArgument) {
+		if (command.options?.argument_name) {
 			opts.push({
-				name: 'options',
+				name: command.options.argument_name,
 				description: 'option to pass to this command',
-				type: 3
+				type: 3,
+				required: command.options.argument_required
 			});
 		}
 
 		if (command.options?.subcommands) {
 			opts.push(
 				...command.options.subcommands.map(i => {
-					const cmd = {
+					return {
 						name: i.name,
 						description: i.description || i.name,
 						type: 1,
-						options: [] as { type: number; name: string; description: string }[]
+						options: i.options?.argument_name
+							? [
+									{
+										name: i.options.argument_name,
+										description: i.options.argument_name,
+										type: 3,
+										required: i.options.argument_required || false
+									}
+							  ]
+							: undefined
 					};
-					if (i.options?.hasArgument) {
-						cmd.options.push({
-							name: 'options',
-							description: 'option to pass to this command',
-							type: 3
-						});
-					}
-					return cmd;
 				})
 			);
 		}
@@ -44,13 +50,8 @@ export async function registerCommands(discord: DiscordPlugin, bolt: Bolt) {
 		};
 	});
 
-	await discord.bot.api.applicationCommands.bulkOverwriteGlobalCommands(
-		discord.config.appId,
-		[]
-	);
-
-	await discord.bot.api.applicationCommands.bulkOverwriteGlobalCommands(
-		discord.config.appId,
+	await api.applicationCommands.bulkOverwriteGlobalCommands(
+		config.app_id,
 		data
 	);
 }

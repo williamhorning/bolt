@@ -1,35 +1,33 @@
-import {
-	API,
-	BoltMessage,
-	ChannelEditSystemMessage,
-	ChannelOwnershipChangeSystemMessage,
-	Message,
-	TextEmbed,
-	TextSystemMessage,
-	User,
-	UserSystemMessage
-} from './deps.ts';
-import RevoltPlugin from './mod.ts';
+import { API, message, Message, TextEmbed } from './deps.ts';
 
-export async function coreToMessage(
-	message: BoltMessage<unknown>,
+export async function torevolt(
+	message: message<unknown>,
 	masquerade = true
 ): Promise<Omit<API.DataMessageSend, 'nonce'>> {
-	return {
+	const dat: API.DataMessageSend = {
 		attachments:
 			message.attachments && message.attachments.length > 0
 				? await Promise.all(
-						message.attachments.map(async ({ file }) => {
-							const formdat = new FormData();
-							formdat.append('file', await (await fetch(file)).blob());
+						message.attachments.slice(0, 5).map(async ({ file, name }) => {
+							const formdata = new FormData();
+							formdata.append(
+								'file',
+								new File(
+									[await (await fetch(file)).arrayBuffer()],
+									name || 'file.name',
+									{
+										type: 'application/octet-stream'
+									}
+								)
+							);
 							return (
 								await (
 									await fetch(`https://autumn.revolt.chat/attachments`, {
 										method: 'POST',
-										body: formdat
+										body: formdata
 									})
 								).json()
-							).id;
+							)?.id;
 						})
 				  )
 				: undefined,
@@ -38,23 +36,35 @@ export async function coreToMessage(
 			: message.embeds
 			? undefined
 			: 'empty message',
-		embeds: message.embeds,
+		embeds: message.embeds?.map(embed => {
+			if (embed.fields) {
+				for (const field of embed.fields) {
+					embed.description += `\n\n**${field.name}**\n${field.value}`;
+				}
+			}
+			return embed;
+		}),
 		masquerade: masquerade
 			? {
 					avatar: message.author.profile,
-					name: message.author.username,
+					name: message.author.username.slice(0, 32),
 					colour: message.author.color
 			  }
+			: undefined,
+		replies: message.replytoid
+			? [{ id: message.replytoid, mention: true }]
 			: undefined
 	};
+
+	if (!dat.attachments) delete dat.attachments;
+	if (!dat.masquerade) delete dat.masquerade;
+	if (!dat.content) delete dat.content;
+	if (!dat.embeds) delete dat.embeds;
+
+	return dat;
 }
 
-export async function messageToCore(
-	plugin: RevoltPlugin,
-	message: Message,
-	getReply = true
-): Promise<BoltMessage<Message>> {
-	const content = systemMessages(message);
+export function tocore(message: Message): message<Message> {
 	return {
 		author: {
 			username:
@@ -66,102 +76,37 @@ export async function messageToCore(
 				`${message.authorId || 'unknown user'} on revolt`,
 			profile: message.author?.avatarURL,
 			id: message.authorId || 'unknown',
-			color: '#ff4654'
+			color: '#FF4654'
 		},
 		channel: message.channelId,
 		id: message.id,
-		timestamp: message.createdAt.valueOf(),
+		timestamp: Temporal.Instant.fromEpochMilliseconds(
+			message.createdAt.valueOf()
+		),
 		embeds: (message.embeds as TextEmbed[] | undefined)?.map(i => {
 			return {
-				...i,
+				icon_url: i.iconUrl ? i.iconUrl : undefined,
+				type: 'Text',
 				description: i.description ? i.description : undefined,
 				title: i.title ? i.title : undefined,
 				url: i.url ? i.url : undefined
 			};
 		}),
 		platform: { name: 'bolt-revolt', message },
-		reply: async (msg: BoltMessage<unknown>, masquerade = true) => {
-			message.reply(await coreToMessage(msg, masquerade));
+		reply: async (msg: message<unknown>, masquerade = true) => {
+			message.reply(await torevolt(msg, masquerade as boolean));
 		},
 		attachments: message.attachments?.map(
-			({ filename, size, downloadURL, isSpoiler }) => {
+			({ filename, size, isSpoiler, id, tag }) => {
 				return {
-					file: downloadURL,
+					file: `https://autumn.revolt.chat/${tag}/${id}/${filename}`,
 					name: filename,
-					spoiler: isSpoiler, // change if revolt adds spoiler support
+					spoiler: isSpoiler,
 					size: (size || 1) / 1000000
 				};
 			}
 		),
-		content: content !== null ? content : undefined,
-		guild: String(message.channel?.serverId),
-		replyto: await replyto(plugin, message, getReply)
+		content: message.content,
+		replytoid: message.replyIds ? message.replyIds[0] : undefined
 	};
-}
-
-function systemMessages(message: Message) {
-	let content = message.content;
-	const systemMessage = message.systemMessage;
-	function user<T>(type: 'user' | 'from' | 'to') {
-		return (
-			((systemMessage as T)[type as keyof T] as User | null)?.username ||
-			(systemMessage as T)[`${type}Id` as keyof T]
-		);
-	}
-	if (systemMessage) {
-		const type = systemMessage.type;
-		const rest = type.split('_');
-		rest.shift();
-		const action = rest.join(' ');
-		if (type === 'text') {
-			content = (systemMessage as TextSystemMessage).content;
-		} else if (
-			[
-				'user_added',
-				'user_remove',
-				'user_joined',
-				'user_left',
-				'user_kicked',
-				'user_banned'
-			].includes(type)
-		) {
-			content = `${user<UserSystemMessage>('user')} ${action}`;
-		} else if (type === 'channel_ownership_changed') {
-			content = `${user<ChannelOwnershipChangeSystemMessage>(
-				'from'
-			)} transfered this to ${user('to')}`;
-		} else if (
-			[
-				'channel_description_changed',
-				'channel_icon_changed',
-				'channel_renamed'
-			].includes(type)
-		) {
-			content = `channel ${action} by ${user<ChannelEditSystemMessage>(
-				'from'
-			)}`;
-		} else {
-			content = 'unknown system message';
-		}
-	}
-	return content;
-}
-
-async function replyto(
-	plugin: RevoltPlugin,
-	message: Message,
-	getReply: boolean
-) {
-	if (message.replyIds && message.replyIds.length > 0 && getReply) {
-		try {
-			return await messageToCore(
-				plugin,
-				await plugin.bot.messages.fetch(message.channelId, message.replyIds[0]),
-				false
-			);
-		} catch {
-			return;
-		}
-	}
-	return;
 }

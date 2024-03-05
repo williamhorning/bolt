@@ -10,8 +10,8 @@ export {
 } from 'npm:matrix-appservice-bridge@10.1.0';
 export {
 	Bolt,
-	BoltPlugin,
-	type BoltBridgeMessageArgs,
-	type BoltMessage
+	bolt_plugin,
+	type bridge_platform,
+	type message
 } from '../bolt/mod.ts';
-export { Buffer } from "node:buffer";
+export { Buffer } from 'node:buffer';

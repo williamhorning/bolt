@@ -1,13 +1,11 @@
-import { Document } from './deps.ts';
-import { mapPlugins } from './utils.ts';
+import { Document } from './_deps.ts';
+import { _map_plugins } from './mod.ts';
 
 export default {
-	versionfrom: '0.4-beta',
-	versionto: '0.5',
-	collectionNames: {
-		fromDB: 'bridgev1',
-		toDB: 'bridges'
-	},
+	from: '0.4-beta',
+	to: '0.5',
+	from_db: 'bridgev1',
+	to_db: 'bridges',
 	translate: (
 		itemslist: (
 			| Document
@@ -24,14 +22,12 @@ export default {
 			return [
 				{
 					_id,
-					name: `bridge-migrated-${_id}`,
 					platforms: value.bridges.map(
 						(i: { platform: string; channel: string; senddata: unknown }) => {
 							return {
-								plugin: mapPlugins(i.platform),
+								plugin: _map_plugins(i.platform),
 								channel: i.channel,
-								senddata: i.senddata,
-								name: `${i.channel} on ${i.platform}`
+								senddata: i.senddata
 							};
 						}
 					)

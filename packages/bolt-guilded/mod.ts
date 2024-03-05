@@ -1,125 +1,100 @@
 import {
-	BoltBridgeMessage,
-	BoltBridgeMessageArgs,
-	BoltPlugin,
-	Client
-} from './deps.ts';
-import { bridgeLegacy } from './legacybridging.ts';
-import { coreToMessage, messageToCore } from './messages.ts';
+	Bolt,
+	Client,
+	WebhookClient,
+	bolt_plugin,
+	bridge_platform,
+	deleted_message,
+	message
+} from './_deps.ts';
+import { bridge_legacy } from './legacybridging.ts';
+import { tocore, toguilded } from './messages.ts';
 
-export default class GuildedPlugin extends BoltPlugin {
+export class guilded_plugin extends bolt_plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.5.4';
-	constructor(config: { token: string }) {
-		super();
+	version = '0.5.5';
+	support = ['0.5.5'];
+
+	constructor(bolt: Bolt, config: { token: string }) {
+		super(bolt, config);
 		this.bot = new Client(config);
-		this.setupClient(this.bot, config);
-	}
-	private setupClient(client: Client, config: { token: string }) {
-		client.on('debug', (data: unknown) => {
-			this.emit('debug', data);
-		});
-		client.on('messageCreated', async message => {
-			const msg = await messageToCore(message, this);
-			if (msg) this.emit('messageCreate', msg);
-		});
-		client.on('messageUpdated', async message => {
-			const msg = await messageToCore(message, this);
-			if (msg) this.emit('messageUpdate', msg);
-		});
-		client.on('messageDeleted', message => {
-			this.emit('messageDelete', {
-				id: message.id,
-				platform: { name: 'guilded', message },
-				channel: message.channelId,
-				guild: message.serverId,
-				timestamp: new Date(message.deletedAt).getTime()
-			});
-		});
-		client.on('ready', () => {
+		this.bot.on('ready', () => {
 			this.emit('ready');
 		});
-		client.ws.emitter.on('exit', info => {
-			this.emit('debug', info);
-			this.bot = new Client(config);
-			this.setupClient(this.bot, config);
+		this.bot.on('messageCreated', async message => {
+			const msg = await tocore(message, this);
+			if (msg) this.emit('create_message', msg);
 		});
-	}
-
-	start() {
+		this.bot.on('messageUpdated', async message => {
+			const msg = await tocore(message, this);
+			if (msg) this.emit('create_message', msg);
+		});
+		this.bot.on('messageDeleted', del => {
+			this.emit('delete_message', {
+				channel: del.channelId,
+				id: del.id,
+				platform: { message: del, name: 'bolt-guilded' },
+				timestamp: Temporal.Instant.from(del.deletedAt)
+			});
+		});
+		this.bot.ws.emitter.on('exit', () => {
+			this.bot.ws.connect();
+		});
 		this.bot.login();
 	}
-	stop() {
-		this.bot.disconnect();
-	}
-	bridgeSupport = {
-		text: true
-	};
-	async createSenddata(channel: string) {
+
+	async create_bridge(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
 		const wh = await this.bot.webhooks.create(ch.serverId, {
-			name: 'Bolt Bridge',
+			name: 'Bolt Bridges',
 			channelId: channel
 		});
-		return {
-			id: wh.id,
-			token: wh.token || ''
-		};
+		if (!wh.token) {
+			await this.bot.webhooks.delete(ch.serverId, wh.id);
+			throw new Error('No token!!!');
+		}
+		return { id: wh.id, token: wh.token };
 	}
-	async bridgeMessage(data: BoltBridgeMessageArgs) {
-		switch (data.type) {
-			case 'create': {
-				const dat = data.data as BoltBridgeMessage & {
-					senddata: string | { token: string; id: string };
+
+	is_bridged(msg: message<unknown>) {
+		if (msg.author.id === this.bot.user?.id && msg.embeds && !msg.replytoid) {
+			return true;
+		}
+		return 'query';
+	}
+
+	async create_message(message: message<unknown>, platform: bridge_platform) {
+		if (typeof platform.senddata === 'string') {
+			return await bridge_legacy(this, message, platform.senddata);
+		} else {
+			try {
+				const resp = await new WebhookClient(
+					platform.senddata as { token: string; id: string }
+				).send(toguilded(message));
+				return {
+					channel: resp.channelId,
+					id: resp.id,
+					plugin: 'bolt-guilded',
+					senddata: platform.senddata
 				};
-				let replyto;
-				try {
-					if (dat.replytoId) {
-						replyto = await messageToCore(
-							await this.bot.messages.fetch(dat.channel, dat.replytoId),
-							this
-						);
-					}
-				} catch {
-					replyto = undefined;
-				}
-				if (typeof dat.senddata === 'string') {
-					return await bridgeLegacy.bind(this)(dat, dat.senddata, replyto);
-				} else {
-					const msgd = coreToMessage({ ...dat, replyto });
-					const resp = await fetch(
-						`https://media.guilded.gg/webhooks/${dat.senddata.id}/${dat.senddata.token}`,
-						{
-							method: 'POST',
-							body: JSON.stringify(msgd)
-						}
-					);
-					if (resp.status === 404) {
-						// if the webhook disappeared, but the channel hasn't, try to legacy send it, which should recreate the webhook
-						return await bridgeLegacy.bind(this)(
-							dat,
-							dat.bridgePlatform.channel,
-							replyto
-						);
-					}
-					const result = await resp.json();
-					return {
-						channel: result.channelId,
-						id: result.id,
-						plugin: 'bolt-guilded',
-						senddata: dat.senddata
-					};
-				}
-			}
-			case 'update': {
-				// editing is NOT supported
-				return { ...data.data.bridgePlatform, id: data.data.id };
-			}
-			case 'delete': {
-				await this.bot.messages.delete(data.data.channel, data.data.id);
-				return { ...data.data.bridgePlatform, id: data.data.id };
+			} catch {
+				return await bridge_legacy(this, message, platform.channel);
 			}
 		}
+	}
+
+	// deno-lint-ignore require-await
+	async edit_message(message: message<unknown>, bridge: bridge_platform) {
+		return { id: message.id, ...bridge };
+	}
+
+	async delete_message(
+		_message: deleted_message<unknown>,
+		bridge: bridge_platform
+	) {
+		const msg = await this.bot.messages.fetch(bridge.channel, bridge.id!);
+		await msg.delete();
+		return bridge;
 	}
 }
