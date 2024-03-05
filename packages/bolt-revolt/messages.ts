@@ -47,7 +47,7 @@ export async function torevolt(
 		masquerade: masquerade
 			? {
 					avatar: message.author.profile,
-					name: message.author.username,
+					name: message.author.username.slice(0, 32),
 					colour: message.author.color
 			  }
 			: undefined,

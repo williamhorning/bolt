@@ -19,13 +19,13 @@ export const default_commands = [
 		}
 	],
 	[
-		'info',
+		'version',
 		{
-			name: 'info',
-			description: 'get information about bolt',
+			name: 'version',
+			description: "get bolt's version",
 			execute: () =>
 				create_message({
-					text: `bolt 0.5.5 running with a bunch of open-source software.`
+					text: `hello from bolt 0.5.5!`
 				})
 		}
 	],
@@ -39,16 +39,6 @@ export const default_commands = [
 					text: `Pong! 🏓 ${Temporal.Now.instant()
 						.since(timestamp)
 						.total('milliseconds')}ms`
-				})
-		}
-	],
-	[
-		'site',
-		{
-			name: 'site',
-			execute: () =>
-				create_message({
-					text: `You can find the bolt site at https://williamhorning.dev/bolt`
 				})
 		}
 	]

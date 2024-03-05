@@ -1,15 +1,17 @@
 import { create_message, message } from './_deps.ts';
 import { toguildedid } from './messages.ts';
-import GuildedPlugin from './mod.ts';
+import { guilded_plugin } from './mod.ts';
 
 export async function bridge_legacy(
-	guilded: GuildedPlugin,
+	guilded: guilded_plugin,
 	dat: message<unknown>,
 	senddata: string
 ) {
-	const channel = await guilded.bot.channels.fetch(senddata);
 	try {
-		const result = await channel.send(toguildedid({ ...dat }));
+		const result = await guilded.bot.messages.send(
+			senddata,
+			toguildedid({ ...dat })
+		);
 		return {
 			channel: result.channelId,
 			id: result.id,
@@ -20,7 +22,8 @@ export async function bridge_legacy(
 		try {
 			await migrate_bridge(senddata, guilded);
 		} catch {
-			channel.send(
+			await guilded.bot.messages.send(
+				senddata,
 				toguildedid(
 					create_message({
 						text: `In the next major version of Bolt, embed-based bridges like this one won't be supported anymore.
@@ -32,13 +35,13 @@ export async function bridge_legacy(
 	}
 }
 
-async function migrate_bridge(channel: string, guilded: GuildedPlugin) {
+async function migrate_bridge(channel: string, guilded: guilded_plugin) {
 	if (!guilded.bolt.db.redis.get(`guilded-embed-migration-${channel}`)) {
 		await guilded.bolt.db.redis.set(
 			`guilded-embed-migration-${channel}`,
 			'true'
 		);
-		const current = await guilded.bolt.bridge.getBridge({ channel: channel });
+		const current = await guilded.bolt.bridge.get_bridge({ channel: channel });
 		if (current) {
 			current.platforms[
 				current.platforms.findIndex(i => i.channel === channel)
@@ -47,7 +50,7 @@ async function migrate_bridge(channel: string, guilded: GuildedPlugin) {
 				plugin: 'bolt-guilded',
 				senddata: await guilded.create_bridge(channel)
 			};
-			await guilded.bolt.bridge.updateBridge(current);
+			await guilded.bolt.bridge.update_bridge(current);
 		}
 	}
 }

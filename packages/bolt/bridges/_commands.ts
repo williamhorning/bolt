@@ -1,4 +1,4 @@
-import { join, leave, reset } from './_command_functions.ts';
+import { join, leave, reset, toggle, status } from './_command_functions.ts';
 import { Bolt, command, create_message } from './_deps.ts';
 
 export function bridge_commands(bolt: Bolt): command {
@@ -29,15 +29,18 @@ export function bridge_commands(bolt: Bolt): command {
 					options: { argument_name: 'name' }
 				},
 				{
+					name: 'toggle',
+					description: 'toggle a setting on a bridge',
+					execute: async opts => (await toggle(opts, bolt)).text,
+					options: {
+						argument_name: 'setting',
+						argument_required: true
+					}
+				},
+				{
 					name: 'status',
 					description: "see what bridges you're in",
-					execute: async ({ channel }) => {
-						const data = await bolt.bridge.get_bridge({ channel });
-						const text = data?._id
-							? `This channel is connected to \`${data._id}\``
-							: "You're not in any bridges right now.";
-						return create_message({ text });
-					}
+					execute: async opts => (await status(opts, bolt)).text
 				}
 			]
 		}

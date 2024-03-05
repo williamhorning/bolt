@@ -16,6 +16,7 @@ export async function tocore(
 	let author;
 	if (!message.createdByWebhookId)
 		author = await plugin.bot.members.fetch(message.serverId, message.authorId);
+	const update_content = message.content.replaceAll('\n```\n```\n', '\n');
 	return {
 		author: {
 			username: author?.nickname || author?.username || 'user on guilded',
@@ -64,7 +65,7 @@ export async function tocore(
 		reply: async (msg: message<unknown>) => {
 			await message.reply(toguilded(msg));
 		},
-		content: message.content.replaceAll('\n```\n```\n', '\n'),
+		content: update_content,
 		replytoid: message.isReply ? message.replyMessageIds[0] : undefined
 	};
 }
@@ -78,6 +79,19 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 	};
 	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
 	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+	if (msg.attachments?.length) {
+		if (!message.embeds) message.embeds = [];
+		message.embeds.push({
+			title: 'attachments',
+			description: msg.attachments
+				.slice(0, 5)
+				.map(a => {
+					return `![${a.alt || a.name}](${a.file})`;
+				})
+				.join('\n')
+		});
+	}
+
 	return message;
 }
 
@@ -99,11 +113,9 @@ export function toguildedid(msg: message<unknown>) {
 			...fix_embed<Date>(msg.embeds, d => {
 				return new Date(d);
 			})
-		]
+		],
+		replyMessageIds: msg.replytoid ? [msg.replytoid] : undefined
 	};
-	if (msg.replytoid) {
-		senddat.replyMessageIds = [msg.replytoid];
-	}
 	if (msg.attachments?.length) {
 		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
 			.slice(0, 5)
@@ -118,16 +130,16 @@ export function toguildedid(msg: message<unknown>) {
 type guilded_msg = RESTPostWebhookBody & { replyMessageIds?: string[] };
 
 function get_valid_username(msg: message<unknown>) {
-	if (check_username(msg.author.username)) {
+	if (is_valid_username(msg.author.username)) {
 		return msg.author.username;
-	} else if (check_username(msg.author.rawname)) {
+	} else if (is_valid_username(msg.author.rawname)) {
 		return msg.author.rawname;
 	} else {
 		return `${msg.author.id}`;
 	}
 }
 
-function check_username(e: string) {
+function is_valid_username(e: string) {
 	if (!e || e.length === 0 || e.length > 32) return false;
 	return /^[a-zA-Z0-9_ ()]*$/gms.test(e);
 }

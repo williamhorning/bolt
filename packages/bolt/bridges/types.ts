@@ -3,6 +3,7 @@ export interface bridge_document {
 	platforms: bridge_platform[];
 	settings?: {
 		realnames?: boolean;
+		editing_allowed?: boolean;
 	};
 }
 

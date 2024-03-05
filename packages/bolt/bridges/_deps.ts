@@ -1,4 +1,4 @@
-export { Collection } from 'https://deno.land/x/mongo@v0.32.0/mod.ts';
+export { type Collection } from '../deps.ts';
 export { Bolt } from '../bolt.ts';
 export { type command, type command_arguments } from '../cmds/mod.ts';
 export {

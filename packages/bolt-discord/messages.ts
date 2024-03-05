@@ -51,7 +51,10 @@ export async function tocore(
 		author: {
 			profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
 			username:
-				message.member?.nick || message.author?.username || 'discord user',
+				message.member?.nick ||
+				message.author?.global_name ||
+				message.author?.username ||
+				'discord user',
 			rawname: message.author?.username || 'discord user',
 			id: message.author?.id || message.webhook_id || '',
 			color: '#5865F2'
