@@ -1,6 +1,6 @@
 import { bolt_bridges } from './bridges/mod.ts';
 import { bolt_commands } from './cmds/mod.ts';
-import { connect, EventEmitter, MongoClient } from './deps.ts';
+import { connect, EventEmitter, MongoClient } from './_deps.ts';
 import {
 	bolt_plugin,
 	config,

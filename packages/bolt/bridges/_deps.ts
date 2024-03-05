@@ -1,4 +1,4 @@
-export { type Collection } from '../deps.ts';
+export { type Collection } from '../_deps.ts';
 export { Bolt } from '../bolt.ts';
 export { type command, type command_arguments } from '../cmds/mod.ts';
 export {

@@ -1,1 +1,1 @@
-export { type Document } from '../deps.ts';
+export { type Document } from '../_deps.ts';

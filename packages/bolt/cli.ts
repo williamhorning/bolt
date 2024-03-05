@@ -4,7 +4,7 @@ import {
 	versions
 } from './migrations/mod.ts';
 import { Bolt } from './bolt.ts';
-import { MongoClient, parseArgs } from './deps.ts';
+import { MongoClient, parseArgs } from './_deps.ts';
 
 const c = {
 	name: 'bolt',
