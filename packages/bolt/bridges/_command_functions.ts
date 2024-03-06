@@ -10,7 +10,7 @@ export async function join(
 	const errorargs = { channel, platform, _id };
 	const plugin = bolt.plugins.get(platform);
 
-	if (current || !_id) {
+	if (current || !opts.name?.split(' ')[0]) {
 		return {
 			text: create_message({
 				text: "to do this, you can't be in a bridge and need to name your bridge, see `!bolt help`"
