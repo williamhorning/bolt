@@ -21,7 +21,7 @@ export type discord_config = {
 export class discord_plugin extends bolt_plugin<discord_config> {
 	bot: Client;
 	name = 'bolt-discord';
-	version = '0.5.5';
+	version = '0.5.7';
 	support = ['0.5.5'];
 
 	constructor(bolt: Bolt, config: discord_config) {

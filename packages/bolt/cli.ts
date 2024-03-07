@@ -17,12 +17,12 @@ const f = parseArgs(Deno.args, {
 });
 
 if (f.version) {
-	console.log('0.5.5');
+	console.log('0.5.7');
 	Deno.exit();
 }
 
 if (!f.run && !f.migrations) {
-	log('bolt v0.5.5 - cross-platform bot connecting communities', 'blue');
+	log('bolt v0.5.7 - cross-platform bot connecting communities', 'blue');
 	log('Usage: bolt [options]', 'purple');
 	log('Options:', 'green');
 	log('--help: show this');

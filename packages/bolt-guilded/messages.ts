@@ -154,7 +154,7 @@ function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {
 				? (embed[key as keyof embed] = undefined)
 				: embed[key as keyof embed];
 		});
-		if (!embed.description) return [];
+		if (!embed.description || embed.description == '') return [];
 		return [
 			{
 				...embed,
