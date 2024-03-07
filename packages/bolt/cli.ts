@@ -22,8 +22,8 @@ if (f.version) {
 }
 
 if (!f.run && !f.migrations) {
-	log(`bolt v0.5.5 - cross-platform bot connecting communities`, 'blue');
-	log(`Usage: bolt [options]`, 'purple');
+	log('bolt v0.5.5 - cross-platform bot connecting communities', 'blue');
+	log('Usage: bolt [options]', 'purple');
 	log('Options:', 'green');
 	log('--help: show this');
 	log('--version: shows version');

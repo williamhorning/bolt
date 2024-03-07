@@ -3,8 +3,7 @@ import { create_message } from './messages.ts';
 
 function get_replacer() {
 	const seen = new WeakSet();
-	// deno-lint-ignore no-explicit-any
-	return (_: any, value: any) => {
+	return (_: string, value: unknown) => {
 		if (typeof value === 'object' && value !== null) {
 			if (seen.has(value)) {
 				return '[Circular]';
@@ -20,8 +19,7 @@ function get_replacer() {
 
 export async function log_error(
 	e: Error,
-	// deno-lint-ignore no-explicit-any
-	extra: Record<string, any> = {},
+	extra: Record<string, unknown> = {},
 	_id: () => string = nanoid
 ) {
 	const uuid = _id();

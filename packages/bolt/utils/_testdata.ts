@@ -45,7 +45,8 @@ export const err_return = {
 			rawname: 'bolt',
 			id: 'bolt'
 		},
-		content: `Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`\ntest\ntest\n\`\`\``,
+		content:
+			'Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n```\ntest\ntest\n```',
 		channel: '',
 		embeds: undefined,
 		id: '',

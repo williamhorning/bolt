@@ -8,8 +8,9 @@ export const help_output = {
 	},
 	embeds: [
 		{
-			title: `bolt help`,
-			description: `Check out [the docs](https://williamhorning.dev/bolt/) for help.`
+			title: 'bolt help',
+			description:
+				'Check out [the docs](https://williamhorning.dev/bolt/) for help.'
 		}
 	],
 	content: undefined,

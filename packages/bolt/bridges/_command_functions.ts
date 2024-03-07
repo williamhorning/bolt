@@ -20,7 +20,7 @@ export async function join(
 	} else if (!plugin || !plugin.create_bridge) {
 		return {
 			text: (
-				await log_error(new Error(`can't find plugin#create_bridge`), errorargs)
+				await log_error(new Error("can't find plugin#create_bridge"), errorargs)
 			).message
 		};
 	} else {
@@ -160,9 +160,7 @@ export async function status(args: command_arguments, bolt: Bolt) {
 
 	const settings_text =
 		settings_keys.length > 0
-			? ` as well as the following settings: \n\`${settings_keys.join(
-					'`, `'
-			  )}\``
+			? `as well as the following settings: \n\`${settings_keys.join('`, `')}\``
 			: 'as well as no settings';
 
 	return {
