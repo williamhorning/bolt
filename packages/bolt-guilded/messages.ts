@@ -38,7 +38,7 @@ export async function tocore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-					  }
+						}
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,
@@ -77,8 +77,9 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 		username: get_valid_username(msg),
 		embeds: fix_embed<string>(msg.embeds, String)
 	};
+
 	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
-	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+
 	if (msg.attachments?.length) {
 		if (!message.embeds) message.embeds = [];
 		message.embeds.push({
@@ -91,6 +92,8 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 				.join('\n')
 		});
 	}
+
+	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
 
 	return message;
 }
@@ -145,15 +148,18 @@ function is_valid_username(e: string) {
 }
 
 function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {
-	return embeds.map(embed => {
+	return embeds.flatMap(embed => {
 		Object.keys(embed).forEach(key => {
 			embed[key as keyof embed] === null
 				? (embed[key as keyof embed] = undefined)
 				: embed[key as keyof embed];
 		});
-		return {
-			...embed,
-			timestamp: embed.timestamp ? timestamp_fix(embed.timestamp) : undefined
-		};
+		if (!embed.description) return [];
+		return [
+			{
+				...embed,
+				timestamp: embed.timestamp ? timestamp_fix(embed.timestamp) : undefined
+			}
+		];
 	}) as (EmbedPayload & { timestamp: t })[];
 }

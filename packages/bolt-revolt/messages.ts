@@ -22,20 +22,20 @@ export async function torevolt(
 							);
 							return (
 								await (
-									await fetch(`https://autumn.revolt.chat/attachments`, {
+									await fetch('https://autumn.revolt.chat/attachments', {
 										method: 'POST',
 										body: formdata
 									})
 								).json()
 							)?.id;
 						})
-				  )
+					)
 				: undefined,
 		content: message.content
 			? message.content
 			: message.embeds
-			? undefined
-			: 'empty message',
+				? undefined
+				: 'empty message',
 		embeds: message.embeds?.map(embed => {
 			if (embed.fields) {
 				for (const field of embed.fields) {
@@ -49,7 +49,7 @@ export async function torevolt(
 					avatar: message.author.profile,
 					name: message.author.username.slice(0, 32),
 					colour: message.author.color
-			  }
+				}
 			: undefined,
 		replies: message.replytoid
 			? [{ id: message.replytoid, mention: true }]

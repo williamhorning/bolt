@@ -11,8 +11,9 @@ export const default_commands = [
 				create_message({
 					embeds: [
 						{
-							title: `bolt help`,
-							description: `Check out [the docs](https://williamhorning.dev/bolt/) for help.`
+							title: 'bolt help',
+							description:
+								'Check out [the docs](https://williamhorning.dev/bolt/) for help.'
 						}
 					]
 				})
@@ -25,7 +26,7 @@ export const default_commands = [
 			description: "get bolt's version",
 			execute: () =>
 				create_message({
-					text: `hello from bolt 0.5.5!`
+					text: 'hello from bolt 0.5.5!'
 				})
 		}
 	],

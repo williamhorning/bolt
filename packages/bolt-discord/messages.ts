@@ -118,7 +118,7 @@ export async function todiscord(
 							data: new Uint8Array(await (await fetch(a.file)).arrayBuffer())
 						}
 					];
-			  })
+				})
 			: undefined,
 		username: message.author.username,
 		wait: true

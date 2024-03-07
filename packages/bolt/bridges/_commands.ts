@@ -7,7 +7,7 @@ export function bridge_commands(bolt: Bolt): command {
 		description: 'bridge this channel to somewhere else',
 		execute: () =>
 			create_message({
-				text: `Try running \`!bolt help\` for help with bridges`
+				text: 'Try running `!bolt help` for help with bridges'
 			}),
 		options: {
 			subcommands: [
@@ -39,7 +39,7 @@ export function bridge_commands(bolt: Bolt): command {
 				},
 				{
 					name: 'status',
-					description: "see what bridges you're in",
+					description: 'see what bridges you are in',
 					execute: async opts => (await status(opts, bolt)).text
 				}
 			]

@@ -5,12 +5,13 @@ export async function join(
 	{ channel, platform, opts }: command_arguments,
 	bolt: Bolt
 ) {
+	const _idraw = opts.name?.split(' ')[0];
 	const _id = `bridge-${opts.name?.split(' ')[0]}`;
 	const current = await bolt.bridge.get_bridge({ channel });
 	const errorargs = { channel, platform, _id };
 	const plugin = bolt.plugins.get(platform);
 
-	if (current || !_id) {
+	if (current || !_idraw) {
 		return {
 			text: create_message({
 				text: "to do this, you can't be in a bridge and need to name your bridge, see `!bolt help`"
@@ -19,7 +20,7 @@ export async function join(
 	} else if (!plugin || !plugin.create_bridge) {
 		return {
 			text: (
-				await log_error(new Error(`can't find plugin#create_bridge`), errorargs)
+				await log_error(new Error("can't find plugin#create_bridge"), errorargs)
 			).message
 		};
 	} else {
@@ -159,9 +160,7 @@ export async function status(args: command_arguments, bolt: Bolt) {
 
 	const settings_text =
 		settings_keys.length > 0
-			? ` as well as the following settings: \n\`${settings_keys.join(
-					'`, `'
-			  )}\``
+			? `as well as the following settings: \n\`${settings_keys.join('`, `')}\``
 			: 'as well as no settings';
 
 	return {

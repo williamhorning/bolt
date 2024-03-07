@@ -5,115 +5,75 @@ import {
 } from './migrations/mod.ts';
 import { Bolt } from './bolt.ts';
 import { MongoClient, parseArgs } from './_deps.ts';
+import { config } from './utils/mod.ts';
 
-const c = {
-	name: 'bolt',
-	version: '0.5.5',
-	description: 'Cross-platform bot connecting communities',
-	colors: {
-		red: 'color: red',
-		blue: 'color: blue',
-		green: 'color: green',
-		purple: 'color: purple'
-	}
-};
+function log(text: string, color?: string, type?: 'error' | 'log') {
+	console[type || 'log'](`%c${text}`, `color: ${color || 'white'}`);
+}
 
 const f = parseArgs(Deno.args, {
 	boolean: ['help', 'version', 'run', 'migrations'],
 	string: ['config']
 });
 
-if (f.help) {
-	run_help();
-} else if (f.version) {
-	console.log(c.version);
-	Deno.exit();
-} else if (f.run) {
-	await run_bolt();
-} else if (f.migrations) {
-	await run_migrations();
-} else {
-	run_help();
-}
-
-function run_help() {
-	console.log(`%c${c.name} v${c.version} - ${c.description}`, c.colors.blue);
-	console.log('%cUsage: bolt [options]', c.colors.purple);
-	console.log('%cOptions:', c.colors.green);
-	console.log('--help: Show this help.');
-	console.log('--version: Show version.');
-	console.log('--run: run an of bolt using the settings in config.ts');
-	console.log('--config <string>: absolute path to config file');
-	console.log('--migrations: Start interactive tool to migrate databases');
+if (f.version) {
+	console.log('0.5.5');
 	Deno.exit();
 }
 
-async function run_bolt() {
-	let cfg;
-
-	try {
-		cfg = (await import(f.config || `${Deno.cwd()}/config.ts`))?.default;
-	} catch (e) {
-		console.error(`%cCan't load your config, exiting...\n`, c.colors.red);
-		console.error(e);
-		Deno.exit(1);
-	}
-
-	await Bolt.setup(cfg);
+if (!f.run && !f.migrations) {
+	log('bolt v0.5.5 - cross-platform bot connecting communities', 'blue');
+	log('Usage: bolt [options]', 'purple');
+	log('Options:', 'green');
+	log('--help: show this');
+	log('--version: shows version');
+	log('--config <string>: absolute path to config file');
+	log('--run: run an of bolt using the settings in config.ts');
+	log('--migrations: start interactive tool to migrate databases');
+	Deno.exit();
 }
 
-async function run_migrations() {
-	console.log(
-		`Available versions are: ${Object.values(versions).join(', ')}`,
-		c.colors.blue
-	);
+try {
+	const cfg = (await import(f.config || `${Deno.cwd()}/config.ts`))?.default;
+	if (f.run) await Bolt.setup(cfg);
+	if (f.migrations) await migrations(cfg);
+} catch (e) {
+	log('Something went wrong, exiting..', 'red', 'error');
+	console.error(e);
+	Deno.exit(1);
+}
 
-	const version_from = prompt('what version is the DB currently set up for?');
-	const version_to = prompt('what version of bolt do you want to move to?');
-	const db_uri = prompt('Input your MongoDB connection URI');
-	const prod = confirm('Did you run Bolt in prod mode?');
+async function migrations(cfg: config) {
+	log(`Available versions are: ${Object.values(versions).join(', ')}`, 'blue');
 
-	if (!version_from || !version_to || !db_uri) Deno.exit();
+	const from = prompt('what version is the DB currently set up for?');
+	const to = prompt('what version of bolt do you want to move to?');
 
-	if (version_from === version_to) {
-		console.log(
-			'%cYou are already on the version you want to move to',
-			c.colors.red
-		);
-		Deno.exit();
-	}
+	const is_invalid = (val: string) =>
+		!(Object.values(versions) as string[]).includes(val);
 
-	if (
-		!(Object.values(versions) as string[]).includes(version_from) ||
-		!(Object.values(versions) as string[]).includes(version_to)
-	) {
-		console.log('%cInvalid version(s) entered', c.colors.red);
-		Deno.exit(1);
-	}
+	if (!from || !to || is_invalid(from) || is_invalid(to)) Deno.exit(1);
 
-	const migrationlist = get_migrations(version_from, version_to);
+	const migrationlist = get_migrations(from, to);
 
 	if (migrationlist.length < 1) Deno.exit();
 
 	const mongo = new MongoClient();
-	await mongo.connect(db_uri);
-	const database = mongo.database(prod ? 'bolt' : 'bolt-canary');
 
-	console.log(`%cDownloading your data...`, c.colors.blue);
+	await mongo.connect(cfg.mongo_uri);
+
+	const database = mongo.database(cfg.mongo_database);
+
+	log('Migrating your data..', 'blue');
 
 	const dumped = await database
 		.collection(migrationlist[0].from_db)
 		.find()
 		.toArray();
 
-	console.log(
-		`%cDownloaded data from the DB! Migrating your data...`,
-		c.colors.blue
-	);
-
 	const data = apply_migrations(migrationlist, dumped);
 
-	const filepath = Deno.makeTempFileSync({ suffix: 'bolt-db-migration' });
+	const filepath = Deno.makeTempFileSync();
 	Deno.writeTextFileSync(filepath, JSON.stringify(data));
 
 	const writeconfirm = confirm(
@@ -130,6 +90,5 @@ async function run_migrations() {
 		})
 	);
 
-	console.log('%cWrote data to the DB', c.colors.green);
-	Deno.exit();
+	log('Wrote data to the DB', 'green');
 }

@@ -60,7 +60,6 @@ export type plugin_events = {
 };
 
 export interface create_plugin {
-	// deno-lint-ignore no-explicit-any
-	new (bolt: Bolt, config: any): bolt_plugin<unknown>;
+	new (bolt: Bolt, config: unknown): bolt_plugin<unknown>;
 	readonly prototype: bolt_plugin<unknown>;
 }
