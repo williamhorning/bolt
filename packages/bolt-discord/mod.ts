@@ -56,15 +56,23 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 	): Promise<bridge_platform> {
 		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
-		const wh = await this.bot.api.webhooks.execute(
-			senddata.id,
-			senddata.token,
-			msg
-		);
-		return {
-			...bridge,
-			id: wh.id
-		};
+		try {
+			const wh = await this.bot.api.webhooks.execute(
+				senddata.id,
+				senddata.token,
+				msg
+			);
+			return {
+				...bridge,
+				id: wh.id
+			};
+		} catch (e) {
+			if (e.status === 404) {
+				return bridge;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	async edit_message(
