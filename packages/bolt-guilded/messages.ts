@@ -38,7 +38,7 @@ export async function tocore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-						}
+					  }
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,
@@ -102,21 +102,24 @@ export function toguildedid(msg: message<unknown>) {
 	const senddat: guilded_msg & {
 		embeds: APIEmbed[];
 	} = {
-		embeds: [
-			{
-				author: {
-					name: msg.author.username,
-					icon_url: msg.author.profile
+		embeds: fix_embed<Date>(
+			[
+				{
+					author: {
+						name: msg.author.username,
+						icon_url: msg.author.profile
+					},
+					description: msg.content || '*empty message*',
+					footer: {
+						text: 'please migrate to webhook bridges'
+					}
 				},
-				description: msg.content,
-				footer: {
-					text: 'please migrate to webhook bridges'
-				}
-			},
-			...fix_embed<Date>(msg.embeds, d => {
+				...(msg.embeds || [])
+			],
+			d => {
 				return new Date(d);
-			})
-		],
+			}
+		),
 		replyMessageIds: msg.replytoid ? [msg.replytoid] : undefined
 	};
 	if (msg.attachments?.length) {
