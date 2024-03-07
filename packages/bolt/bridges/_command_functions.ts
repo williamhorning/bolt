@@ -5,12 +5,13 @@ export async function join(
 	{ channel, platform, opts }: command_arguments,
 	bolt: Bolt
 ) {
+	const _idraw = opts.name?.split(' ')[0];
 	const _id = `bridge-${opts.name?.split(' ')[0]}`;
 	const current = await bolt.bridge.get_bridge({ channel });
 	const errorargs = { channel, platform, _id };
 	const plugin = bolt.plugins.get(platform);
 
-	if (current || !_id) {
+	if (current || !_idraw) {
 		return {
 			text: create_message({
 				text: "to do this, you can't be in a bridge and need to name your bridge, see `!bolt help`"

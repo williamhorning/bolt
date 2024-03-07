@@ -59,12 +59,21 @@ async function run_bolt() {
 		Deno.exit(1);
 	}
 
-	await Bolt.setup(cfg);
+	try {
+		await Bolt.setup(cfg);
+	} catch (e) {
+		console.error(
+			`%cSomething went wrong with bolt, exiting...\n`,
+			c.colors.red
+		);
+		console.error(e);
+		Deno.exit(1);
+	}
 }
 
 async function run_migrations() {
 	console.log(
-		`Available versions are: ${Object.values(versions).join(', ')}`,
+		`%cAvailable versions are: ${Object.values(versions).join(', ')}`,
 		c.colors.blue
 	);
 
