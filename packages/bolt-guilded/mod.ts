@@ -1,6 +1,7 @@
 import {
 	Bolt,
 	Client,
+	WebhookPayload,
 	WebhookClient,
 	bolt_plugin,
 	bridge_platform,
@@ -46,13 +47,49 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 
 	async create_bridge(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
-		const wh = await this.bot.webhooks.create(ch.serverId, {
-			name: 'Bolt Bridges',
-			channelId: channel
+		const srvwhs = await fetch(
+			`https://guilded.gg/api/v1/servers/${ch.serverId}/webhooks`,
+			{
+				headers: {
+					Authorization: `Bearer ${this.config.token}`
+				}
+			}
+		);
+		if (!srvwhs.ok)
+			throw new Error('Server webhooks not found!', {
+				cause: await srvwhs.text()
+			});
+		const srvhooks = (await srvwhs.json()).webhooks;
+		const found_wh = srvhooks.find((wh: WebhookPayload) => {
+			if (wh.name === 'Bolt Bridges' && wh.channelId === channel) return true;
+			return false;
 		});
+		if (found_wh && found_wh.token)
+			return { id: found_wh.id, token: found_wh.token };
+		const new_wh = await fetch(
+			`https://guilded.gg/api/v1/servers/${ch.serverId}/webhooks`,
+			{
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${this.config.token}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					name: 'Bolt Bridges',
+					channelId: channel
+				})
+			}
+		);
+		if (!new_wh.ok) {
+			throw new Error('Webhook creation failed!', {
+				cause: await new_wh.text()
+			});
+		}
+		const wh = await new_wh.json();
 		if (!wh.token) {
-			await this.bot.webhooks.delete(ch.serverId, wh.id);
-			throw new Error('No token!!!');
+			throw new Error('Webhook lacks token!', {
+				cause: JSON.stringify(wh)
+			});
 		}
 		return { id: wh.id, token: wh.token };
 	}
