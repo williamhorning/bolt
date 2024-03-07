@@ -14,7 +14,7 @@ import { tocore, toguilded } from './messages.ts';
 export class guilded_plugin extends bolt_plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.5.7';
+	version = '0.5.8';
 	support = ['0.5.5'];
 
 	constructor(bolt: Bolt, config: { token: string }) {

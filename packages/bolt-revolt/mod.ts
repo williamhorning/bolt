@@ -11,7 +11,7 @@ import { tocore, torevolt } from './messages.ts';
 export class revolt_plugin extends bolt_plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-revolt';
-	version = '0.5.7';
+	version = '0.5.8';
 	support = ['0.5.5'];
 
 	constructor(bolt: Bolt, config: { token: string }) {

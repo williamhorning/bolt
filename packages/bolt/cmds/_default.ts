@@ -26,7 +26,7 @@ export const default_commands = [
 			description: "get bolt's version",
 			execute: () =>
 				create_message({
-					text: 'hello from bolt 0.5.7!'
+					text: 'hello from bolt 0.5.8!'
 				})
 		}
 	],
