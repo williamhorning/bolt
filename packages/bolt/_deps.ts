@@ -1,8 +1,9 @@
-export { EventEmitter } from 'https://deno.land/x/event@2.0.1/mod.ts';
+export { EventEmitter } from 'jsr:@denosaurs/event@^2.0.2';
 export {
 	MongoClient,
 	type Document,
 	type Collection
 } from 'https://deno.land/x/mongo@v0.32.0/mod.ts';
 export { connect } from 'https://deno.land/x/redis@v0.32.0/mod.ts';
-export { parseArgs } from 'https://deno.land/std@0.215.0/cli/parse_args.ts';
+export { parseArgs } from 'jsr:@std/cli@^0.219.1/parse_args';
+export { assertEquals } from 'jsr:@std/assert@^0.219.1/assert_equals';

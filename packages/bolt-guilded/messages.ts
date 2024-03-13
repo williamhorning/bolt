@@ -77,8 +77,9 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 		username: get_valid_username(msg),
 		embeds: fix_embed<string>(msg.embeds, String)
 	};
+
 	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
-	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+
 	if (msg.attachments?.length) {
 		if (!message.embeds) message.embeds = [];
 		message.embeds.push({
@@ -92,6 +93,8 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 		});
 	}
 
+	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+
 	return message;
 }
 
@@ -99,21 +102,24 @@ export function toguildedid(msg: message<unknown>) {
 	const senddat: guilded_msg & {
 		embeds: APIEmbed[];
 	} = {
-		embeds: [
-			{
-				author: {
-					name: msg.author.username,
-					icon_url: msg.author.profile
+		embeds: fix_embed<Date>(
+			[
+				{
+					author: {
+						name: msg.author.username,
+						icon_url: msg.author.profile
+					},
+					description: msg.content || '*empty message*',
+					footer: {
+						text: 'please migrate to webhook bridges'
+					}
 				},
-				description: msg.content,
-				footer: {
-					text: 'please migrate to webhook bridges'
-				}
-			},
-			...fix_embed<Date>(msg.embeds, d => {
+				...(msg.embeds || [])
+			],
+			d => {
 				return new Date(d);
-			})
-		],
+			}
+		),
 		replyMessageIds: msg.replytoid ? [msg.replytoid] : undefined
 	};
 	if (msg.attachments?.length) {
@@ -145,15 +151,18 @@ function is_valid_username(e: string) {
 }
 
 function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {
-	return embeds.map(embed => {
+	return embeds.flatMap(embed => {
 		Object.keys(embed).forEach(key => {
 			embed[key as keyof embed] === null
 				? (embed[key as keyof embed] = undefined)
 				: embed[key as keyof embed];
 		});
-		return {
-			...embed,
-			timestamp: embed.timestamp ? timestamp_fix(embed.timestamp) : undefined
-		};
+		if (!embed.description || embed.description == '') return [];
+		return [
+			{
+				...embed,
+				timestamp: embed.timestamp ? timestamp_fix(embed.timestamp) : undefined
+			}
+		];
 	}) as (EmbedPayload & { timestamp: t })[];
 }

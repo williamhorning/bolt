@@ -17,7 +17,6 @@ export class Bolt extends EventEmitter<plugin_events> {
 	db: {
 		mongo: MongoClient;
 		redis: Awaited<ReturnType<typeof connect>>;
-		name: string;
 	};
 	plugins = new Map<string, bolt_plugin<unknown>>();
 
@@ -51,7 +50,7 @@ export class Bolt extends EventEmitter<plugin_events> {
 	) {
 		super();
 		this.config = config;
-		this.db = { mongo, redis, name: config.mongo_database };
+		this.db = { mongo, redis };
 		this.bridge = new bolt_bridges(this);
 		this.cmds.listen(this);
 		this.load(this.config.plugins);
@@ -61,10 +60,11 @@ export class Bolt extends EventEmitter<plugin_events> {
 		for (const { type, config } of plugins) {
 			const plugin = new type(this, config);
 			if (!plugin.support.includes('0.5.5')) {
-				await log_error(
-					new Error(`plugin '${plugin.name}' doesn't support bolt 0.5.5`)
-				);
-				Deno.exit(1);
+				throw (
+					await log_error(
+						new Error(`plugin '${plugin.name}' doesn't support bolt 0.5.5`)
+					)
+				).e;
 			} else {
 				this.plugins.set(plugin.name, plugin);
 				(async () => {

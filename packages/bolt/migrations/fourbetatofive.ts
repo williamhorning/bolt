@@ -1,5 +1,5 @@
-import { Document } from './_deps.ts';
-import { _map_plugins } from './mod.ts';
+import { Document } from '../_deps.ts';
+import { map_plugins } from './_utils.ts';
 
 export default {
 	from: '0.4-beta',
@@ -17,7 +17,10 @@ export default {
 			  }
 		)[]
 	) =>
-		itemslist.flatMap(({ _id, value }) => {
+		itemslist.flatMap<{
+			_id: string;
+			platforms: { plugin: string; channel: string; senddata: unknown }[];
+		}>(({ _id, value }) => {
 			if (_id.startsWith('message-')) return [];
 			return [
 				{
@@ -25,7 +28,7 @@ export default {
 					platforms: value.bridges.map(
 						(i: { platform: string; channel: string; senddata: unknown }) => {
 							return {
-								plugin: _map_plugins(i.platform),
+								plugin: map_plugins(i.platform),
 								channel: i.channel,
 								senddata: i.senddata
 							};
@@ -33,5 +36,5 @@ export default {
 					)
 				}
 			];
-		})
+		}) as Document[]
 };

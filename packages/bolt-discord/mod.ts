@@ -21,7 +21,7 @@ export type discord_config = {
 export class discord_plugin extends bolt_plugin<discord_config> {
 	bot: Client;
 	name = 'bolt-discord';
-	version = '0.5.5';
+	version = '0.5.8';
 	support = ['0.5.5'];
 
 	constructor(bolt: Bolt, config: discord_config) {
@@ -56,15 +56,23 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 	): Promise<bridge_platform> {
 		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
-		const wh = await this.bot.api.webhooks.execute(
-			senddata.id,
-			senddata.token,
-			msg
-		);
-		return {
-			...bridge,
-			id: wh.id
-		};
+		try {
+			const wh = await this.bot.api.webhooks.execute(
+				senddata.id,
+				senddata.token,
+				msg
+			);
+			return {
+				...bridge,
+				id: wh.id
+			};
+		} catch (e) {
+			if (e.status === 404) {
+				return bridge;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	async edit_message(
@@ -73,16 +81,24 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 	): Promise<bridge_platform> {
 		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
-		const wh = await this.bot.api.webhooks.editMessage(
-			senddata.id,
-			senddata.token,
-			bridge.id,
-			msg
-		);
-		return {
-			...bridge,
-			id: wh.id
-		};
+		try {
+			const wh = await this.bot.api.webhooks.editMessage(
+				senddata.id,
+				senddata.token,
+				bridge.id,
+				msg
+			);
+			return {
+				...bridge,
+				id: wh.id
+			};
+		} catch (e) {
+			if (e.status === 404) {
+				return bridge;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	async delete_message(
@@ -90,11 +106,19 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 		bridge: bridge_platform & { id: string }
 	) {
 		const senddata = bridge.senddata as { token: string; id: string };
-		await this.bot.api.webhooks.deleteMessage(
-			senddata.id,
-			senddata.token,
-			bridge.id
-		);
-		return bridge;
+		try {
+			await this.bot.api.webhooks.deleteMessage(
+				senddata.id,
+				senddata.token,
+				bridge.id
+			);
+			return bridge;
+		} catch (e) {
+			if (e.status === 404) {
+				return bridge;
+			} else {
+				throw e;
+			}
+		}
 	}
 }

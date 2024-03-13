@@ -35,7 +35,7 @@ export async function register_commands(
 										type: 3,
 										required: i.options.argument_required || false
 									}
-							  ]
+								]
 							: undefined
 					};
 				})

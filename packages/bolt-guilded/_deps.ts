@@ -8,7 +8,8 @@ export {
 	Message,
 	WebhookClient,
 	type EmbedPayload,
-	type RESTPostWebhookBody
+	type RESTPostWebhookBody,
+	type WebhookPayload
 } from 'npm:guilded.js@0.23.7';
 export {
 	Bolt,

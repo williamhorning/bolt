@@ -1,10 +1,8 @@
 export function create_message({
 	text,
-	embeds,
 	uuid
 }: {
 	text?: string;
-	embeds?: embed[];
 	uuid?: string;
 }): message<undefined> & { uuid?: string } {
 	const data = {
@@ -16,7 +14,6 @@ export function create_message({
 			id: 'bolt'
 		},
 		content: text,
-		embeds,
 		channel: '',
 		id: '',
 		reply: async () => {},
