@@ -17,7 +17,6 @@ export class Bolt extends EventEmitter<plugin_events> {
 	db: {
 		mongo: MongoClient;
 		redis: Awaited<ReturnType<typeof connect>>;
-		name: string;
 	};
 	plugins = new Map<string, bolt_plugin<unknown>>();
 
@@ -51,7 +50,7 @@ export class Bolt extends EventEmitter<plugin_events> {
 	) {
 		super();
 		this.config = config;
-		this.db = { mongo, redis, name: config.mongo_database };
+		this.db = { mongo, redis };
 		this.bridge = new bolt_bridges(this);
 		this.cmds.listen(this);
 		this.load(this.config.plugins);

@@ -1,5 +1,5 @@
-import { Document } from './_deps.ts';
-import { _is_channel } from './mod.ts';
+import { Document } from '../_deps.ts';
+import { is_channel } from './_utils.ts';
 
 export default {
 	from: '0.4',
@@ -20,7 +20,7 @@ export default {
 		for (const item of items) {
 			const [platform, ...join] = item._id.split('-');
 			const name = join.join('-');
-			if (_is_channel(name)) continue;
+			if (is_channel(name)) continue;
 			const _id = items.find(i => {
 				return i._id.startsWith(platform) && i.value === name;
 			})?._id;
@@ -38,7 +38,7 @@ export default {
 		for (const _id in obj) {
 			const value = obj[_id];
 			if (!value) continue;
-			if (_is_channel(_id)) continue;
+			if (is_channel(_id)) continue;
 			if (value.length < 2) continue;
 			documents.push({
 				_id,
@@ -48,6 +48,6 @@ export default {
 			});
 		}
 
-		return documents;
+		return documents as Document[];
 	}
 };

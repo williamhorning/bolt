@@ -1,4 +1,4 @@
-import { Document } from './_deps.ts';
+import { Document } from '../_deps.ts';
 import BoltFourToFourBeta from './fourtofourbeta.ts';
 import BoltFourBetaToFive from './fourtofourbeta.ts';
 
@@ -15,7 +15,7 @@ export enum versions {
 export function get_migrations(from: string, to: string): migration[] {
 	const indexoffrom = list_migrations.findIndex(i => i.from === from);
 	const indexofto = list_migrations.findLastIndex(i => i.to === to);
-	return list_migrations.slice(indexoffrom, indexofto + 1);
+	return list_migrations.slice(indexoffrom, indexofto);
 }
 
 export function apply_migrations(
@@ -23,31 +23,4 @@ export function apply_migrations(
 	data: Document[]
 ): Document[] {
 	return migrations.reduce((acc, migration) => migration.translate(acc), data);
-}
-
-export function _map_plugins(pluginname: string): string {
-	if (pluginname === 'discord') return 'bolt-discord';
-	if (pluginname === 'guilded') return 'bolt-guilded';
-	if (pluginname === 'revolt') return 'bolt-revolt';
-	return 'unknown';
-}
-
-export function _is_channel(channel: string): boolean {
-	if (
-		channel.match(
-			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-		)
-	) {
-		return true;
-	}
-	if (channel.match(/[0-7][0-9A-HJKMNP-TV-Z]{25}/gm)) return true;
-	if (!isNaN(Number(channel))) return true;
-	if (
-		channel.startsWith('discord-') ||
-		channel.startsWith('guilded-') ||
-		channel.startsWith('revolt-')
-	) {
-		return true;
-	}
-	return false;
 }

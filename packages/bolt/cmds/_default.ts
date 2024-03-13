@@ -9,13 +9,7 @@ export const default_commands = [
 			description: 'get help',
 			execute: () =>
 				create_message({
-					embeds: [
-						{
-							title: 'bolt help',
-							description:
-								'Check out [the docs](https://williamhorning.dev/bolt/) for help.'
-						}
-					]
+					text: 'check out [the docs](https://williamhorning.dev/bolt/) for help.'
 				})
 		}
 	],

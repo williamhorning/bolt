@@ -6,7 +6,7 @@ export async function join(
 	bolt: Bolt
 ) {
 	const _idraw = opts.name?.split(' ')[0];
-	const _id = `bridge-${opts.name?.split(' ')[0]}`;
+	const _id = `bridge-${_idraw}`;
 	const current = await bolt.bridge.get_bridge({ channel });
 	const errorargs = { channel, platform, _id };
 	const plugin = bolt.plugins.get(platform);
