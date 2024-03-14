@@ -12,15 +12,18 @@ import {
 
 export class Bolt extends EventEmitter<plugin_events> {
 	bridge: bolt_bridges;
-	cmds = new bolt_commands();
+	cmds: bolt_commands = new bolt_commands();
 	config: config;
 	db: {
 		mongo: MongoClient;
 		redis: Awaited<ReturnType<typeof connect>>;
 	};
-	plugins = new Map<string, bolt_plugin<unknown>>();
+	plugins: Map<string, bolt_plugin<unknown>> = new Map<
+		string,
+		bolt_plugin<unknown>
+	>();
 
-	static async setup(cfg: Partial<config>) {
+	static async setup(cfg: Partial<config>): Promise<Bolt> {
 		const config = define_config(cfg);
 
 		Deno.env.set('BOLT_ERROR_HOOK', config.errorURL || '');

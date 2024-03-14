@@ -38,13 +38,13 @@ export class bolt_bridges {
 		this.bolt.cmds.set('bridge', bridge_commands(bolt));
 	}
 
-	async get_bridge_message(id: string) {
+	async get_bridge_message(id: string): Promise<bridge_platform[] | null> {
 		const redis_data = await this.bolt.db.redis.get(`bolt-bridge-${id}`);
 		if (redis_data === null) return [] as bridge_platform[];
 		return JSON.parse(redis_data) as bridge_platform[];
 	}
 
-	is_bridged(msg: deleted_message<unknown>) {
+	is_bridged(msg: deleted_message<unknown>): boolean {
 		const platform = this.bolt.plugins.get(msg.platform.name);
 		if (!platform) return false;
 		const platsays = platform.is_bridged(msg);
@@ -52,7 +52,13 @@ export class bolt_bridges {
 		return Boolean(this.bridged_message_id_map.get(msg.id));
 	}
 
-	async get_bridge({ _id, channel }: { _id?: string; channel?: string }) {
+	async get_bridge({
+		_id,
+		channel
+	}: {
+		_id?: string;
+		channel?: string;
+	}): Promise<bridge_document | undefined> {
 		const query = {} as Record<string, string>;
 
 		if (_id) {
@@ -64,14 +70,10 @@ export class bolt_bridges {
 		return (await this.bridge_collection.findOne(query)) || undefined;
 	}
 
-	async update_bridge(bridge: bridge_document) {
-		return await this.bridge_collection.replaceOne(
-			{ _id: bridge._id },
-			bridge,
-			{
-				upsert: true
-			}
-		);
+	async update_bridge(bridge: bridge_document): Promise<void> {
+		await this.bridge_collection.replaceOne({ _id: bridge._id }, bridge, {
+			upsert: true
+		});
 	}
 
 	private async handle_message(
@@ -161,7 +163,7 @@ export class bolt_bridges {
 		let replytoid;
 		if ('replytoid' in msg && msg.replytoid) {
 			try {
-				replytoid = (await this.get_bridge_message(msg.replytoid)).find(
+				replytoid = (await this.get_bridge_message(msg.replytoid))?.find(
 					i => i.channel === platform.channel && i.plugin === platform.plugin
 				)?.id;
 			} catch {

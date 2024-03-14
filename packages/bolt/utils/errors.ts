@@ -1,5 +1,5 @@
 import { nanoid } from './_deps.ts';
-import { create_message } from './messages.ts';
+import { create_message, message } from './messages.ts';
 
 function get_replacer() {
 	const seen = new WeakSet();
@@ -21,7 +21,12 @@ export async function log_error(
 	e: Error,
 	extra: Record<string, unknown> = {},
 	_id: () => string = nanoid
-) {
+): Promise<{
+	e: Error;
+	extra: Record<string, unknown>;
+	uuid: string;
+	message: message<unknown> & { uuid?: string };
+}> {
 	const uuid = _id();
 
 	const error_hook = Deno.env.get('BOLT_ERROR_HOOK');

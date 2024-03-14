@@ -8,7 +8,7 @@ export default {
 	to_db: 'bridgev1',
 	translate: (
 		items: (Document | { _id: string; value: string | unknown })[]
-	) => {
+	): Document[] => {
 		const obj = {} as {
 			[key: string]: {
 				platform: string;
@@ -48,6 +48,6 @@ export default {
 			});
 		}
 
-		return documents as Document[];
+		return documents;
 	}
 };
