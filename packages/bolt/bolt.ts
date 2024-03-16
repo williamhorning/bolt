@@ -1,62 +1,39 @@
+import { EventEmitter } from 'event';
+import { MongoClient } from 'mongo';
+import { RedisClient } from 'r2d2';
 import { bolt_bridges } from './bridges/mod.ts';
-import { bolt_commands } from './cmds/mod.ts';
-import { connect, EventEmitter, MongoClient } from './_deps.ts';
 import {
-	bolt_plugin,
+	Commands,
+	plugin,
 	config,
-	define_config,
+	create_plugin,
 	log_error,
-	plugin_events,
-	create_plugin
+	plugin_events
 } from './utils/mod.ts';
 
 export class Bolt extends EventEmitter<plugin_events> {
 	bridge: bolt_bridges;
-	cmds: bolt_commands = new bolt_commands();
+	cmds: Commands = new Commands();
 	config: config;
 	db: {
 		mongo: MongoClient;
-		redis: Awaited<ReturnType<typeof connect>>;
 	};
-	plugins: Map<string, bolt_plugin<unknown>> = new Map<
-		string,
-		bolt_plugin<unknown>
-	>();
+	redis: RedisClient;
+	plugins: Map<string, plugin<unknown>> = new Map<string, plugin<unknown>>();
 
-	static async setup(cfg: Partial<config>): Promise<Bolt> {
-		const config = define_config(cfg);
+	// TODO: replace deno.* specific stuff if possible
 
-		Deno.env.set('BOLT_ERROR_HOOK', config.errorURL || '');
-
-		const mongo = new MongoClient();
-
-		let redis: Bolt['db']['redis'] | undefined;
-
-		try {
-			await mongo.connect(config.mongo_uri);
-			redis = await connect({
-				hostname: config.redis_host,
-				port: config.redis_port
-			});
-		} catch (e) {
-			await log_error(e, { config });
-			Deno.exit(1);
-		}
-
-		return new Bolt(config, mongo, redis);
-	}
-
-	private constructor(
-		config: config,
-		mongo: MongoClient,
-		redis: Bolt['db']['redis']
-	) {
+	constructor(config: config, mongo: MongoClient, redis_conn: Deno.TcpConn) {
 		super();
 		this.config = config;
-		this.db = { mongo, redis };
+		this.db = { mongo };
+		this.redis = new RedisClient(redis_conn);
 		this.bridge = new bolt_bridges(this);
+	}
+
+	async setup() {
 		this.cmds.listen(this);
-		this.load(this.config.plugins);
+		await this.load(this.config.plugins);
 	}
 
 	async load(plugins: { type: create_plugin; config: unknown }[]) {

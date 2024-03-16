@@ -1,5 +1,4 @@
-import { Document } from '../_deps.ts';
-import { map_plugins } from './_utils.ts';
+import { Document } from 'mongo';
 
 export default {
 	from: '0.4-beta',
@@ -38,3 +37,10 @@ export default {
 			];
 		}) as Document[]
 };
+
+function map_plugins(pluginname: string): string {
+	if (pluginname === 'discord') return 'bolt-discord';
+	if (pluginname === 'guilded') return 'bolt-guilded';
+	if (pluginname === 'revolt') return 'bolt-revolt';
+	return 'unknown';
+}

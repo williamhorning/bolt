@@ -1,5 +1,4 @@
-import { Document } from '../_deps.ts';
-import { is_channel } from './_utils.ts';
+import { Document } from 'mongo';
 
 export default {
 	from: '0.4',
@@ -51,3 +50,23 @@ export default {
 		return documents;
 	}
 };
+
+function is_channel(channel: string): boolean {
+	if (
+		channel.match(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+		)
+	) {
+		return true;
+	}
+	if (channel.match(/[0-7][0-9A-HJKMNP-TV-Z]{25}/gm)) return true;
+	if (!isNaN(Number(channel))) return true;
+	if (
+		channel.startsWith('discord-') ||
+		channel.startsWith('guilded-') ||
+		channel.startsWith('revolt-')
+	) {
+		return true;
+	}
+	return false;
+}

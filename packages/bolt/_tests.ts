@@ -1,6 +1,4 @@
-// the bolt test suite (incomplete)
-
-import { assertEquals } from './_deps.ts';
+import { assertEquals } from 'assert_eq';
 import {
 	cmd_help_output,
 	migrations_five,
@@ -15,17 +13,17 @@ import {
 	utils_err_hook,
 	utils_msg
 } from './_testdata.ts';
-import { bolt_commands } from './cmds/mod.ts';
 import {
+	Commands,
 	message,
 	apply_migrations,
 	get_migrations,
 	define_config,
 	log_error,
 	create_message
-} from './mod.ts';
-import BoltFourToFourBeta from './migrations/fourtofourbeta.ts';
-import BoltFourBetaToFive from './migrations/fourbetatofive.ts';
+} from './utils/mod.ts';
+import BoltFourToFourBeta from './utils/_fourfourbeta.ts';
+import BoltFourBetaToFive from './utils/_fourbetafive.ts';
 
 // override globals
 
@@ -40,7 +38,7 @@ console.log = console.error = () => {};
 // cmds
 
 Deno.test('bolt/cmds', async t => {
-	const cmds = new bolt_commands();
+	const cmds = new Commands();
 
 	await t.step('run help command', async () => {
 		let res: (value: message<unknown>) => void;
@@ -95,7 +93,6 @@ Deno.test('bolt/migrations', async t => {
 		});
 
 		await t.step('0.4-beta => 0.5', () => {
-			// TODO: fix
 			const result = apply_migrations(
 				[BoltFourBetaToFive],
 				migrations_fourbeta
@@ -145,8 +142,7 @@ Deno.test('bolt/utils', async t => {
 
 	await t.step('message creation', () => {
 		const result = create_message({
-			text: 'test',
-			uuid: 'test'
+			text: 'test'
 		});
 
 		result.reply = utils_msg.reply;

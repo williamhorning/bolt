@@ -1,10 +1,9 @@
+/** creates a message given text and an optional uuid */
 export function create_message({
-	text,
-	uuid
+	text
 }: {
 	text?: string;
-	uuid?: string;
-}): message<undefined> & { uuid?: string } {
+}): message<undefined> {
 	const data = {
 		author: {
 			username: 'Bolt',
@@ -21,8 +20,7 @@ export function create_message({
 		platform: {
 			name: 'bolt',
 			message: undefined
-		},
-		uuid
+		}
 	};
 	return data;
 }

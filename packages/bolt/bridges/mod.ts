@@ -1,12 +1,7 @@
 import { bridge_commands } from './_commands.ts';
-import {
-	Bolt,
-	Collection,
-	message,
-	deleted_message,
-	log_error,
-	bolt_plugin
-} from './_deps.ts';
+import { Bolt } from '../bolt.ts';
+import { Collection } from 'mongo';
+import { message, deleted_message, log_error, plugin } from '../utils/mod.ts';
 import { bridge_document, bridge_platform } from './types.ts';
 
 export class bolt_bridges {
@@ -39,9 +34,12 @@ export class bolt_bridges {
 	}
 
 	async get_bridge_message(id: string): Promise<bridge_platform[] | null> {
-		const redis_data = await this.bolt.db.redis.get(`bolt-bridge-${id}`);
-		if (redis_data === null) return [] as bridge_platform[];
-		return JSON.parse(redis_data) as bridge_platform[];
+		const rdata = await this.bolt.redis.sendCommand([
+			'JSON.GET',
+			`bolt-bridge-${id}`
+		]);
+		if (!rdata) return [] as bridge_platform[];
+		return rdata as bridge_platform[];
 	}
 
 	is_bridged(msg: deleted_message<unknown>): boolean {
@@ -76,14 +74,6 @@ export class bolt_bridges {
 		});
 	}
 
-	private async handle_message(
-		msg: deleted_message<unknown>,
-		action: 'delete_message'
-	): Promise<void>;
-	private async handle_message(
-		msg: message<unknown>,
-		action: 'create_message' | 'edit_message'
-	): Promise<void>;
 	private async handle_message(
 		msg: message<unknown> | deleted_message<unknown>,
 		action: 'create_message' | 'edit_message' | 'delete_message'
@@ -130,10 +120,20 @@ export class bolt_bridges {
 		}
 
 		for (const i of data) {
-			await this.bolt.db.redis.set(`bolt-bridge-${i.id}`, JSON.stringify(data));
+			await this.bolt.redis.writeCommand([
+				'JSON.SET',
+				`bolt-bridge-${i.id}`,
+				'$',
+				`'${JSON.stringify(data)}'`
+			]);
 		}
 
-		await this.bolt.db.redis.set(`bolt-bridge-${msg.id}`, JSON.stringify(data));
+		await this.bolt.redis.writeCommand([
+			'JSON.SET',
+			`bolt-bridge-${msg.id}`,
+			'$',
+			`'${JSON.stringify(data)}'`
+		]);
 	}
 
 	private async get_platforms(
@@ -177,7 +177,7 @@ export class bolt_bridges {
 		platform: bridge_platform,
 		action: 'create_message' | 'edit_message' | 'delete_message'
 	): Promise<{
-		plugin?: bolt_plugin<unknown>;
+		plugin?: plugin<unknown>;
 		platform?: bridge_platform & { id: string };
 	}> {
 		const plugin = this.bolt.plugins.get(platform.plugin);
@@ -191,10 +191,8 @@ export class bolt_bridges {
 			return {};
 
 		return { plugin, platform: platform } as {
-			plugin: bolt_plugin<unknown>;
+			plugin: plugin<unknown>;
 			platform: bridge_platform & { id: string };
 		};
 	}
 }
-
-export * from './types.ts';

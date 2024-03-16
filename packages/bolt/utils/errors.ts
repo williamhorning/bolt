@@ -1,34 +1,19 @@
-import { nanoid } from './_deps.ts';
 import { create_message, message } from './messages.ts';
 
-function get_replacer() {
-	const seen = new WeakSet();
-	return (_: string, value: unknown) => {
-		if (typeof value === 'object' && value !== null) {
-			if (seen.has(value)) {
-				return '[Circular]';
-			}
-			seen.add(value);
-		}
-		if (typeof value === 'bigint') {
-			return value.toString();
-		}
-		return value;
-	};
-}
-
+/** logs an error and returns a unique id and a message for users */
 export async function log_error(
 	e: Error,
 	extra: Record<string, unknown> = {},
-	_id: () => string = nanoid
+	_id: () => string = crypto.randomUUID
 ): Promise<{
 	e: Error;
 	extra: Record<string, unknown>;
 	uuid: string;
-	message: message<unknown> & { uuid?: string };
+	message: message<unknown>;
 }> {
 	const uuid = _id();
 
+	// TODO: replace deno.env
 	const error_hook = Deno.env.get('BOLT_ERROR_HOOK');
 
 	if (error_hook && error_hook !== '') {
@@ -50,13 +35,13 @@ export async function log_error(
 										...extra,
 										uuid
 									},
-									get_replacer(),
+									replacer(),
 									2
 								)}\`\`\``
 							}
 						]
 					},
-					get_replacer()
+					replacer()
 				)
 			})
 		).text();
@@ -70,8 +55,23 @@ export async function log_error(
 		uuid,
 		extra,
 		message: create_message({
-			text: `Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
-			uuid
+			text: `Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
 		})
+	};
+}
+
+function replacer() {
+	const seen = new WeakSet();
+	return (_: string, value: unknown) => {
+		if (typeof value === 'object' && value !== null) {
+			if (seen.has(value)) {
+				return '[Circular]';
+			}
+			seen.add(value);
+		}
+		if (typeof value === 'bigint') {
+			return value.toString();
+		}
+		return value;
 	};
 }

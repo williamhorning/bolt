@@ -1,15 +1,19 @@
+import { Bolt } from './bolt.ts';
+import { parseArgs } from 'std_args';
+import { MongoClient } from 'mongo';
 import {
 	apply_migrations,
 	get_migrations,
-	versions
-} from './migrations/mod.ts';
-import { Bolt } from './bolt.ts';
-import { MongoClient, parseArgs } from './_deps.ts';
-import { config } from './utils/mod.ts';
+	versions,
+	config,
+	define_config
+} from './utils/mod.ts';
 
 function log(text: string, color?: string, type?: 'error' | 'log') {
 	console[type || 'log'](`%c${text}`, `color: ${color || 'white'}`);
 }
+
+// TODO: remove deno-specific stuff
 
 const f = parseArgs(Deno.args, {
 	boolean: ['help', 'version', 'run', 'migrations'],
@@ -34,16 +38,32 @@ if (!f.run && !f.migrations) {
 }
 
 try {
-	const cfg = (await import(f.config || `${Deno.cwd()}/config.ts`))?.default;
-	if (f.run) await Bolt.setup(cfg);
-	if (f.migrations) await migrations(cfg);
+	const cfg = define_config(
+		(await import(f.config || `${Deno.cwd()}/config.ts`))?.default
+	);
+
+	Deno.env.set('BOLT_ERROR_HOOK', cfg.errorURL || '');
+
+	const mongo = new MongoClient();
+	await mongo.connect(cfg.mongo_uri);
+
+	if (f.run) {
+		const redis = await Deno.connect({
+			hostname: cfg.redis_host,
+			port: cfg.redis_port || 6379
+		});
+		const bolt = new Bolt(cfg, mongo, redis);
+		await bolt.setup();
+	} else if (f.migrations) {
+		await migrations(cfg, mongo);
+	}
 } catch (e) {
 	log('Something went wrong, exiting..', 'red', 'error');
 	console.error(e);
 	Deno.exit(1);
 }
 
-async function migrations(cfg: config) {
+async function migrations(cfg: config, mongo: MongoClient) {
 	log(`Available versions are: ${Object.values(versions).join(', ')}`, 'blue');
 
 	const from = prompt('what version is the DB currently set up for?');
@@ -57,10 +77,6 @@ async function migrations(cfg: config) {
 	const migrationlist = get_migrations(from, to);
 
 	if (migrationlist.length < 1) Deno.exit();
-
-	const mongo = new MongoClient();
-
-	await mongo.connect(cfg.mongo_uri);
 
 	const database = mongo.database(cfg.mongo_database);
 
@@ -91,4 +107,6 @@ async function migrations(cfg: config) {
 	);
 
 	log('Wrote data to the DB', 'green');
+
+	Deno.exit();
 }

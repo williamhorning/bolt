@@ -3,7 +3,7 @@ import {
 	Client,
 	WebhookPayload,
 	WebhookClient,
-	bolt_plugin,
+	plugin,
 	bridge_platform,
 	deleted_message,
 	message
@@ -11,7 +11,7 @@ import {
 import { bridge_legacy } from './legacybridging.ts';
 import { tocore, toguilded } from './messages.ts';
 
-export class guilded_plugin extends bolt_plugin<{ token: string }> {
+export class guilded_plugin extends plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
 	version = '0.5.8';

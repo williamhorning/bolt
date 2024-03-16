@@ -1,4 +1,5 @@
-import { Bolt, command_arguments, create_message, log_error } from './_deps.ts';
+import { Bolt } from '../bolt.ts';
+import { command_arguments, create_message, log_error } from '../utils/mod.ts';
 
 /** join a bridge */
 export async function join(

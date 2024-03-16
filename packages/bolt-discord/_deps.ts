@@ -11,7 +11,7 @@ export { REST as rest, type RawFile } from 'npm:@discordjs/rest@2.2.0';
 export { WebSocketManager as socket } from 'npm:@discordjs/ws@1.0.2';
 export {
 	Bolt,
-	bolt_plugin,
+	plugin,
 	type bridge_platform,
 	type deleted_message,
 	type message

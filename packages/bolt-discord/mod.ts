@@ -1,7 +1,7 @@
 import {
 	Bolt,
 	Client,
-	bolt_plugin,
+	plugin,
 	bridge_platform,
 	deleted_message,
 	message,
@@ -18,7 +18,7 @@ export type discord_config = {
 	slash_cmds?: boolean;
 };
 
-export class discord_plugin extends bolt_plugin<discord_config> {
+export class discord_plugin extends plugin<discord_config> {
 	bot: Client;
 	name = 'bolt-discord';
 	version = '0.5.8';

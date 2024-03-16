@@ -1,5 +1,6 @@
 import { join, leave, reset, toggle, status } from './_command_functions.ts';
-import { Bolt, command, create_message } from './_deps.ts';
+import { command, create_message } from '../utils/mod.ts';
+import { Bolt } from '../bolt.ts';
 
 export function bridge_commands(bolt: Bolt): command {
 	return {

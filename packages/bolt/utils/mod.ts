@@ -1,4 +1,22 @@
-export * from './config.ts';
-export * from './messages.ts';
-export * from './plugins.ts';
-export * from './errors.ts';
+/**
+ * Various utilities for Bolt
+ * @module
+ */
+
+export { Commands, type command, type command_arguments } from './commands.ts';
+export { type config, define_config } from './config.ts';
+export { log_error } from './errors.ts';
+export {
+	create_message,
+	type deleted_message,
+	type embed,
+	type embed_media,
+	type message
+} from './messages.ts';
+export {
+	apply_migrations,
+	get_migrations,
+	type migration,
+	versions
+} from './migrations.ts';
+export { plugin, type create_plugin, type plugin_events } from './plugins.ts';

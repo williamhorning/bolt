@@ -7,6 +7,7 @@ export interface bridge_document {
 	};
 }
 
+/** platform within a bridge */
 export interface bridge_platform {
 	channel: string;
 	plugin: string;

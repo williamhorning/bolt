@@ -1,49 +1,48 @@
-import {
-	Bolt,
-	EventEmitter,
-	bridge_platform,
-	command_arguments
-} from './_deps.ts';
-import { deleted_message, message } from './messages.ts';
+import { EventEmitter } from 'event';
+import { Bolt } from '../bolt.ts';
+import { bridge_platform } from '../bridges/types.ts';
+import { message, deleted_message } from './messages.ts';
+import { command_arguments } from './commands.ts';
 
-export abstract class bolt_plugin<t> extends EventEmitter<plugin_events> {
+/** a plugin for bolt */
+export abstract class plugin<t> extends EventEmitter<plugin_events> {
+	/** access the instance of bolt you're connected to */
 	bolt: Bolt;
+	/** access the config passed to you by bolt */
 	config: t;
 
-	/** the name of your plugin (like bolt-discord) */
+	/** the name of your plugin */
 	abstract name: string;
-
-	/** the version of your plugin (like 0.0.1) */
+	/** the version of your plugin */
 	abstract version: string;
-
-	/** the versions of bolt your plugin was made for (array of strings like `[0.5.0, 0.5.5]` that only includes breaking releases) */
+	/** a list of major versions supported by your plugin, should include 0.5 */
 	abstract support: string[];
 
-	/** constructor */
 	constructor(bolt: Bolt, config: t) {
 		super();
 		this.bolt = bolt;
 		this.config = config;
 	}
-	/** create data needed to bridge */
+
+	/** this should return the data you need to send to the channel given */
 	abstract create_bridge(channel: string): Promise<unknown>;
 
-	/** checks if message is bridged */
+	/** this is used to check whether or not a message is bridged, return query if you don't know for sure */
 	abstract is_bridged(message: deleted_message<unknown>): boolean | 'query';
 
-	/** bridge a message */
+	/** this is used to bridge a NEW message */
 	abstract create_message(
 		message: message<unknown>,
 		bridge: bridge_platform
 	): Promise<bridge_platform>;
 
-	/** edit a bridged message */
+	/** this is used to bridge an EDITED message */
 	abstract edit_message(
 		new_message: message<unknown>,
 		bridge: bridge_platform & { id: string }
 	): Promise<bridge_platform>;
 
-	/** delete a bridged message */
+	/** this is used to bridge a DELETED message */
 	abstract delete_message(
 		message: deleted_message<unknown>,
 		bridge: bridge_platform & { id: string }
@@ -60,6 +59,6 @@ export type plugin_events = {
 };
 
 export interface create_plugin {
-	new (bolt: Bolt, config: unknown): bolt_plugin<unknown>;
-	readonly prototype: bolt_plugin<unknown>;
+	new (bolt: Bolt, config: unknown): plugin<unknown>;
+	readonly prototype: plugin<unknown>;
 }

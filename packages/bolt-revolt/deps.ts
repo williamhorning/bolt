@@ -11,7 +11,7 @@ export {
 } from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
 export {
 	Bolt,
-	bolt_plugin,
+	plugin,
 	type bridge_platform,
 	type message
 } from '../bolt/mod.ts';

@@ -1,5 +1,6 @@
 import { create_plugin } from './plugins.ts';
 
+/** a function that returns a config object when given a partial config object */
 export function define_config(config?: Partial<config>): config {
 	if (!config) config = {};
 	if (!config.prod) config.prod = false;

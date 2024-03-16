@@ -13,7 +13,7 @@ export {
 } from 'npm:guilded.js@0.23.7';
 export {
 	Bolt,
-	bolt_plugin,
+	plugin,
 	create_message,
 	type bridge_platform,
 	type deleted_message,

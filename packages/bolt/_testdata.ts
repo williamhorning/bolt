@@ -14,8 +14,7 @@ export const cmd_help_output = {
 	platform: {
 		name: 'bolt',
 		message: undefined
-	},
-	uuid: undefined
+	}
 };
 
 export const migrations_four_one = [
@@ -102,8 +101,7 @@ export const utils_msg = {
 	platform: {
 		name: 'bolt',
 		message: undefined
-	},
-	uuid: 'test'
+	}
 };
 
 export const utils_cfg = {
@@ -141,8 +139,7 @@ export const utils_err_return = {
 		platform: {
 			name: 'bolt',
 			message: undefined
-		},
-		uuid: 'test'
+		}
 	}
 };
 
