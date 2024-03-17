@@ -1,23 +1,23 @@
 {
-  "name": "@jersey/lightning",
-  "version": "...",
-  "lint": {
-    "exclude": ["./_testdata.ts","./_tests.ts"]
-  },
-  "lock": false,
-  "unstable": ["temporal"],
-  "test": {
-    "include": ["./_tests.ts"]
-  },
-  "imports": {
-    "assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
-    "event": "jsr:@denosaurs/event@^2.0.2",
-    "mongo": "https://deno.land/x/mongo@v0.32.0/mod.ts",
-    "r2d2": "https://deno.land/x/r2d2@v2.0.0/mod.ts",
-    "std_args": "jsr:@std/cli@^0.219.1/parse_args"
-  },
-  "exports": {
-    ".": "./mod.ts",
-    "./utils": "./utils/mod.ts"
-  }
+	"name": "@jersey/lightning",
+	"version": "0.6.0",
+	"lint": {
+		"exclude": ["./_testdata.ts", "./_tests.ts"]
+	},
+	"lock": false,
+	"unstable": ["temporal"],
+	"test": {
+		"include": ["./_tests.ts"]
+	},
+	"imports": {
+		"assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
+		"event": "jsr:@denosaurs/event@^2.0.2",
+		"mongo": "https://deno.land/x/mongo@v0.32.0/mod.ts",
+		"r2d2": "https://deno.land/x/r2d2@v2.0.0/mod.ts",
+		"std_args": "jsr:@std/cli@^0.219.1/parse_args"
+	},
+	"exports": {
+		".": "./mod.ts",
+		"./utils": "./utils/mod.ts"
+	}
 }

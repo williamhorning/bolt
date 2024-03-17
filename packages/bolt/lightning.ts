@@ -37,14 +37,14 @@ export class lightning extends EventEmitter<plugin_events> {
 	}
 
 	/** load plugins */
-	async load(plugins: { type: create_plugin; config: unknown }[]) {
+	async load(plugins: create_plugin<plugin<unknown>>[]) {
 		for (const { type, config } of plugins) {
 			const plugin = new type(this, config);
 			if (!plugin.support.includes('0.5.5')) {
 				throw (
 					await log_error(
 						new Error(
-							`plugin '${plugin.name}' doesn't support lightning 0.5.5 or above`
+							`plugin '${plugin.name}' doesn't support this version of lightning`
 						)
 					)
 				).e;

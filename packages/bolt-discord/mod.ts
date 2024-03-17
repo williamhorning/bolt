@@ -21,7 +21,7 @@ export type discord_config = {
 export class discord_plugin extends plugin<discord_config> {
 	bot: Client;
 	name = 'bolt-discord';
-	version = '0.5.8';
+	version = '0.6.0';
 	support = ['0.5.5'];
 
 	constructor(l: lightning, config: discord_config) {

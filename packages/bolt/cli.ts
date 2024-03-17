@@ -20,12 +20,12 @@ const f = parseArgs(Deno.args, {
 });
 
 if (f.version) {
-	log('0.5.8');
+	log('0.6.0');
 	Deno.exit();
 }
 
 if (!f.run && !f.migrations) {
-	log('lightning v0.5.8 - cross-platform bot connecting communities', 'blue');
+	log('lightning v0.6.0 - cross-platform bot connecting communities', 'blue');
 	log('Usage: lightning [options]', 'purple');
 	log('Options:', 'green');
 	log('--help: show this');
