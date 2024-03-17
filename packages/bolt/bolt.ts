@@ -27,11 +27,8 @@ export class Bolt extends EventEmitter<plugin_events> {
 		this.db = { mongo };
 		this.redis = new RedisClient(redis_conn);
 		this.bridge = new bolt_bridges(this);
-	}
-
-	async setup() {
 		this.cmds.listen(this);
-		await this.load(this.config.plugins);
+		this.load(this.config.plugins);
 	}
 
 	async load(plugins: { type: create_plugin; config: unknown }[]) {

@@ -39,7 +39,7 @@ export class bolt_bridges {
 			`bolt-bridge-${id}`
 		]);
 		if (!rdata) return [] as bridge_platform[];
-		return rdata as bridge_platform[];
+		return JSON.parse(rdata as string) as bridge_platform[];
 	}
 
 	is_bridged(msg: deleted_message<unknown>): boolean {
@@ -120,19 +120,19 @@ export class bolt_bridges {
 		}
 
 		for (const i of data) {
-			await this.bolt.redis.writeCommand([
+			await this.bolt.redis.sendCommand([
 				'JSON.SET',
 				`bolt-bridge-${i.id}`,
 				'$',
-				`'${JSON.stringify(data)}'`
+				JSON.stringify(data)
 			]);
 		}
 
-		await this.bolt.redis.writeCommand([
+		await this.bolt.redis.sendCommand([
 			'JSON.SET',
 			`bolt-bridge-${msg.id}`,
 			'$',
-			`'${JSON.stringify(data)}'`
+			JSON.stringify(data)
 		]);
 	}
 

@@ -21,7 +21,7 @@ const f = parseArgs(args(), {
 });
 
 if (f.version) {
-	console.log('0.5.8');
+	log('0.5.8');
 	exit();
 }
 
@@ -49,19 +49,19 @@ try {
 	const mongo = new MongoClient();
 	await mongo.connect(cfg.mongo_uri);
 
+	const redis = await Deno.connect({
+		hostname: cfg.redis_host,
+		port: cfg.redis_port || 6379
+	});
+
 	if (f.run) {
-		const redis = await Deno.connect({
-			hostname: cfg.redis_host,
-			port: cfg.redis_port || 6379
-		});
-		const bolt = new Bolt(cfg, mongo, redis);
-		await bolt.setup();
+		new Bolt(cfg, mongo, redis);
 	} else if (f.migrations) {
 		await migrations(cfg, mongo);
 	}
 } catch (e) {
 	log('Something went wrong, exiting...', 'red', 'error');
-	console.error(e);
+	log(e, 'red', 'error');
 	exit(1);
 }
 
