@@ -15,7 +15,7 @@ import {
 	utils_msg
 } from './_testdata.ts';
 import {
-	Commands,
+	commands,
 	message,
 	apply_migrations,
 	get_migrations,
@@ -40,7 +40,7 @@ console.log = console.error = () => {};
 // cmds
 
 Deno.test('bolt/cmds', async t => {
-	const cmds = new Commands();
+	const cmds = new commands();
 
 	await t.step('run help command', async () => {
 		let res: (value: message<unknown>) => void;

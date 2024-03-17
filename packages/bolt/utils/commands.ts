@@ -3,11 +3,21 @@ import { log_error } from './errors.ts';
 import { parseArgs } from 'std_args';
 import { create_message, message } from './messages.ts';
 
-export class Commands extends Map<string, command> {
+/**
+ * commands implements simple command handling for bolt that others may find useful
+ */
+export class commands extends Map<string, command> {
+	/**
+	 * creates a command handler instance with the given commands
+	 * @param default_cmds - the commands to use by default, should include help as a fallback command
+	 */
 	constructor(default_cmds: [string, command][] = default_commands) {
 		super(default_cmds);
 	}
 
+	/**
+	 * listen for commands on the given bolt instance
+	 */
 	listen(bolt: Bolt) {
 		bolt.on('create_nonbridged_message', msg => {
 			if (msg.content?.startsWith('!bolt')) {
@@ -30,6 +40,9 @@ export class Commands extends Map<string, command> {
 		});
 	}
 
+	/**
+	 * run a command given the options that would be passed to it
+	 */
 	async run(opts: command_arguments) {
 		let reply;
 		try {
@@ -86,7 +99,7 @@ const default_commands: [string, command][] = [
 	]
 ];
 
-export type command_arguments = {
+export interface command_arguments {
 	channel: string;
 	cmd: string;
 	opts: Record<string, string>;
@@ -94,17 +107,23 @@ export type command_arguments = {
 	replyfn: message<unknown>['reply'];
 	subcmd?: string;
 	timestamp: Temporal.Instant;
-};
+}
 
-export type command = {
+export interface command {
+	/** the name of the command */
 	name: string;
+	/** an optional description */
 	description?: string;
 	options?: {
+		/** this will be the key passed to options.opts in the execute function */
 		argument_name?: string;
+		/** whether or not the argument provided is required */
 		argument_required?: boolean;
+		/** an array of commands that show as subcommands */
 		subcommands?: command[];
 	};
+	/** a function that returns a message */
 	execute: (
-		opts: command_arguments
+		options: command_arguments
 	) => Promise<message<unknown>> | message<unknown>;
-};
+}

@@ -9,9 +9,11 @@
       "jsr:@denosaurs/event@^2.0.2": "jsr:@denosaurs/event@2.0.2",
       "jsr:@std/assert@^0.219.1": "jsr:@std/assert@0.219.1",
       "jsr:@std/cli@^0.219.1": "jsr:@std/cli@0.219.1",
+      "jsr:@std/fmt@^0.219.1": "jsr:@std/fmt@0.219.1",
       "npm:@discordjs/core@1.1.1": "npm:@discordjs/core@1.1.1",
       "npm:@discordjs/rest@2.2.0": "npm:@discordjs/rest@2.2.0",
       "npm:@discordjs/ws@1.0.2": "npm:@discordjs/ws@1.0.2",
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:@williamhorning/revolt.js@7.0.0-beta.10": "npm:@williamhorning/revolt.js@7.0.0-beta.10_solid-js@1.8.15__seroval@1.0.4",
       "npm:guilded-api-typings@0.13.2": "npm:guilded-api-typings@0.13.2",
       "npm:guilded.js@0.23.7": "npm:guilded.js@0.23.7"
@@ -40,13 +42,19 @@
         "integrity": "3310ba1a9e94dd60ccb09c6084fc818cc1cd50e543c56ef0c6199f1b89073392"
       },
       "@std/assert@0.219.1": {
-        "integrity": "e76c2a1799a78f0f4db7de04bdc9b908a7a4b821bb65eda0285885297d4fb8af"
+        "integrity": "e76c2a1799a78f0f4db7de04bdc9b908a7a4b821bb65eda0285885297d4fb8af",
+        "dependencies": [
+          "jsr:@std/fmt@^0.219.1"
+        ]
       },
       "@std/cli@0.219.1": {
         "integrity": "715a9926b58b89ef8a3c91e91633ac5f8176e0f02f6b3a16f0a67309e41a2911",
         "dependencies": [
           "jsr:@std/assert@^0.219.1"
         ]
+      },
+      "@std/fmt@0.219.1": {
+        "integrity": "2432152e927df249a207177aa048a6d9465956ea0047653ee6abd4f514db504f"
       }
     },
     "npm": {

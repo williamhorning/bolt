@@ -3,7 +3,7 @@
  * @module
  */
 
-export { Commands, type command, type command_arguments } from './commands.ts';
+export { commands, type command, type command_arguments } from './commands.ts';
 export { type config, define_config } from './config.ts';
 export { log_error } from './errors.ts';
 export {
@@ -11,7 +11,9 @@ export {
 	type deleted_message,
 	type embed,
 	type embed_media,
-	type message
+	type message,
+	type platform,
+	type attachment
 } from './messages.ts';
 export {
 	apply_migrations,

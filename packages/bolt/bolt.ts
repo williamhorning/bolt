@@ -1,9 +1,9 @@
 import { EventEmitter } from 'event';
 import { MongoClient } from 'mongo';
 import { RedisClient } from 'r2d2';
-import { bolt_bridges } from './bridges/mod.ts';
+import { bridges } from './bridges/mod.ts';
 import {
-	Commands,
+	commands,
 	plugin,
 	config,
 	create_plugin,
@@ -11,26 +11,32 @@ import {
 	plugin_events
 } from './utils/mod.ts';
 
+/** an instance of bolt */
 export class Bolt extends EventEmitter<plugin_events> {
-	bridge: bolt_bridges;
-	cmds: Commands = new Commands();
+	bridge: bridges;
+	/** a command handler */
+	cmds: commands = new commands();
+	/** the config used */
 	config: config;
-	db: {
-		mongo: MongoClient;
-	};
+	/** a mongo client */
+	mongo: MongoClient;
+	/** a redis client */
 	redis: RedisClient;
+	/** the plugins loaded */
 	plugins: Map<string, plugin<unknown>> = new Map<string, plugin<unknown>>();
 
+	/** setup an instance with the given config, mongo instance, and redis connection */
 	constructor(config: config, mongo: MongoClient, redis_conn: Deno.TcpConn) {
 		super();
 		this.config = config;
-		this.db = { mongo };
+		this.mongo = mongo;
 		this.redis = new RedisClient(redis_conn);
-		this.bridge = new bolt_bridges(this);
+		this.bridge = new bridges(this);
 		this.cmds.listen(this);
 		this.load(this.config.plugins);
 	}
 
+	/** load plugins */
 	async load(plugins: { type: create_plugin; config: unknown }[]) {
 		for (const { type, config } of plugins) {
 			const plugin = new type(this, config);

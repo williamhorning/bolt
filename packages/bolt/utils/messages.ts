@@ -1,4 +1,7 @@
-/** creates a message given text and an optional uuid */
+/**
+ * creates a message that can be sent using bolt
+ * @param text the text of the message (can be markdown)
+ */
 export function create_message(text: string): message<undefined> {
 	const data = {
 		author: {
@@ -21,8 +24,38 @@ export function create_message(text: string): message<undefined> {
 	return data;
 }
 
-export type embed_media = { height?: number; url: string; width?: number };
+export interface attachment {
+	/** alt text for images */
+	alt?: string;
+	/** a URL pointing to the file */
+	file: string;
+	/** the file's name */
+	name?: string;
+	/** whether or not the file has a spoiler */
+	spoiler?: boolean;
+	/**
+	 * file size
+	 * @deprecated
+	 */
+	size: number;
+}
 
+export interface platform<t> {
+	/** the name of a plugin */
+	name: string;
+	/** the platforms representation of a message */
+	message: t;
+	/** the webhook the message was sent with */
+	webhookid?: string;
+}
+
+export interface embed_media {
+	height?: number;
+	url: string;
+	width?: number;
+}
+
+/** a discord-style embed */
 export interface embed {
 	author?: { name: string; url?: string; icon_url?: string };
 	color?: number;
@@ -37,42 +70,42 @@ export interface embed {
 	video?: Omit<embed_media, 'url'> & { url?: string };
 }
 
-export interface message<t> {
-	attachments?: {
-		alt?: string;
-		file: string;
-		name?: string;
-		spoiler?: boolean;
-		size: number;
-	}[];
+export interface message<t> extends deleted_message<t> {
+	attachments?: attachment[];
 	author: {
+		/** the nickname of the author */
 		username: string;
+		/** the author's username */
 		rawname: string;
+		/** a url pointing to the authors profile picture */
 		profile?: string;
+		/** a url pointing to the authors banner */
 		banner?: string;
+		/** the author's id on their platform */
 		id: string;
+		/** the color of an author */
 		color?: string;
 	};
+	/** message content (can be markdown) */
 	content?: string;
+	/** discord-style embeds */
 	embeds?: embed[];
+	/** a function to reply to a message */
 	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
+	/** the id of the message replied to */
 	replytoid?: string;
-	id: string;
-	platform: {
-		name: string;
-		message: t;
-		webhookid?: string;
-	};
-	channel: string;
-	timestamp: Temporal.Instant;
 }
 
 export interface deleted_message<t> {
+	/** the message's id */
 	id: string;
+	/** the channel the message was sent in */
 	channel: string;
-	platform: {
-		name: string;
-		message: t;
-	};
+	/** the platform the message was sent on */
+	platform: platform<t>;
+	/**
+	 * the time the message was sent/edited as a temporal instant
+	 * @see https://tc39.es/proposal-temporal/docs/instant.html
+	 */
 	timestamp: Temporal.Instant;
 }

@@ -1,4 +1,5 @@
 import { Document } from 'mongo';
+import { versions } from './migrations.ts';
 
 type doc = {
 	_id: string;
@@ -8,8 +9,8 @@ type doc = {
 };
 
 export default {
-	from: '0.4-beta',
-	to: '0.5',
+	from: '0.4-beta' as versions,
+	to: '0.5' as versions,
 	from_db: 'bridgev1',
 	to_db: 'bridges',
 	translate: (itemslist: (doc | Document)[]) =>

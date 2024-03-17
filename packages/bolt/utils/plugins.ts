@@ -4,12 +4,14 @@ import { bridge_platform } from '../bridges/types.ts';
 import { message, deleted_message } from './messages.ts';
 import { command_arguments } from './commands.ts';
 
-/** a plugin for bolt */
-export abstract class plugin<t> extends EventEmitter<plugin_events> {
+/**
+ * a plugin for bolt
+ */
+export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** access the instance of bolt you're connected to */
 	bolt: Bolt;
 	/** access the config passed to you by bolt */
-	config: t;
+	config: cfg;
 
 	/** the name of your plugin */
 	abstract name: string;
@@ -18,7 +20,7 @@ export abstract class plugin<t> extends EventEmitter<plugin_events> {
 	/** a list of major versions supported by your plugin, should include 0.5 */
 	abstract support: string[];
 
-	constructor(bolt: Bolt, config: t) {
+	constructor(bolt: Bolt, config: cfg) {
 		super();
 		this.bolt = bolt;
 		this.config = config;
@@ -50,14 +52,21 @@ export abstract class plugin<t> extends EventEmitter<plugin_events> {
 }
 
 export type plugin_events = {
+	/** when a message is created */
 	create_message: [message<unknown>];
+	/** when a command is run (not a text command) */
 	create_command: [command_arguments];
+	/** when a message isn't already bridged (don't emit outside of core) */
 	create_nonbridged_message: [message<unknown>];
+	/** when a message is edited */
 	edit_message: [message<unknown>];
+	/** when a message is deleted */
 	delete_message: [deleted_message<unknown>];
+	/** when your plugin is ready */
 	ready: [];
 };
 
+/** the constructor for a plugin */
 export interface create_plugin {
 	new (bolt: Bolt, config: unknown): plugin<unknown>;
 	readonly prototype: plugin<unknown>;

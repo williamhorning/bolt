@@ -1,7 +1,12 @@
 import { create_message, message } from './messages.ts';
 import { getEnv } from 'cross_env';
 
-/** logs an error and returns a unique id and a message for users */
+/**
+ * logs an error and returns a unique id and a message for users
+ * @param e the error to log
+ * @param extra any extra data to log
+ * @param _id a function that returns a unique id (used for testing)
+ */
 export async function log_error(
 	e: Error,
 	extra: Record<string, unknown> = {},

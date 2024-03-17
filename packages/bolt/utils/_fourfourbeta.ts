@@ -1,8 +1,9 @@
 import { Document } from 'mongo';
+import { versions } from './migrations.ts';
 
 export default {
-	from: '0.4',
-	to: '0.4-beta',
+	from: '0.4' as versions,
+	to: '0.4-beta' as versions,
 	from_db: 'bridge',
 	to_db: 'bridgev1',
 	translate: (
