@@ -12,8 +12,5 @@
   // TODO: DO NOT PUBLISH UNDER THE BOLT NAME
   "name": "@jersey/unknown",
   "unstable": ["temporal"],
-  "test": {
-    "include": ["./_tests.ts"]
-  },
   "version": "0.5.9"
 }

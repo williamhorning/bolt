@@ -13,54 +13,44 @@ export async function log_error(
 	message: message<unknown>;
 }> {
 	const uuid = _id();
+	const error_hook = getEnv('BOLT_ERROR_HOOK') || '';
 
-	const error_hook = getEnv('BOLT_ERROR_HOOK');
-
-	if (error_hook && error_hook !== '') {
+	if (error_hook !== '') {
 		delete extra.msg;
 
 		await (
 			await fetch(error_hook, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(
-					{
-						embeds: [
-							{
-								title: e.message,
-								description: `\`\`\`${
-									e.stack
-								}\`\`\`\n\`\`\`js\n${JSON.stringify(
-									{
-										...extra,
-										uuid
-									},
-									replacer(),
-									2
-								)}\`\`\``
-							}
-						]
-					},
-					replacer()
-				)
+				body: JSON.stringify({
+					embeds: [
+						{
+							title: e.message,
+							description: `\`\`\`js\n${e.stack}\n${JSON.stringify(
+								{ ...extra, uuid },
+								r(),
+								2
+							)}\`\`\``
+						}
+					]
+				})
 			})
 		).text();
 	}
 
-	console.error(`\x1b[1;31mBolt Error - '${uuid}'\x1b[0m`);
-	console.error(e, extra);
+	console.error(`%cBolt Error ${uuid}`, 'color: red', e, extra);
 
 	return {
 		e,
 		uuid,
 		extra,
-		message: create_message({
-			text: `Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
-		})
+		message: create_message(
+			`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
+		)
 	};
 }
 
-function replacer() {
+function r() {
 	const seen = new WeakSet();
 	return (_: string, value: unknown) => {
 		if (typeof value === 'object' && value !== null) {

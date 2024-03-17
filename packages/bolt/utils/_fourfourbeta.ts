@@ -20,9 +20,9 @@ export default {
 			const [platform, ...join] = item._id.split('-');
 			const name = join.join('-');
 			if (is_channel(name)) continue;
-			const _id = items.find(i => {
-				return i._id.startsWith(platform) && i.value === name;
-			})?._id;
+			const _id = items.find(
+				i => i._id.startsWith(platform) && i.value === name
+			)?._id;
 			if (!_id) continue;
 			if (!obj[name]) obj[name] = [];
 			obj[name].push({
@@ -32,22 +32,12 @@ export default {
 			});
 		}
 
-		const documents = [];
-
-		for (const _id in obj) {
-			const value = obj[_id];
-			if (!value) continue;
-			if (is_channel(_id)) continue;
-			if (value.length < 2) continue;
-			documents.push({
-				_id,
-				value: {
-					bridges: value
-				}
-			});
-		}
-
-		return documents;
+		return Object.entries(obj)
+			.filter(([key, value]) => !is_channel(key) && value.length >= 2)
+			.map(([key, value]) => ({
+				_id: key,
+				value: { bridges: value }
+			}));
 	}
 };
 

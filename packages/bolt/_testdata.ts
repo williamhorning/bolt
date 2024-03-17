@@ -109,7 +109,8 @@ export const utils_cfg = {
 	plugins: [],
 	mongo_uri: 'mongodb://localhost:27017',
 	mongo_database: 'bolt-testing',
-	redis_host: 'localhost'
+	redis_host: 'localhost',
+	redis_port: 6379
 };
 
 export const utils_err = new Error('test');
@@ -131,7 +132,7 @@ export const utils_err_return = {
 			id: 'bolt'
 		},
 		content:
-			'Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n```\ntest\ntest\n```',
+			'Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n```\ntest\ntest\n```',
 		channel: '',
 		id: '',
 		reply: async () => {},
@@ -147,7 +148,7 @@ export const utils_err_hook = {
 	embeds: [
 		{
 			title: utils_err.message,
-			description: `\`\`\`${utils_err.stack}\`\`\`\n\`\`\`js\n${JSON.stringify(
+			description: `\`\`\`js\n${utils_err.stack}\n${JSON.stringify(
 				{
 					...utils_extra,
 					uuid: 'test'

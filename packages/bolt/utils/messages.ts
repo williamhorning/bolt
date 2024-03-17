@@ -1,9 +1,5 @@
 /** creates a message given text and an optional uuid */
-export function create_message({
-	text
-}: {
-	text?: string;
-}): message<undefined> {
+export function create_message(text: string): message<undefined> {
 	const data = {
 		author: {
 			username: 'Bolt',

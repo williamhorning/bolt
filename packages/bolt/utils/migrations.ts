@@ -15,7 +15,7 @@ export enum versions {
 }
 
 /** get migrations that can then be applied */
-export function get_migrations(from: string, to: string): migration[] {
+export function get_migrations(from: versions, to: versions): migration[] {
 	const indexoffrom = migrations.findIndex(i => i.from === from);
 	const indexofto = migrations.findLastIndex(i => i.to === to);
 	return migrations.slice(indexoffrom, indexofto);

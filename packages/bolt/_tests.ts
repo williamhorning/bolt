@@ -25,6 +25,7 @@ import {
 } from './utils/mod.ts';
 import BoltFourToFourBeta from './utils/_fourfourbeta.ts';
 import BoltFourBetaToFive from './utils/_fourbetafive.ts';
+import { versions } from './utils/migrations.ts';
 
 // override globals
 
@@ -70,7 +71,7 @@ Deno.test('bolt/cmds', async t => {
 
 Deno.test('bolt/migrations', async t => {
 	await t.step('get a migration', () => {
-		const migrations = get_migrations('0.4', '0.4-beta');
+		const migrations = get_migrations(versions.Four, versions.FourBeta);
 		assertEquals(migrations, [BoltFourToFourBeta]);
 	});
 
@@ -142,9 +143,7 @@ Deno.test('bolt/utils', async t => {
 	});
 
 	await t.step('message creation', () => {
-		const result = create_message({
-			text: 'test'
-		});
+		const result = create_message('test');
 
 		result.reply = utils_msg.reply;
 

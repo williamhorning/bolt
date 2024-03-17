@@ -7,9 +7,7 @@ export function bridge_commands(bolt: Bolt): command {
 		name: 'bridge',
 		description: 'bridge this channel to somewhere else',
 		execute: () =>
-			create_message({
-				text: 'Try running `!bolt help` for help with bridges'
-			}),
+			create_message('Try running `!bolt help` for help with bridges'),
 		options: {
 			subcommands: [
 				{

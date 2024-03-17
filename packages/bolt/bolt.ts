@@ -21,8 +21,6 @@ export class Bolt extends EventEmitter<plugin_events> {
 	redis: RedisClient;
 	plugins: Map<string, plugin<unknown>> = new Map<string, plugin<unknown>>();
 
-	// TODO: replace deno.* specific stuff if possible
-
 	constructor(config: config, mongo: MongoClient, redis_conn: Deno.TcpConn) {
 		super();
 		this.config = config;

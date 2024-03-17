@@ -60,7 +60,7 @@ try {
 		await migrations(cfg, mongo);
 	}
 } catch (e) {
-	log('Something went wrong, exiting..', 'red', 'error');
+	log('Something went wrong, exiting...', 'red', 'error');
 	console.error(e);
 	exit(1);
 }
@@ -76,7 +76,7 @@ async function migrations(cfg: config, mongo: MongoClient) {
 
 	if (!from || !to || is_invalid(from) || is_invalid(to)) return exit(1);
 
-	const migrationlist = get_migrations(from, to);
+	const migrationlist = get_migrations(from as versions, to as versions);
 
 	if (migrationlist.length < 1) exit();
 

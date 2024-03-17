@@ -2,14 +2,15 @@ import { create_plugin } from './plugins.ts';
 
 /** a function that returns a config object when given a partial config object */
 export function define_config(config?: Partial<config>): config {
-	if (!config) config = {};
-	if (!config.prod) config.prod = false;
-	if (!config.plugins) config.plugins = [];
-	if (!config.mongo_uri) config.mongo_uri = 'mongodb://localhost:27017';
-	if (!config.mongo_database)
-		config.mongo_database = config.prod ? 'bolt' : 'bolt-testing';
-	if (!config.redis_host) config.redis_host = 'localhost';
-	return config as config;
+	return {
+		...(config || {}),
+		prod: false,
+		plugins: [],
+		mongo_uri: 'mongodb://localhost:27017',
+		mongo_database: config?.prod ? 'bolt' : 'bolt-testing',
+		redis_host: 'localhost',
+		redis_port: 6379
+	};
 }
 
 export interface config {
