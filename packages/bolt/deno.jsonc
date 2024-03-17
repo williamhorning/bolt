@@ -2,8 +2,6 @@
   "exports": "./mod.ts",
   "imports": {
     "assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
-    "cross_env": "jsr:@cross/env@^0.2.7",
-    "cross_utils": "jsr:@cross/utils@^0.5.0",
     "event": "jsr:@denosaurs/event@^2.0.2",
     "mongo": "https://deno.land/x/mongo@v0.32.0/mod.ts",
     "r2d2": "https://deno.land/x/r2d2@v2.0.0/mod.ts",
