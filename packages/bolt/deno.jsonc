@@ -1,5 +1,14 @@
 {
-  "exports": "./mod.ts",
+  "name": "@jersey/lightning",
+  "version": "...",
+  "lint": {
+    "exclude": ["./_testdata.ts","./_tests.ts"]
+  },
+  "lock": false,
+  "unstable": ["temporal"],
+  "test": {
+    "include": ["./_tests.ts"]
+  },
   "imports": {
     "assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
     "event": "jsr:@denosaurs/event@^2.0.2",
@@ -7,8 +16,8 @@
     "r2d2": "https://deno.land/x/r2d2@v2.0.0/mod.ts",
     "std_args": "jsr:@std/cli@^0.219.1/parse_args"
   },
-  // TODO: DO NOT PUBLISH UNDER THE BOLT NAME
-  "name": "@jersey/unknown",
-  "unstable": ["temporal"],
-  "version": "0.5.9"
+  "exports": {
+    ".": "./mod.ts",
+    "./utils": "./utils/mod.ts"
+  }
 }

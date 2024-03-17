@@ -1,4 +1,4 @@
-import { Bolt } from './bolt.ts';
+import { lightning } from './lightning.ts';
 import { parseArgs } from 'std_args';
 import { MongoClient } from 'mongo';
 import {
@@ -6,7 +6,8 @@ import {
 	get_migrations,
 	versions,
 	config,
-	define_config
+	define_config,
+	log_error
 } from './utils/mod.ts';
 
 function log(text: string, color?: string, type?: 'error' | 'log') {
@@ -24,13 +25,13 @@ if (f.version) {
 }
 
 if (!f.run && !f.migrations) {
-	log('bolt v0.5.8 - cross-platform bot connecting communities', 'blue');
-	log('Usage: bolt [options]', 'purple');
+	log('lightning v0.5.8 - cross-platform bot connecting communities', 'blue');
+	log('Usage: lightning [options]', 'purple');
 	log('Options:', 'green');
 	log('--help: show this');
 	log('--version: shows version');
 	log('--config <string>: absolute path to config file');
-	log('--run: run an of bolt using the settings in config.ts');
+	log('--run: run an of lightning using the settings in config.ts');
 	log('--migrations: start interactive tool to migrate databases');
 	Deno.exit();
 }
@@ -42,7 +43,7 @@ try {
 		(await import(f.config || `${Deno.cwd()}/config.ts`))?.default
 	);
 
-	Deno.env.set('BOLT_ERROR_HOOK', cfg.errorURL || '');
+	Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
 
 	const mongo = new MongoClient();
 	await mongo.connect(cfg.mongo_uri);
@@ -53,13 +54,12 @@ try {
 	});
 
 	if (f.run) {
-		new Bolt(cfg, mongo, redis);
+		new lightning(cfg, mongo, redis);
 	} else if (f.migrations) {
 		await migrations(cfg, mongo);
 	}
 } catch (e) {
-	log('Something went wrong, exiting...', 'red', 'error');
-	log(e, 'red', 'error');
+	await log_error(e);
 	Deno.exit(1);
 }
 
@@ -67,7 +67,7 @@ async function migrations(cfg: config, mongo: MongoClient) {
 	log(`Available versions are: ${Object.values(versions).join(', ')}`, 'blue');
 
 	const from = prompt('what version is the DB currently set up for?');
-	const to = prompt('what version of bolt do you want to move to?');
+	const to = prompt('what version of lightning do you want to move to?');
 
 	const is_invalid = (val: string) =>
 		!(Object.values(versions) as string[]).includes(val);

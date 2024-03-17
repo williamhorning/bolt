@@ -9,4 +9,11 @@ export {
 	type bridge_settings
 } from './bridges/types.ts';
 export * from './utils/mod.ts';
-export { Bolt } from './bolt.ts';
+export {
+	lightning,
+	/**
+	 * TODO: remove in 0.7.0
+	 * @deprecated will be removed in 0.7.0
+	 */
+	lightning as Bolt
+} from './lightning.ts';

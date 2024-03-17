@@ -17,7 +17,7 @@ export async function log_error(
 	message: message<unknown>;
 }> {
 	const uuid = _id();
-	const error_hook = Deno.env.get('BOLT_ERROR_HOOK') || '';
+	const error_hook = Deno.env.get('LIGHTNING_ERROR_HOOK') || '';
 
 	if (error_hook !== '') {
 		delete extra.msg;
@@ -42,7 +42,7 @@ export async function log_error(
 		).text();
 	}
 
-	console.error(`%cBolt Error ${uuid}`, 'color: red', e, extra);
+	console.error(`%cLightning Error ${uuid}`, 'color: red', e, extra);
 
 	return {
 		e,

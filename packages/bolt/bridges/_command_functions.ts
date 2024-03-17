@@ -1,20 +1,20 @@
-import { Bolt } from '../bolt.ts';
+import { lightning } from '../lightning.ts';
 import { command_arguments, create_message, log_error } from '../utils/mod.ts';
 
 export async function join(
-	{ channel, platform, opts }: command_arguments,
-	bolt: Bolt
+	{ channel, platform, opts, commands }: command_arguments,
+	l: lightning
 ) {
 	const _idraw = opts.name?.split(' ')[0];
 	const _id = `bridge-${_idraw}`;
-	const current = await bolt.bridge.get_bridge({ channel });
+	const current = await l.bridge.get_bridge({ channel });
 	const errorargs = { channel, platform, _id };
-	const plugin = bolt.plugins.get(platform);
+	const plugin = l.plugins.get(platform);
 
 	if (current || !_idraw) {
 		return {
 			text: create_message(
-				"to do this, you can't be in a bridge and need to name your bridge, see `!bolt help`"
+				`to do this, you can't be in a bridge and need to name your bridge, see \`${commands.prefix} help\``
 			)
 		};
 	} else if (!plugin || !plugin.create_bridge) {
@@ -24,7 +24,7 @@ export async function join(
 			).message
 		};
 	} else {
-		const bridge = (await bolt.bridge.get_bridge({ _id })) || {
+		const bridge = (await l.bridge.get_bridge({ _id })) || {
 			_id,
 			platforms: []
 		};
@@ -34,7 +34,7 @@ export async function join(
 				plugin: platform,
 				senddata: await plugin.create_bridge(channel)
 			});
-			await bolt.bridge.update_bridge(bridge);
+			await l.bridge.update_bridge(bridge);
 			return {
 				text: create_message('Joined a bridge!'),
 				ok: true
@@ -46,21 +46,21 @@ export async function join(
 }
 
 export async function leave(
-	{ channel, platform }: command_arguments,
-	bolt: Bolt
+	{ channel, platform, commands }: command_arguments,
+	l: lightning
 ) {
-	const current = await bolt.bridge.get_bridge({ channel });
+	const current = await l.bridge.get_bridge({ channel });
 
 	if (!current) {
 		return {
 			text: create_message(
-				'To run this command you need to be in a bridge. To learn more, run `!bolt help`.'
+				`To run this command you need to be in a bridge. To learn more, run \`${commands.prefix} help\`.`
 			),
 			ok: true
 		};
 	} else {
 		try {
-			await bolt.bridge.update_bridge({
+			await l.bridge.update_bridge({
 				_id: current._id,
 				platforms: current.platforms.filter(
 					i => i.channel !== channel && i.plugin !== platform
@@ -79,22 +79,22 @@ export async function leave(
 	}
 }
 
-export async function reset(args: command_arguments, bolt: Bolt) {
+export async function reset(args: command_arguments, l: lightning) {
 	if (!args.opts.name) {
-		const [_, ...rest] = (
-			(await bolt.bridge.get_bridge(args))?._id || ''
-		).split('bridge-');
+		const [_, ...rest] = ((await l.bridge.get_bridge(args))?._id || '').split(
+			'bridge-'
+		);
 		args.opts.name = rest.join('bridge-');
 	}
-	let result = await leave(args, bolt);
+	let result = await leave(args, l);
 	if (!result.ok) return result;
-	result = await join(args, bolt);
+	result = await join(args, l);
 	if (!result.ok) return result;
 	return { text: create_message('Reset this bridge!') };
 }
 
-export async function toggle(args: command_arguments, bolt: Bolt) {
-	const current = await bolt.bridge.get_bridge(args);
+export async function toggle(args: command_arguments, l: lightning) {
+	const current = await l.bridge.get_bridge(args);
 
 	if (!current) {
 		return {
@@ -125,7 +125,7 @@ export async function toggle(args: command_arguments, bolt: Bolt) {
 	};
 
 	try {
-		await bolt.bridge.update_bridge(bridge);
+		await l.bridge.update_bridge(bridge);
 		return {
 			text: create_message('Toggled that setting!')
 		};
@@ -136,8 +136,8 @@ export async function toggle(args: command_arguments, bolt: Bolt) {
 	}
 }
 
-export async function status(args: command_arguments, bolt: Bolt) {
-	const current = await bolt.bridge.get_bridge(args);
+export async function status(args: command_arguments, l: lightning) {
+	const current = await l.bridge.get_bridge(args);
 
 	if (!current) {
 		return {

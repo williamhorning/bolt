@@ -1,16 +1,16 @@
 import { bridges } from './mod.ts';
 import { message, deleted_message, log_error, plugin } from '../utils/mod.ts';
 import { bridge_platform } from './types.ts';
-import { Bolt } from '../bolt.ts';
+import { lightning } from '../lightning.ts';
 
 export class bridge_internals_dont_use_or_look_at {
 	private bridges: bridges;
-	private bolt: Bolt;
+	private l: lightning;
 	// TODO: find a better way to do this, maps work BUT don't't scale well
 	private bridged_message_id_map = new Map<string, boolean>();
 
-	constructor(bridge: bridges, bolt: Bolt) {
-		this.bolt = bolt;
+	constructor(bridge: bridges, l: lightning) {
+		this.l = l;
 		this.bridges = bridge;
 	}
 
@@ -64,17 +64,17 @@ export class bridge_internals_dont_use_or_look_at {
 		}
 
 		for (const i of data) {
-			await this.bolt.redis.sendCommand([
+			await this.l.redis.sendCommand([
 				'JSON.SET',
-				`bolt-bridge-${i.id}`,
+				`lightning-bridge-${i.id}`,
 				'$',
 				JSON.stringify(data)
 			]);
 		}
 
-		await this.bolt.redis.sendCommand([
+		await this.l.redis.sendCommand([
 			'JSON.SET',
-			`bolt-bridge-${msg.id}`,
+			`lightning-bridge-${msg.id}`,
 			'$',
 			JSON.stringify(data)
 		]);
@@ -126,7 +126,7 @@ export class bridge_internals_dont_use_or_look_at {
 		plugin?: plugin<unknown>;
 		platform?: bridge_platform & { id: string };
 	}> {
-		const plugin = this.bolt.plugins.get(platform.plugin);
+		const plugin = this.l.plugins.get(platform.plugin);
 
 		if (!plugin || !plugin[action]) {
 			await log_error(new Error(`plugin ${platform.plugin} has no ${action}`));

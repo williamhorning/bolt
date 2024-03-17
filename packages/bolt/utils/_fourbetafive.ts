@@ -30,6 +30,7 @@ export default {
 };
 
 function map_plugins(pluginname: string): string {
+	// the use of bolt is intentional
 	if (pluginname === 'discord') return 'bolt-discord';
 	if (pluginname === 'guilded') return 'bolt-guilded';
 	if (pluginname === 'revolt') return 'bolt-revolt';

@@ -11,8 +11,8 @@ import {
 	plugin_events
 } from './utils/mod.ts';
 
-/** an instance of bolt */
-export class Bolt extends EventEmitter<plugin_events> {
+/** an instance of lightning */
+export class lightning extends EventEmitter<plugin_events> {
 	bridge: bridges;
 	/** a command handler */
 	cmds: commands = new commands();
@@ -43,7 +43,9 @@ export class Bolt extends EventEmitter<plugin_events> {
 			if (!plugin.support.includes('0.5.5')) {
 				throw (
 					await log_error(
-						new Error(`plugin '${plugin.name}' doesn't support bolt 0.5.5`)
+						new Error(
+							`plugin '${plugin.name}' doesn't support lightning 0.5.5 or above`
+						)
 					)
 				).e;
 			} else {

@@ -1,12 +1,15 @@
-import { Bolt } from '../bolt.ts';
+import { lightning } from '../lightning.ts';
 import { log_error } from './errors.ts';
 import { parseArgs } from 'std_args';
 import { create_message, message } from './messages.ts';
 
 /**
- * commands implements simple command handling for bolt that others may find useful
+ * commands implements simple command handling for lightning that others may find useful
  */
 export class commands extends Map<string, command> {
+	// TODO: make this configurable
+	prefix = '!bolt';
+
 	/**
 	 * creates a command handler instance with the given commands
 	 * @param default_cmds - the commands to use by default, should include help as a fallback command
@@ -16,11 +19,11 @@ export class commands extends Map<string, command> {
 	}
 
 	/**
-	 * listen for commands on the given bolt instance
+	 * listen for commands on the given lightning instance
 	 */
-	listen(bolt: Bolt) {
-		bolt.on('create_nonbridged_message', msg => {
-			if (msg.content?.startsWith('!bolt')) {
+	listen(l: lightning) {
+		l.on('create_nonbridged_message', msg => {
+			if (msg.content?.startsWith(this.prefix)) {
 				const args = parseArgs(msg.content.split(' '));
 				args._.shift();
 				this.run({
@@ -35,7 +38,7 @@ export class commands extends Map<string, command> {
 			}
 		});
 
-		bolt.on('create_command', async cmd => {
+		l.on('create_command', async cmd => {
 			await this.run(cmd);
 		});
 	}
@@ -43,7 +46,7 @@ export class commands extends Map<string, command> {
 	/**
 	 * run a command given the options that would be passed to it
 	 */
-	async run(opts: command_arguments) {
+	async run(opts: Omit<command_arguments, 'commands'>) {
 		let reply;
 		try {
 			const cmd = this.get(opts.cmd) || this.get('help')!;
@@ -52,7 +55,7 @@ export class commands extends Map<string, command> {
 					? cmd.options.subcommands.find(i => i.name === opts.subcmd)
 							?.execute || cmd.execute
 					: cmd.execute;
-			reply = await execute(opts);
+			reply = await execute({ ...opts, commands: this });
 		} catch (e) {
 			reply = (await log_error(e, { ...opts, reply: undefined })).message;
 		}
@@ -63,6 +66,8 @@ export class commands extends Map<string, command> {
 		}
 	}
 }
+
+// TODO: remove in 0.7.0 and make its own package
 
 const default_commands: [string, command][] = [
 	[
@@ -80,8 +85,8 @@ const default_commands: [string, command][] = [
 		'version',
 		{
 			name: 'version',
-			description: "get bolt's version",
-			execute: () => create_message('hello from bolt 0.5.8!')
+			description: "get lightning's version",
+			execute: () => create_message('hello from lightning (bolt) v0.6.0!')
 		}
 	],
 	[
@@ -107,6 +112,7 @@ export interface command_arguments {
 	replyfn: message<unknown>['reply'];
 	subcmd?: string;
 	timestamp: Temporal.Instant;
+	commands: commands;
 }
 
 export interface command {

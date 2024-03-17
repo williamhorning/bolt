@@ -1,15 +1,16 @@
 /**
- * creates a message that can be sent using bolt
+ * creates a message that can be sent using lightning
  * @param text the text of the message (can be markdown)
  */
 export function create_message(text: string): message<undefined> {
 	const data = {
 		author: {
+			// TODO: make this configurable
 			username: 'Bolt',
 			profile:
 				'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
-			rawname: 'bolt',
-			id: 'bolt'
+			rawname: 'lightning',
+			id: 'lightning'
 		},
 		content: text,
 		channel: '',
@@ -17,7 +18,7 @@ export function create_message(text: string): message<undefined> {
 		reply: async () => {},
 		timestamp: Temporal.Now.instant(),
 		platform: {
-			name: 'bolt',
+			name: 'lightning',
 			message: undefined
 		}
 	};
@@ -35,7 +36,7 @@ export interface attachment {
 	spoiler?: boolean;
 	/**
 	 * file size
-	 * @deprecated
+	 * @deprecated will be removed in 0.7.0
 	 */
 	size: number;
 }

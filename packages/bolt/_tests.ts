@@ -22,8 +22,8 @@ import {
 	log_error,
 	create_message
 } from './utils/mod.ts';
-import BoltFourToFourBeta from './utils/_fourfourbeta.ts';
-import BoltFourBetaToFive from './utils/_fourbetafive.ts';
+import fourfourbeta from './utils/_fourfourbeta.ts';
+import fourbetafive from './utils/_fourbetafive.ts';
 import { versions } from './utils/migrations.ts';
 
 // override globals
@@ -38,7 +38,7 @@ console.log = console.error = () => {};
 
 // cmds
 
-Deno.test('bolt/cmds', async t => {
+Deno.test('cmds', async t => {
 	const cmds = new commands();
 
 	await t.step('run help command', async () => {
@@ -52,7 +52,7 @@ Deno.test('bolt/cmds', async t => {
 			channel: '',
 			cmd: 'help',
 			opts: {},
-			platform: 'bolt',
+			platform: 'lightning',
 			// deno-lint-ignore require-await
 			replyfn: async msg => res(msg),
 			timestamp: temporal_instant
@@ -68,36 +68,27 @@ Deno.test('bolt/cmds', async t => {
 
 // migrations
 
-Deno.test('bolt/migrations', async t => {
+Deno.test('migrations', async t => {
 	await t.step('get a migration', () => {
 		const migrations = get_migrations(versions.Four, versions.FourBeta);
-		assertEquals(migrations, [BoltFourToFourBeta]);
+		assertEquals(migrations, [fourfourbeta]);
 	});
 
 	await t.step('apply migrations', async t => {
 		await t.step('0.4 => 0.4-beta (one platform)', () => {
-			const result = apply_migrations(
-				[BoltFourToFourBeta],
-				migrations_four_one
-			);
+			const result = apply_migrations([fourfourbeta], migrations_four_one);
 
 			assertEquals(result, []);
 		});
 
 		await t.step('0.4 => 0.4-beta (two platforms)', () => {
-			const result = apply_migrations(
-				[BoltFourToFourBeta],
-				migrations_four_two
-			);
+			const result = apply_migrations([fourfourbeta], migrations_four_two);
 
 			assertEquals(result, migrations_fourbeta);
 		});
 
 		await t.step('0.4-beta => 0.5', () => {
-			const result = apply_migrations(
-				[BoltFourBetaToFive],
-				migrations_fourbeta
-			);
+			const result = apply_migrations([fourbetafive], migrations_fourbeta);
 
 			assertEquals(result, migrations_five);
 		});
@@ -106,13 +97,15 @@ Deno.test('bolt/migrations', async t => {
 
 // utils
 
-Deno.test('bolt/utils', async t => {
+Deno.test('utils', async t => {
 	await t.step('config handling', () => {
 		assertEquals(define_config(), utils_cfg);
 	});
 
 	await t.step('error handling', async t => {
 		await t.step('basic', async () => {
+			Deno.env.set('LIGHTNING_ERROR_HOOK', '');
+
 			const result = await log_error(utils_err, utils_extra, utils_err_id);
 
 			result.message.reply = utils_err_return.message.reply;
@@ -121,7 +114,7 @@ Deno.test('bolt/utils', async t => {
 		});
 
 		await t.step('webhooks', async () => {
-			Deno.env.set('BOLT_ERROR_HOOK', 'http://localhost:8000');
+			Deno.env.set('LIGHTNING_ERROR_HOOK', 'http://localhost:8000');
 
 			let res: (value: unknown) => void;
 

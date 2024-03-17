@@ -1,5 +1,5 @@
 /**
- * Various utilities for Bolt
+ * Various utilities for lightning
  * @module
  */
 

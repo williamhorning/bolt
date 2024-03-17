@@ -1,28 +1,34 @@
 import { EventEmitter } from 'event';
-import { Bolt } from '../bolt.ts';
+import { lightning } from '../lightning.ts';
 import { bridge_platform } from '../bridges/types.ts';
 import { message, deleted_message } from './messages.ts';
 import { command_arguments } from './commands.ts';
 
 /**
- * a plugin for bolt
+ * a plugin for lightning
  */
 export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
-	/** access the instance of bolt you're connected to */
-	bolt: Bolt;
-	/** access the config passed to you by bolt */
+	/**
+	 * access the instance of lightning you're connected to
+	 * @deprecated use `l` instead, will be removed in 0.7.0
+	 */
+	bolt: lightning;
+	/** access the instance of lightning you're connected to */
+	lightning: lightning;
+	/** access the config passed to you by lightning */
 	config: cfg;
 
 	/** the name of your plugin */
 	abstract name: string;
 	/** the version of your plugin */
 	abstract version: string;
-	/** a list of major versions supported by your plugin, should include 0.5 */
+	/** a list of major versions supported by your plugin, should include 0.5.5 */
 	abstract support: string[];
 
-	constructor(bolt: Bolt, config: cfg) {
+	constructor(l: lightning, config: cfg) {
 		super();
-		this.bolt = bolt;
+		this.bolt = l;
+		this.lightning = l;
 		this.config = config;
 	}
 
@@ -68,6 +74,6 @@ export type plugin_events = {
 
 /** the constructor for a plugin */
 export interface create_plugin {
-	new (bolt: Bolt, config: unknown): plugin<unknown>;
+	new (l: lightning, config: unknown): plugin<unknown>;
 	readonly prototype: plugin<unknown>;
 }
