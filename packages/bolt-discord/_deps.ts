@@ -15,4 +15,4 @@ export {
 	type bridge_platform,
 	type deleted_message,
 	type message
-} from '../bolt/mod.ts';
+} from '../lightning/mod.ts';

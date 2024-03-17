@@ -19,4 +19,4 @@ export {
 	type deleted_message,
 	type embed,
 	type message
-} from '../bolt/mod.ts';
+} from '../lightning/mod.ts';

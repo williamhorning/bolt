@@ -14,4 +14,4 @@ export {
 	plugin,
 	type bridge_platform,
 	type message
-} from '../bolt/mod.ts';
+} from '../lightning/mod.ts';
