@@ -1,4 +1,5 @@
 import { create_message, message } from './messages.ts';
+import { getEnv } from 'cross_env';
 
 /** logs an error and returns a unique id and a message for users */
 export async function log_error(
@@ -13,8 +14,7 @@ export async function log_error(
 }> {
 	const uuid = _id();
 
-	// TODO: replace deno.env
-	const error_hook = Deno.env.get('BOLT_ERROR_HOOK');
+	const error_hook = getEnv('BOLT_ERROR_HOOK');
 
 	if (error_hook && error_hook !== '') {
 		delete extra.msg;

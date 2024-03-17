@@ -1,4 +1,5 @@
 import { assertEquals } from 'assert_eq';
+import { setEnv } from 'cross_env';
 import {
 	cmd_help_output,
 	migrations_five,
@@ -120,7 +121,7 @@ Deno.test('bolt/utils', async t => {
 		});
 
 		await t.step('webhooks', async () => {
-			Deno.env.set('BOLT_ERROR_HOOK', 'http://localhost:8000');
+			setEnv('BOLT_ERROR_HOOK', 'http://localhost:8000');
 
 			let res: (value: unknown) => void;
 

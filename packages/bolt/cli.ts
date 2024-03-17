@@ -1,4 +1,6 @@
 import { Bolt } from './bolt.ts';
+import { setEnv } from 'cross_env';
+import { args, exit, cwd } from 'cross_utils';
 import { parseArgs } from 'std_args';
 import { MongoClient } from 'mongo';
 import {
@@ -13,16 +15,14 @@ function log(text: string, color?: string, type?: 'error' | 'log') {
 	console[type || 'log'](`%c${text}`, `color: ${color || 'white'}`);
 }
 
-// TODO: remove deno-specific stuff
-
-const f = parseArgs(Deno.args, {
+const f = parseArgs(args(), {
 	boolean: ['help', 'version', 'run', 'migrations'],
 	string: ['config']
 });
 
 if (f.version) {
 	console.log('0.5.8');
-	Deno.exit();
+	exit();
 }
 
 if (!f.run && !f.migrations) {
@@ -34,15 +34,17 @@ if (!f.run && !f.migrations) {
 	log('--config <string>: absolute path to config file');
 	log('--run: run an of bolt using the settings in config.ts');
 	log('--migrations: start interactive tool to migrate databases');
-	Deno.exit();
+	exit();
 }
 
 try {
+	if (!Deno) throw new Error('not running on deno, exiting...');
+
 	const cfg = define_config(
-		(await import(f.config || `${Deno.cwd()}/config.ts`))?.default
+		(await import(f.config || `${cwd()}/config.ts`))?.default
 	);
 
-	Deno.env.set('BOLT_ERROR_HOOK', cfg.errorURL || '');
+	setEnv('BOLT_ERROR_HOOK', cfg.errorURL || '');
 
 	const mongo = new MongoClient();
 	await mongo.connect(cfg.mongo_uri);
@@ -60,7 +62,7 @@ try {
 } catch (e) {
 	log('Something went wrong, exiting..', 'red', 'error');
 	console.error(e);
-	Deno.exit(1);
+	exit(1);
 }
 
 async function migrations(cfg: config, mongo: MongoClient) {
@@ -72,11 +74,11 @@ async function migrations(cfg: config, mongo: MongoClient) {
 	const is_invalid = (val: string) =>
 		!(Object.values(versions) as string[]).includes(val);
 
-	if (!from || !to || is_invalid(from) || is_invalid(to)) Deno.exit(1);
+	if (!from || !to || is_invalid(from) || is_invalid(to)) return exit(1);
 
 	const migrationlist = get_migrations(from, to);
 
-	if (migrationlist.length < 1) Deno.exit();
+	if (migrationlist.length < 1) exit();
 
 	const database = mongo.database(cfg.mongo_database);
 
@@ -96,7 +98,7 @@ async function migrations(cfg: config, mongo: MongoClient) {
 		`Do you want to write the data at ${filepath} to the DB?`
 	);
 
-	if (!writeconfirm) Deno.exit();
+	if (!writeconfirm) exit();
 
 	const tocollection = database.collection(migrationlist.slice(-1)[0].to_db);
 
@@ -108,5 +110,5 @@ async function migrations(cfg: config, mongo: MongoClient) {
 
 	log('Wrote data to the DB', 'green');
 
-	Deno.exit();
+	exit();
 }
