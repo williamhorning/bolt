@@ -1,5 +1,5 @@
 import {
-	Bolt,
+	lightning,
 	Client,
 	Message,
 	plugin,
@@ -14,8 +14,8 @@ export class revolt_plugin extends plugin<{ token: string }> {
 	version = '0.5.8';
 	support = ['0.5.5'];
 
-	constructor(bolt: Bolt, config: { token: string }) {
-		super(bolt, config);
+	constructor(l: lightning, config: { token: string }) {
+		super(l, config);
 		this.bot = new Client();
 		this.bot.on('messageCreate', message => {
 			if (message.systemMessage) return;

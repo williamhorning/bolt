@@ -25,6 +25,13 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** a list of major versions supported by your plugin, should include 0.5.5 */
 	abstract support: string[];
 
+	/** create a new plugin instance */
+	static new<T extends plugin<unknown>>(
+		this: new (l: lightning, config: T['config']) => T,
+		config: T['config']
+	): create_plugin<T> {
+		return { type: this, config };
+	}
 	constructor(l: lightning, config: cfg) {
 		super();
 		this.bolt = l;
@@ -61,7 +68,7 @@ export type plugin_events = {
 	/** when a message is created */
 	create_message: [message<unknown>];
 	/** when a command is run (not a text command) */
-	create_command: [command_arguments];
+	create_command: [Omit<command_arguments, 'commands'>];
 	/** when a message isn't already bridged (don't emit outside of core) */
 	create_nonbridged_message: [message<unknown>];
 	/** when a message is edited */
@@ -73,7 +80,7 @@ export type plugin_events = {
 };
 
 /** the constructor for a plugin */
-export interface create_plugin {
-	new (l: lightning, config: unknown): plugin<unknown>;
-	readonly prototype: plugin<unknown>;
+export interface create_plugin<T extends plugin<T['config']>> {
+	type: new (l: lightning, config: T['config']) => T;
+	config: T['config'];
 }

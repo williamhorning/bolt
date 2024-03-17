@@ -1,5 +1,5 @@
 import {
-	Bolt,
+	lightning,
 	Client,
 	WebhookPayload,
 	WebhookClient,
@@ -17,8 +17,8 @@ export class guilded_plugin extends plugin<{ token: string }> {
 	version = '0.5.8';
 	support = ['0.5.5'];
 
-	constructor(bolt: Bolt, config: { token: string }) {
-		super(bolt, config);
+	constructor(l: lightning, config: { token: string }) {
+		super(l, config);
 		this.bot = new Client(config);
 		this.bot.on('ready', () => {
 			this.emit('ready');
@@ -61,7 +61,8 @@ export class guilded_plugin extends plugin<{ token: string }> {
 			});
 		const srvhooks = (await srvwhs.json()).webhooks;
 		const found_wh = srvhooks.find((wh: WebhookPayload) => {
-			if (wh.name === 'Bolt Bridges' && wh.channelId === channel) return true;
+			if (wh.name === 'Lightning Bridges' && wh.channelId === channel)
+				return true;
 			return false;
 		});
 		if (found_wh && found_wh.token)
@@ -75,7 +76,7 @@ export class guilded_plugin extends plugin<{ token: string }> {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					name: 'Bolt Bridges',
+					name: 'Lightning Bridges',
 					channelId: channel
 				})
 			}

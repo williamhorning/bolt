@@ -1,12 +1,12 @@
-ARG DENO_VERSION=v1.40.4
+ARG DENO_VERSION=v1.41.3
 
-FROM docker.io/lukechannings/deno:${DENO_VERSION}
+FROM docker.io/denoland/deno:${DENO_VERSION}
 
-# add bolt to the image
+# add lightning to the image
 WORKDIR /app
 ADD ./packages/bolt /app
-RUN deno install -A --unstable-temporal -n bolt /app/cli.ts
+RUN deno install -A --unstable-temporal -n lightning /app/cli.ts
 
-# set bolt as the entrypoint and use the run command by default
-ENTRYPOINT [ "bolt" ]
+# set lightning as the entrypoint and use the run command by default
+ENTRYPOINT [ "lightning" ]
 CMD [ "--run", "--config", "./data/config.ts"]

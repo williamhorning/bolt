@@ -12,7 +12,7 @@ export {
 	type WebhookPayload
 } from 'npm:guilded.js@0.23.7';
 export {
-	Bolt,
+	lightning,
 	plugin,
 	create_message,
 	type bridge_platform,

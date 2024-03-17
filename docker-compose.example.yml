@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  bolt:
+  lightning:
     build: .
     volumes:
       - ./config/data:/app/data

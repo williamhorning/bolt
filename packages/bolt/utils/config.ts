@@ -14,7 +14,8 @@ export function define_config(config?: Partial<config>): config {
 
 export interface config {
 	/** a list of plugins */
-	plugins: { type: create_plugin; config: unknown }[];
+	// deno-lint-ignore no-explicit-any
+	plugins: create_plugin<any>[];
 	/** the URI that points to your instance of mongodb */
 	mongo_uri: string;
 	/** the database to use */
