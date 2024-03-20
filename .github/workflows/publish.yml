@@ -23,7 +23,7 @@ jobs:
           deno-version: v1.41.3
       - name: publish to jsr
         run: |
-          cd packages/bolt
+          cd packages/lightning
           deno publish
   docker:
     runs-on: ubuntu-latest

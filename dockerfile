@@ -4,7 +4,8 @@ FROM docker.io/denoland/deno:${DENO_VERSION}
 
 # add lightning to the image
 WORKDIR /app
-ADD ./packages/bolt /app
+# TODO: change when repos split
+ADD ./packages/lightning /app
 RUN deno install -A --unstable-temporal -n lightning /app/cli.ts
 
 # set lightning as the entrypoint and use the run command by default
