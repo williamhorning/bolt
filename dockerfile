@@ -1,4 +1,4 @@
-ARG DENO_VERSION=v1.41.3
+ARG DENO_VERSION=1.41.3
 
 FROM docker.io/denoland/deno:${DENO_VERSION}
 
