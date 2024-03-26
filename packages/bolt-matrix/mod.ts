@@ -1,36 +1,53 @@
 import {
 	AppServiceRegistration,
 	Bolt,
+	BoltBridgeMessageArgs,
+	BoltMessage,
+	BoltPlugin,
 	Bridge,
-	Buffer,
-	MatrixUser,
-	existsSync,
-	bolt_plugin,
-	message,
-	bridge_platform
+	ClientEncryptionSession,
+	existsSync
 } from './deps.ts';
 import { coreToMessage, onEvent } from './events.ts';
 
 type MatrixConfig = {
-	appserviceUrl: string;
+	accessToken: string;
 	homeserverUrl: string;
 	domain: string;
 	port?: number;
 	reg_path: string;
 };
 
-export class matrix_plugin extends bolt_plugin<MatrixConfig> {
+export default class MatrixPlugin extends BoltPlugin {
 	bot: Bridge;
-	name = 'bolt-matrix';
-	version = '0.5.6';
-	support = ['0.5.5'];
-
-	constructor(bolt: Bolt, config: MatrixConfig) {
-		super(bolt, config);
+	config: MatrixConfig;
+	name = 'bolt-revolt';
+	version = '0.5.4';
+	bolt?: Bolt;
+	constructor(config: MatrixConfig) {
+		super();
+		this.config = config;
 		this.bot = new Bridge({
 			homeserverUrl: this.config.homeserverUrl,
 			domain: this.config.domain,
 			registration: this.config.reg_path,
+			bridgeEncryption: {
+				homeserverUrl: config.homeserverUrl,
+				store: {
+					getStoredSession: async (userId: string) => {
+						return JSON.parse(
+							(await this.bolt?.redis?.get(`mtx-session-${userId}`)) || 'null'
+						);
+					},
+					setStoredSession: async (session: ClientEncryptionSession) => {
+						await this.bolt?.redis?.set(
+							`mtx-session-${session.userId}`,
+							JSON.stringify(session)
+						);
+					},
+					async updateSyncToken() {}
+				}
+			},
 			controller: {
 				onEvent: onEvent.bind(this)
 			},
@@ -38,102 +55,77 @@ export class matrix_plugin extends bolt_plugin<MatrixConfig> {
 			userStore: './db/userStore.db',
 			userActivityStore: './db/userActivityStore.db'
 		});
+	}
+	async start(bolt: Bolt) {
+		this.bolt = bolt;
 		if (!existsSync(this.config.reg_path)) {
-			const reg = new AppServiceRegistration(this.config.appserviceUrl);
+			const reg = new AppServiceRegistration(this.config.homeserverUrl);
 			reg.setAppServiceToken(AppServiceRegistration.generateToken());
 			reg.setHomeserverToken(AppServiceRegistration.generateToken());
-			reg.setId(AppServiceRegistration.generateToken());
+			reg.setId(
+				'b4d15f02f7e406db25563c1a74ac78863dc4fbcc5595db8d835f6ee6ffef1448'
+			);
 			reg.setProtocols(['bolt']);
 			reg.setRateLimited(false);
-			reg.setSenderLocalpart('bot.bolt');
-			reg.addRegexPattern('users', `@bolt-.+_.+:${this.config.domain}`, true);
+			reg.setSenderLocalpart('boltbot');
+			reg.addRegexPattern('users', '@bolt_*', true);
 			reg.outputAsYaml(this.config.reg_path);
 		}
-		this.bot.run(this.config.port || 8081);
+		await this.bot.run(this.config.port || 8081);
 	}
-
+	bridgeSupport = { text: true };
 	// deno-lint-ignore require-await
-	async create_bridge(channelId: string) {
+	async createSenddata(channelId: string) {
 		return channelId;
 	}
-
-	is_bridged(_msg: message<unknown>) {
-		// TODO: implement this
-		return true;
-	}
-
-	async create_message(
-		msg: message<unknown>,
-		platform: bridge_platform,
-		edit = false
-	) {
-		const room = platform.senddata as string;
-		const name = `@${platform.plugin}_${msg.author.id}:${this.config.domain}`;
-		const intent = this.bot.getIntent(name);
-		// check for profile
-		await intent.ensureProfile(msg.author.username);
-		const store = this.bot.getUserStore();
-		let storeUser = await store?.getMatrixUser(name);
-		if (!storeUser) {
-			storeUser = new MatrixUser(name);
-		}
-		if (storeUser?.get('avatar') != msg.author.profile) {
-			storeUser?.set('avatar', msg.author.profile);
-			const b = await (await fetch(msg.author.profile || '')).blob();
-			const newMxc = await intent.uploadContent(
-				Buffer.from(await b.arrayBuffer()),
-				{ type: b.type }
-			);
-			await intent.ensureProfile(msg.author.username, newMxc);
-			await store?.setMatrixUser(storeUser);
-		}
-		// now to our message
-		const message = coreToMessage(msg);
-		let editinfo = {};
-		if (edit) {
-			editinfo = {
-				'm.new_content': message,
-				'm.relates_to': {
-					rel_type: 'm.replace',
-					event_id: msg.id
-				}
-			};
-		}
-		const result = await intent.sendMessage(room, {
-			...message,
-			...editinfo
-		});
-		return {
-			channel: room,
-			id: result.event_id,
-			plugin: 'bolt-matrix',
-			senddata: room
-		};
-	}
-
-	async edit_message(
-		msg: message<unknown>,
-		platform: bridge_platform & { id: string }
-	) {
-		return await this.create_message(msg, platform, true);
-	}
-
-	async delete_message(
-		_msg: message<unknown>,
-		platform: bridge_platform & { id: string }
-	) {
-		const room = platform.senddata as string;
-		const intent = this.bot.getIntent();
-		await intent.botSdkIntent.underlyingClient.redactEvent(
-			room,
-			platform.id,
-			'bridge message deletion'
+	async bridgeMessage(data: BoltBridgeMessageArgs) {
+		const intent = this.bot.getIntent(
+			`${data.data.platform.name}_${
+				'author' in data.data ? data.data.author.id : 'deletion'
+			}`
 		);
-		return {
-			channel: room,
-			id: platform.id,
-			plugin: 'bolt-matrix',
-			senddata: room
-		};
+		const room = data.data.bridgePlatform.senddata as string;
+		switch (data.type) {
+			case 'create':
+			case 'update': {
+				const message = coreToMessage(
+					data.data as unknown as BoltMessage<unknown>
+				);
+				let editinfo = {};
+				if (data.type === 'update') {
+					editinfo = {
+						'm.new_content': message,
+						'm.relates_to': {
+							rel_type: 'm.replace',
+							event_id: data.data.id
+						}
+					};
+				}
+				const result = await intent.sendMessage(room, {
+					...message,
+					...editinfo
+				});
+				return {
+					channel: room,
+					id: result.event_id,
+					plugin: 'bolt-matrix',
+					senddata: room
+				};
+			}
+			case 'delete': {
+				await intent.sendEvent(room, 'm.room.redaction', {
+					content: {
+						reason: 'bridge message deletion'
+					},
+					redacts: data.data.id
+				});
+				return {
+					channel: room,
+					id: data.data.id,
+					plugin: 'bolt-matrix',
+					senddata: room
+				};
+			}
+		}
 	}
 }
