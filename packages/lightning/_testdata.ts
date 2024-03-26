@@ -3,8 +3,8 @@ export const cmd_help_output = {
 		username: 'Bolt',
 		profile:
 			'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
-		rawname: 'bolt',
-		id: 'bolt'
+		rawname: 'lightning',
+		id: 'lightning'
 	},
 	content: 'check out [the docs](https://williamhorning.dev/bolt/) for help.',
 	channel: '',
@@ -12,10 +12,9 @@ export const cmd_help_output = {
 	reply: async () => {},
 	timestamp: Temporal.Instant.from('2021-01-01T00:00:00Z'),
 	platform: {
-		name: 'bolt',
+		name: 'lightning',
 		message: undefined
-	},
-	uuid: undefined
+	}
 };
 
 export const migrations_four_one = [
@@ -91,8 +90,8 @@ export const utils_msg = {
 		username: 'Bolt',
 		profile:
 			'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
-		rawname: 'bolt',
-		id: 'bolt'
+		rawname: 'lightning',
+		id: 'lightning'
 	},
 	content: 'test',
 	channel: '',
@@ -100,18 +99,17 @@ export const utils_msg = {
 	reply: async () => {},
 	timestamp: Temporal.Instant.from('2021-01-01T00:00:00Z'),
 	platform: {
-		name: 'bolt',
+		name: 'lightning',
 		message: undefined
-	},
-	uuid: 'test'
+	}
 };
 
 export const utils_cfg = {
-	prod: false,
 	plugins: [],
 	mongo_uri: 'mongodb://localhost:27017',
-	mongo_database: 'bolt-testing',
-	redis_host: 'localhost'
+	mongo_database: 'lightning',
+	redis_host: 'localhost',
+	redis_port: 6379
 };
 
 export const utils_err = new Error('test');
@@ -129,20 +127,19 @@ export const utils_err_return = {
 			username: 'Bolt',
 			profile:
 				'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
-			rawname: 'bolt',
-			id: 'bolt'
+			rawname: 'lightning',
+			id: 'lightning'
 		},
 		content:
-			'Something went wrong! Check [the docs](https://williamhorning.dev/bolt/docs/Using/) for help.\n```\ntest\ntest\n```',
+			'Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n```\ntest\ntest\n```',
 		channel: '',
 		id: '',
 		reply: async () => {},
 		timestamp: Temporal.Instant.from('2021-01-01T00:00:00Z'),
 		platform: {
-			name: 'bolt',
+			name: 'lightning',
 			message: undefined
-		},
-		uuid: 'test'
+		}
 	}
 };
 
@@ -150,7 +147,7 @@ export const utils_err_hook = {
 	embeds: [
 		{
 			title: utils_err.message,
-			description: `\`\`\`${utils_err.stack}\`\`\`\n\`\`\`js\n${JSON.stringify(
+			description: `\`\`\`js\n${utils_err.stack}\n${JSON.stringify(
 				{
 					...utils_extra,
 					uuid: 'test'

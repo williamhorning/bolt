@@ -1,9 +1,9 @@
 import {
-	Bolt,
+	lightning,
 	Client,
 	WebhookPayload,
 	WebhookClient,
-	bolt_plugin,
+	plugin,
 	bridge_platform,
 	deleted_message,
 	message
@@ -11,14 +11,14 @@ import {
 import { bridge_legacy } from './legacybridging.ts';
 import { tocore, toguilded } from './messages.ts';
 
-export class guilded_plugin extends bolt_plugin<{ token: string }> {
+export class guilded_plugin extends plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.5.8';
+	version = '0.6.0';
 	support = ['0.5.5'];
 
-	constructor(bolt: Bolt, config: { token: string }) {
-		super(bolt, config);
+	constructor(l: lightning, config: { token: string }) {
+		super(l, config);
 		this.bot = new Client(config);
 		this.bot.on('ready', () => {
 			this.emit('ready');
@@ -61,7 +61,8 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 			});
 		const srvhooks = (await srvwhs.json()).webhooks;
 		const found_wh = srvhooks.find((wh: WebhookPayload) => {
-			if (wh.name === 'Bolt Bridges' && wh.channelId === channel) return true;
+			if (wh.name === 'Lightning Bridges' && wh.channelId === channel)
+				return true;
 			return false;
 		});
 		if (found_wh && found_wh.token)
@@ -75,7 +76,7 @@ export class guilded_plugin extends bolt_plugin<{ token: string }> {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					name: 'Bolt Bridges',
+					name: 'Lightning Bridges',
 					channelId: channel
 				})
 			}

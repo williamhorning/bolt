@@ -12,11 +12,11 @@ export {
 	type WebhookPayload
 } from 'npm:guilded.js@0.23.7';
 export {
-	Bolt,
-	bolt_plugin,
+	lightning,
+	plugin,
 	create_message,
 	type bridge_platform,
 	type deleted_message,
 	type embed,
 	type message
-} from '../bolt/mod.ts';
+} from '../lightning/mod.ts';

@@ -1,11 +1,14 @@
+import { lightning } from './lightning.ts';
+import { parseArgs } from 'std_args';
+import { MongoClient } from 'mongo';
 import {
 	apply_migrations,
 	get_migrations,
-	versions
-} from './migrations/mod.ts';
-import { Bolt } from './bolt.ts';
-import { MongoClient, parseArgs } from './_deps.ts';
-import { config } from './utils/mod.ts';
+	versions,
+	config,
+	define_config,
+	log_error
+} from './utils/mod.ts';
 
 function log(text: string, color?: string, type?: 'error' | 'log') {
 	console[type || 'log'](`%c${text}`, `color: ${color || 'white'}`);
@@ -17,50 +20,63 @@ const f = parseArgs(Deno.args, {
 });
 
 if (f.version) {
-	console.log('0.5.8');
+	log('0.6.0');
 	Deno.exit();
 }
 
 if (!f.run && !f.migrations) {
-	log('bolt v0.5.8 - cross-platform bot connecting communities', 'blue');
-	log('Usage: bolt [options]', 'purple');
+	log('lightning v0.6.0 - cross-platform bot connecting communities', 'blue');
+	log('Usage: lightning [options]', 'purple');
 	log('Options:', 'green');
 	log('--help: show this');
 	log('--version: shows version');
 	log('--config <string>: absolute path to config file');
-	log('--run: run an of bolt using the settings in config.ts');
+	log('--run: run an of lightning using the settings in config.ts');
 	log('--migrations: start interactive tool to migrate databases');
 	Deno.exit();
 }
 
 try {
-	const cfg = (await import(f.config || `${Deno.cwd()}/config.ts`))?.default;
-	if (f.run) await Bolt.setup(cfg);
-	if (f.migrations) await migrations(cfg);
+	if (!Deno) throw new Error('not running on deno, exiting...');
+
+	const cfg = define_config(
+		(await import(f.config || `${Deno.cwd()}/config.ts`))?.default
+	);
+
+	Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
+
+	const mongo = new MongoClient();
+	await mongo.connect(cfg.mongo_uri);
+
+	const redis = await Deno.connect({
+		hostname: cfg.redis_host,
+		port: cfg.redis_port || 6379
+	});
+
+	if (f.run) {
+		new lightning(cfg, mongo, redis);
+	} else if (f.migrations) {
+		await migrations(cfg, mongo);
+	}
 } catch (e) {
-	log('Something went wrong, exiting..', 'red', 'error');
-	console.error(e);
+	await log_error(e);
 	Deno.exit(1);
 }
 
-async function migrations(cfg: config) {
+async function migrations(cfg: config, mongo: MongoClient) {
 	log(`Available versions are: ${Object.values(versions).join(', ')}`, 'blue');
 
 	const from = prompt('what version is the DB currently set up for?');
-	const to = prompt('what version of bolt do you want to move to?');
+	const to = prompt('what version of lightning do you want to move to?');
 
 	const is_invalid = (val: string) =>
 		!(Object.values(versions) as string[]).includes(val);
 
-	if (!from || !to || is_invalid(from) || is_invalid(to)) Deno.exit(1);
+	if (!from || !to || is_invalid(from) || is_invalid(to)) return Deno.exit(1);
 
-	const migrationlist = get_migrations(from, to);
+	const migrationlist = get_migrations(from as versions, to as versions);
 
 	if (migrationlist.length < 1) Deno.exit();
-
-	const mongo = new MongoClient();
-
-	await mongo.connect(cfg.mongo_uri);
 
 	const database = mongo.database(cfg.mongo_database);
 
@@ -91,4 +107,6 @@ async function migrations(cfg: config) {
 	);
 
 	log('Wrote data to the DB', 'green');
+
+	Deno.exit();
 }

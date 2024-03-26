@@ -1,7 +1,7 @@
 import {
-	Bolt,
+	lightning,
 	Client,
-	bolt_plugin,
+	plugin,
 	bridge_platform,
 	deleted_message,
 	message,
@@ -18,14 +18,14 @@ export type discord_config = {
 	slash_cmds?: boolean;
 };
 
-export class discord_plugin extends bolt_plugin<discord_config> {
+export class discord_plugin extends plugin<discord_config> {
 	bot: Client;
 	name = 'bolt-discord';
-	version = '0.5.8';
+	version = '0.6.0';
 	support = ['0.5.5'];
 
-	constructor(bolt: Bolt, config: discord_config) {
-		super(bolt, config);
+	constructor(l: lightning, config: discord_config) {
+		super(l, config);
 		this.config = config;
 		const rest_client = new rest({ version: '10' }).setToken(config.token);
 		const gateway = new socket({
@@ -35,7 +35,7 @@ export class discord_plugin extends bolt_plugin<discord_config> {
 		});
 		this.bot = new Client({ rest: rest_client, gateway });
 		register_events(this);
-		register_commands(this.config, this.bot.api, bolt);
+		register_commands(this.config, this.bot.api, l);
 		gateway.connect();
 	}
 

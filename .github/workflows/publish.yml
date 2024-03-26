@@ -9,15 +9,31 @@ permissions:
   packages: write
 
 jobs:
-  build:
+  jsr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # auth w/JSR
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: setup deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.41.3
+      - name: publish to jsr
+        run: |
+          cd packages/lightning
+          deno publish
+  docker:
     runs-on: ubuntu-latest
     steps:
       # Get the repository's code
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up QEMU
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: set up QEMU
         uses: docker/setup-qemu-action@v1
-      - name: Set up Docker Buildx
+      - name: set up buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to Docker Hub
@@ -25,13 +41,13 @@ jobs:
         with:
           username: williamfromnj
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Docker meta
+      - name: metadata
         id: yo
         uses: docker/metadata-action@v3
         with:
           images: williamfromnj/bolt
           tags: type=ref,event=tag
-      - name: Build and push
+      - name: build and push
         uses: docker/build-push-action@v2
         with:
           context: .

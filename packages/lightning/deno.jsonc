@@ -1,0 +1,26 @@
+{
+	"name": "@jersey/lightning",
+	"version": "0.6.0",
+	"imports": {
+		"assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
+		"event": "jsr:@denosaurs/event@^2.0.2",
+		"mongo": "jsr:@db/mongo@^0.33.0",
+		"r2d2": "jsr:@iuioiua/r2d2@2.1.1",
+		"std_args": "jsr:@std/cli@^0.219.1/parse_args"
+	},
+	"exports": {
+		".": "./mod.ts",
+		"./utils": "./utils/mod.ts"
+	},
+	"publish": {
+		"exclude": ["./_testdata.ts", "./_tests.ts"]
+	},
+	"test": {
+		"include": ["./_tests.ts"]
+	},
+	"lint": {
+		"exclude": ["./_testdata.ts", "./_tests.ts"]
+	},
+	"lock": false,
+	"unstable": ["temporal"]
+}
