@@ -12,8 +12,8 @@ import { tocore, toguilded } from "./messages.ts";
 export class guilded_plugin extends plugin<{ token: string }> {
   bot: Client;
   name = "bolt-guilded";
-  version = "0.6.0";
-  support = ["0.5.5"];
+  version = "0.6.1";
+  support = ["0.6.1"];
 
   constructor(l: lightning, config: { token: string }) {
     super(l, config);
@@ -94,13 +94,6 @@ export class guilded_plugin extends plugin<{ token: string }> {
       });
     }
     return { id: wh.id, token: wh.token };
-  }
-
-  is_bridged(msg: message<unknown>) {
-    if (msg.author.id === this.bot.user?.id && msg.embeds && !msg.replytoid) {
-      return true;
-    }
-    return "query";
   }
 
   async create_message(message: message<unknown>, platform: bridge_platform) {

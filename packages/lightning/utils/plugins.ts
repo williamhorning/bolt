@@ -8,11 +8,6 @@ import { deleted_message, message } from "./messages.ts";
  * a plugin for lightning
  */
 export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
-  /**
-   * access the instance of lightning you're connected to
-   * @deprecated use `l` instead, will be removed in 0.7.0
-   */
-  bolt: lightning;
   /** access the instance of lightning you're connected to */
   lightning: lightning;
   /** access the config passed to you by lightning */
@@ -34,7 +29,6 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
   }
   constructor(l: lightning, config: cfg) {
     super();
-    this.bolt = l;
     this.lightning = l;
     this.config = config;
   }

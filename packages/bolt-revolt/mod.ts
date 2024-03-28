@@ -1,12 +1,12 @@
 import { bridge_platform, lightning, message, plugin } from "lightning";
-import { Client, Message } from "revolt-js";
+import { Client } from "revolt-js";
 import { tocore, torevolt } from "./messages.ts";
 
 export class revolt_plugin extends plugin<{ token: string }> {
   bot: Client;
   name = "bolt-revolt";
-  version = "0.6.0";
-  support = ["0.5.5"];
+  version = "0.6.1";
+  support = ["0.6.1"];
 
   constructor(l: lightning, config: { token: string }) {
     super(l, config);
@@ -27,12 +27,6 @@ export class revolt_plugin extends plugin<{ token: string }> {
       throw new Error("Please enable masquerade permissions!");
     }
     return ch.id;
-  }
-
-  is_bridged(msg: message<Message>) {
-    return Boolean(
-      msg.author.id === this.bot.user?.id && msg.platform.message.masquerade,
-    );
   }
 
   async create_message(msg: message<unknown>, bridge: bridge_platform) {

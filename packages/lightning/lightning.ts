@@ -4,10 +4,10 @@ import { RedisClient } from 'r2d2';
 import { bridges } from './bridges/mod.ts';
 import {
 	commands,
-	plugin,
 	config,
 	create_plugin,
 	log_error,
+	plugin,
 	plugin_events
 } from './utils/mod.ts';
 
@@ -40,7 +40,7 @@ export class lightning extends EventEmitter<plugin_events> {
 	async load(plugins: create_plugin<plugin<unknown>>[]) {
 		for (const { type, config } of plugins) {
 			const plugin = new type(this, config);
-			if (!plugin.support.includes('0.5.5')) {
+			if (!plugin.support.includes('0.5.5') || !plugin.support.includes('0.6.1') {
 				throw (
 					await log_error(
 						new Error(

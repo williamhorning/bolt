@@ -15,8 +15,8 @@ type MatrixConfig = {
 export class matrix_plugin extends plugin<MatrixConfig> {
   bot: Bridge;
   name = "bolt-matrix";
-  version = "0.5.6";
-  support = ["0.5.5"];
+  version = "0.6.1";
+  support = ["0.6.1"];
 
   constructor(l: lightning, config: MatrixConfig) {
     super(l, config);
@@ -48,11 +48,6 @@ export class matrix_plugin extends plugin<MatrixConfig> {
   // deno-lint-ignore require-await
   async create_bridge(channelId: string) {
     return channelId;
-  }
-
-  is_bridged(_msg: message<unknown>) {
-    // TODO: implement this
-    return true;
   }
 
   async create_message(

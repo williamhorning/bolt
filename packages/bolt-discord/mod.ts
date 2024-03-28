@@ -21,8 +21,8 @@ export type discord_config = {
 export class discord_plugin extends plugin<discord_config> {
   bot: Client;
   name = "bolt-discord";
-  version = "0.6.0";
-  support = ["0.5.5"];
+  version = "0.6.1";
+  support = ["0.6.1"];
 
   constructor(l: lightning, config: discord_config) {
     super(l, config);
@@ -44,10 +44,6 @@ export class discord_plugin extends plugin<discord_config> {
       name: "bolt bridge",
     });
     return { id: wh.id, token: wh.token };
-  }
-
-  is_bridged() {
-    return "query" as const;
   }
 
   async create_message(
