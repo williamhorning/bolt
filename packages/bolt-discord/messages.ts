@@ -1,11 +1,11 @@
 import {
   API,
-  message,
-  RawFile,
-  update_data,
-  wh_query,
-  wh_token,
-} from "./_deps.ts";
+  GatewayMessageUpdateDispatchData as update_data,
+  RESTPostAPIWebhookWithTokenJSONBody as wh_token,
+  RESTPostAPIWebhookWithTokenQuery as wh_query,
+} from "discordjs";
+import { RawFile } from "discordrest";
+import { message } from "lightning";
 
 export async function async_flat<A, B>(arr: A[], f: (a: A) => Promise<B>) {
   return (await Promise.all(arr.map(f))).flat();

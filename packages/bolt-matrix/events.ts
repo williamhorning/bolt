@@ -1,4 +1,5 @@
-import { Intent, message, Request, WeakEvent } from "./deps.ts";
+import { message } from "lightning";
+import { Intent, Request, WeakEvent } from "matrix";
 import { matrix_plugin } from "./mod.ts";
 
 export async function onEvent(

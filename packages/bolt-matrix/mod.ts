@@ -1,14 +1,7 @@
-import {
-  AppServiceRegistration,
-  Bolt,
-  Bridge,
-  bridge_platform,
-  Buffer,
-  existsSync,
-  MatrixUser,
-  message,
-  plugin,
-} from "./deps.ts";
+import { Buffer } from "buffer";
+import { existsSync } from "exists";
+import { bridge_platform, lightning, message, plugin } from "lightning";
+import { AppServiceRegistration, Bridge, MatrixUser } from "matrix";
 import { coreToMessage, onEvent } from "./events.ts";
 
 type MatrixConfig = {
@@ -25,8 +18,8 @@ export class matrix_plugin extends plugin<MatrixConfig> {
   version = "0.5.6";
   support = ["0.5.5"];
 
-  constructor(bolt: Bolt, config: MatrixConfig) {
-    super(bolt, config);
+  constructor(l: lightning, config: MatrixConfig) {
+    super(l, config);
     this.bot = new Bridge({
       homeserverUrl: this.config.homeserverUrl,
       domain: this.config.domain,

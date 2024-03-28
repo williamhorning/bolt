@@ -1,13 +1,13 @@
+import { Client } from "discordjs";
+import { REST } from "discordrest";
+import { WebSocketManager } from "discordsocket";
 import {
   bridge_platform,
-  Client,
   deleted_message,
   lightning,
   message,
   plugin,
-  rest,
-  socket,
-} from "./_deps.ts";
+} from "lightning";
 import { register_commands } from "./commands.ts";
 import { register_events } from "./events.ts";
 import { todiscord } from "./messages.ts";
@@ -27,8 +27,8 @@ export class discord_plugin extends plugin<discord_config> {
   constructor(l: lightning, config: discord_config) {
     super(l, config);
     this.config = config;
-    const rest_client = new rest({ version: "10" }).setToken(config.token);
-    const gateway = new socket({
+    const rest_client = new REST({ version: "10" }).setToken(config.token);
+    const gateway = new WebSocketManager({
       rest: rest_client,
       token: config.token,
       intents: 0 | 33281,
