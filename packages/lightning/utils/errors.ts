@@ -12,6 +12,7 @@ export async function log_error(
   _id?: () => string,
 ): Promise<{
   e: Error;
+  cause: unknown;
   extra: Record<string, unknown>;
   uuid: string;
   message: message<unknown>;
@@ -49,6 +50,7 @@ export async function log_error(
 
   return {
     e,
+    cause: e.cause,
     uuid,
     extra,
     message: create_message(
