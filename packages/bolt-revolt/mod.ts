@@ -14,6 +14,23 @@ export class revolt_plugin extends plugin<{ token: string }> {
 			if (message.systemMessage) return;
 			this.emit('create_message', tocore(message));
 		});
+		this.bot.on('messageUpdate', message => {
+			if (message.systemMessage) return;
+			this.emit('edit_message', tocore(message));
+		});
+		this.bot.on('messageDelete', message => {
+			if (message.systemMessage) return;
+			this.emit('delete_message', {
+				channel: message.channelId,
+				id: message.id,
+				platform: { message, name: 'bolt-revolt' },
+				timestamp: message.editedAt
+					? Temporal.Instant.fromEpochMilliseconds(
+							message.editedAt?.getUTCMilliseconds()
+					  )
+					: Temporal.Now.instant()
+			});
+		});
 		this.bot.on('ready', () => {
 			this.emit('ready');
 		});

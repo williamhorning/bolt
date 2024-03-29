@@ -29,7 +29,7 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		});
 		this.bot.on('messageUpdated', async message => {
 			const msg = await tocore(message, this);
-			if (msg) this.emit('create_message', msg);
+			if (msg) this.emit('edit_message', msg);
 		});
 		this.bot.on('messageDeleted', del => {
 			this.emit('delete_message', {
