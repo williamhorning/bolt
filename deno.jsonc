@@ -1,5 +1,0 @@
-{
-  "imports": {
-    "lightning": "./packages/lightning/mod.ts"
-  }
-}

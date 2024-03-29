@@ -1,8 +1,0 @@
-{
-  "imports": {
-    "lightning": "jsr:@jersey/lightning@^0.6.0",
-    "discordjs": "npm:@discordjs/core@1.1.1",
-    "discordrest": "npm:@discordjs/rest@2.2.0",
-    "discordsocket": "npm:@discordjs/ws@1.0.2"
-  }
-}

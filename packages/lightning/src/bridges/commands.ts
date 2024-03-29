@@ -1,6 +1,7 @@
-import { join, leave, reset, toggle, status } from './_command_functions.ts';
-import { command, create_message } from '../utils/mod.ts';
-import { lightning } from '../lightning.ts';
+import type { lightning } from '../../lightning.ts';
+import type { command } from '../types.ts';
+import { create_message } from '../utils.ts';
+import { join, leave, reset, status, toggle } from './command_functions.ts';
 
 export function bridge_commands(l: lightning): command {
 	return {
@@ -26,13 +27,13 @@ export function bridge_commands(l: lightning): command {
 				{
 					name: 'reset',
 					description: 'reset a bridge',
-					execute: async opts => (await reset(opts, l)).text,
+					execute: async opts => await reset(opts, l),
 					options: { argument_name: 'name' }
 				},
 				{
 					name: 'toggle',
 					description: 'toggle a setting on a bridge',
-					execute: async opts => (await toggle(opts, l)).text,
+					execute: async opts => await toggle(opts, l),
 					options: {
 						argument_name: 'setting',
 						argument_required: true
@@ -41,7 +42,7 @@ export function bridge_commands(l: lightning): command {
 				{
 					name: 'status',
 					description: 'see what bridges you are in',
-					execute: async opts => (await status(opts, l)).text
+					execute: async opts => await status(opts, l)
 				}
 			]
 		}

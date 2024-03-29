@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "lightning": "jsr:@jersey/lightning@^0.6.0",
-    "guilded-js": "npm:guilded.js@0.23.7"
-  }
-}

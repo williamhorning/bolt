@@ -1,21 +1,17 @@
 import { EventEmitter } from 'event';
-import { MongoClient } from 'mongo';
+import type { MongoClient } from 'mongo';
 import { RedisClient } from 'r2d2';
-import { bridges } from './bridges/mod.ts';
-import {
-	commands,
-	config,
-	create_plugin,
-	log_error,
-	plugin,
-	plugin_events
-} from './utils/mod.ts';
+import { bridges } from './src/bridges/mod.ts';
+import { commands } from './src/commands.ts';
+import type { plugin } from './src/plugins.ts';
+import type { config, create_plugin, plugin_events } from './src/types.ts';
+import { log_error } from './src/utils.ts';
 
 /** an instance of lightning */
 export class lightning extends EventEmitter<plugin_events> {
 	bridge: bridges;
 	/** a command handler */
-	cmds: commands = new commands();
+	cmds: commands;
 	/** the config used */
 	config: config;
 	/** a mongo client */
@@ -31,8 +27,8 @@ export class lightning extends EventEmitter<plugin_events> {
 		this.config = config;
 		this.mongo = mongo;
 		this.redis = new RedisClient(redis_conn);
+		this.cmds = new commands(this);
 		this.bridge = new bridges(this);
-		this.cmds.listen(this);
 		this.load(this.config.plugins);
 	}
 
@@ -40,7 +36,7 @@ export class lightning extends EventEmitter<plugin_events> {
 	async load(plugins: create_plugin<plugin<unknown>>[]) {
 		for (const { type, config } of plugins) {
 			const plugin = new type(this, config);
-			if (!plugin.support.includes('0.5.5') || !plugin.support.includes('0.6.1') {
+			if (!plugin.support.some(v => v === '0.5.5' || v === '0.6.1')) {
 				throw (
 					await log_error(
 						new Error(

@@ -7,24 +7,22 @@ import {
 	migrations_fourbeta,
 	utils_cfg,
 	utils_err,
+	utils_err_hook,
 	utils_err_id,
 	utils_err_return,
 	utils_extra,
-	utils_err_hook,
 	utils_msg
 } from './_testdata.ts';
+import { commands } from './src/commands.ts';
+import { fourbetafive, fourfourbeta } from './src/migrations.ts';
+import { type message, versions } from './src/types.ts';
 import {
-	commands,
-	message,
 	apply_migrations,
-	get_migrations,
+	create_message,
 	define_config,
-	log_error,
-	create_message
-} from './utils/mod.ts';
-import fourfourbeta from './utils/_fourfourbeta.ts';
-import fourbetafive from './utils/_fourbetafive.ts';
-import { versions } from './utils/migrations.ts';
+	get_migrations,
+	log_error
+} from './src/utils.ts';
 
 // override globals
 
@@ -128,6 +126,7 @@ Deno.test('utils', async t => {
 			});
 
 			await log_error(utils_err, utils_extra, utils_err_id);
+
 			await server.shutdown();
 
 			assertEquals(await promise, utils_err_hook);

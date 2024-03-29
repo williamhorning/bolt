@@ -1,14 +1,13 @@
-import { lightning } from './lightning.ts';
-import { parseArgs } from 'std_args';
 import { MongoClient } from 'mongo';
+import { parseArgs } from 'std_args';
+import { lightning } from './lightning.ts';
+import { type config, versions } from './src/types.ts';
 import {
 	apply_migrations,
-	get_migrations,
-	versions,
-	config,
 	define_config,
+	get_migrations,
 	log_error
-} from './utils/mod.ts';
+} from './src/utils.ts';
 
 function log(text: string, color?: string, type?: 'error' | 'log') {
 	console[type || 'log'](`%c${text}`, `color: ${color || 'white'}`);

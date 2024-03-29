@@ -1,8 +1,0 @@
-{
-  "imports": {
-    "lightning": "jsr:@jersey/lightning@^0.6.0",
-    "matrix": "npm:matrix-appservice-bridge@10.1.0",
-    "buffer": "node:buffer",
-    "exists": "jsr:@std/fs@0.221.0/exists"
-  }
-}

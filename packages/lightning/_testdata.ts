@@ -1,8 +1,7 @@
 export const cmd_help_output = {
 	author: {
-		username: 'Bolt',
-		profile:
-			'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
+		username: 'lightning',
+		profile: 'https://williamhorning.dev/assets/lightning.png',
 		rawname: 'lightning',
 		id: 'lightning'
 	},
@@ -87,9 +86,8 @@ export const migrations_five = [
 
 export const utils_msg = {
 	author: {
-		username: 'Bolt',
-		profile:
-			'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
+		username: 'lightning',
+		profile: 'https://williamhorning.dev/assets/lightning.png',
 		rawname: 'lightning',
 		id: 'lightning'
 	},
@@ -120,13 +118,13 @@ export const utils_err_id = () => 'test';
 
 export const utils_err_return = {
 	e: utils_err,
+	cause: utils_err.cause,
 	uuid: 'test',
 	extra: { test: 'test' },
 	message: {
 		author: {
-			username: 'Bolt',
-			profile:
-				'https://cdn.discordapp.com/icons/1011741670510968862/2d4ce9ff3f384c027d8781fa16a38b07.png?size=1024',
+			username: 'lightning',
+			profile: 'https://williamhorning.dev/assets/lightning.png',
 			rawname: 'lightning',
 			id: 'lightning'
 		},
@@ -147,14 +145,7 @@ export const utils_err_hook = {
 	embeds: [
 		{
 			title: utils_err.message,
-			description: `\`\`\`js\n${utils_err.stack}\n${JSON.stringify(
-				{
-					...utils_extra,
-					uuid: 'test'
-				},
-				null,
-				2
-			)}\`\`\``
+			description: utils_err_return.uuid
 		}
 	]
 };
