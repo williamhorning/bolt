@@ -51,8 +51,13 @@ export class discord_plugin extends plugin<discord_config> {
 		bridge: bridge_platform
 	): Promise<bridge_platform> {
 		const senddata = bridge.senddata as { token: string; id: string };
-		const webhook = await this.bot.api.webhooks.get(senddata.id, senddata);
-		const msg = await todiscord(message, webhook.channel_id, webhook.guild_id!);
+		let replied_message;
+		if (message.replytoid)
+			replied_message = await this.bot.api.channels.getMessage(
+				bridge.channel,
+				message.replytoid
+			);
+		const msg = await todiscord(message, replied_message);
 		try {
 			const wh = await this.bot.api.webhooks.execute(
 				senddata.id,
@@ -77,8 +82,13 @@ export class discord_plugin extends plugin<discord_config> {
 		bridge: bridge_platform & { id: string }
 	): Promise<bridge_platform> {
 		const senddata = bridge.senddata as { token: string; id: string };
-		const webhook = await this.bot.api.webhooks.get(senddata.id, senddata);
-		const msg = await todiscord(message, webhook.channel_id, webhook.guild_id!);
+		let replied_message;
+		if (message.replytoid)
+			replied_message = await this.bot.api.channels.getMessage(
+				bridge.channel,
+				message.replytoid
+			);
+		const msg = await todiscord(message, replied_message);
 		try {
 			const wh = await this.bot.api.webhooks.editMessage(
 				senddata.id,

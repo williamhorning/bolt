@@ -101,24 +101,30 @@ export async function tocore(
 
 export async function todiscord(
 	message: message<unknown>,
-	channel?: string,
-	server?: string
+	replied_message?: Omit<update_data, 'mentions'>
 ): Promise<wh_query & wh_token & { files?: RawFile[]; wait: true }> {
-	let components;
-	if (message.replytoid && channel && server) {
-		components = [
+	if (message.replytoid && replied_message) {
+		if (!message.embeds) message.embeds = [];
+		message.embeds.push(
 			{
-				components: [
-					{
-						label: 'view message being replied to',
-						url: `https://discord.com/channels/${server}/${channel}/${message.replytoid}`,
-						style: 5,
-						type: 2
-					}
-				],
-				type: 1
-			}
-		];
+				author: {
+					name: `replying to ${
+						replied_message.member?.nick ||
+						replied_message.author?.global_name ||
+						replied_message.author?.username ||
+						'a user'
+					}`,
+					icon_url: `https://cdn.discordapp.com/avatars/${replied_message.author?.id}/${replied_message.author?.avatar}.png`
+				},
+				description: replied_message.content
+			},
+			...(replied_message.embeds || []).map(i => {
+				return {
+					...i,
+					timestamp: i.timestamp ? Number(i.timestamp) : undefined
+				};
+			})
+		);
 	}
 	return {
 		avatar_url: message.author.profile,
@@ -142,7 +148,6 @@ export async function todiscord(
 			  })
 			: undefined,
 		username: message.author.username,
-		components: components,
 		wait: true
 	};
 }
