@@ -1,0 +1,21 @@
+name: Tests
+
+on:
+  push:
+    branches-ignore: [0.4.x]
+  pull_request:
+
+jobs:
+  lightning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: setup deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v1.42.0
+      - name: run tests
+        run: |
+          cd packages/lightning
+          deno test -A
