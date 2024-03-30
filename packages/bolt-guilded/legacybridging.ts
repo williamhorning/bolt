@@ -10,7 +10,7 @@ export async function bridge_legacy(
 	try {
 		const result = await guilded.bot.messages.send(
 			senddata,
-			toguildedid({ ...dat })
+			await toguildedid({ ...dat }, senddata, guilded)
 		);
 		return {
 			channel: result.channelId,
@@ -24,7 +24,7 @@ export async function bridge_legacy(
 		} catch {
 			await guilded.bot.messages.send(
 				senddata,
-				toguildedid(
+				await toguildedid(
 					create_message(
 						`In the next major version of bolt-guilded, embed-based bridges like this one won't be supported anymore.
 						 See https://github.com/williamhorning/bolt/issues/36 for more information.`
@@ -37,14 +37,17 @@ export async function bridge_legacy(
 
 async function migrate_bridge(channel: string, guilded: guilded_plugin) {
 	if (
-		!guilded.l.redis.sendCommand(['GET', `guilded-embed-migration-${channel}`])
+		!guilded.lightning.redis.sendCommand([
+			'GET',
+			`guilded-embed-migration-${channel}`
+		])
 	) {
-		await guilded.l.redis.writeCommand([
+		await guilded.lightning.redis.writeCommand([
 			'SET',
 			`guilded-embed-migration-${channel}`,
 			'true'
 		]);
-		const current = await guilded.l.bridge.get_bridge({
+		const current = await guilded.lightning.bridge.get_bridge({
 			channel: channel
 		});
 		if (current) {
@@ -55,7 +58,7 @@ async function migrate_bridge(channel: string, guilded: guilded_plugin) {
 				plugin: 'bolt-guilded',
 				senddata: await guilded.create_bridge(channel)
 			};
-			await guilded.l.bridge.update_bridge(current);
+			await guilded.lightning.bridge.update_bridge(current);
 		}
 	}
 }

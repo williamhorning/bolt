@@ -64,22 +64,28 @@ export async function tocore(
 			webhookid: message.createdByWebhookId || undefined
 		},
 		reply: async (msg: message<unknown>) => {
-			await message.reply(toguilded(msg));
+			await message.reply(await toguilded(msg));
 		},
 		content: update_content,
 		replytoid: message.isReply ? message.replyMessageIds[0] : undefined
 	};
 }
 
-export function toguilded(msg: message<unknown>): guilded_msg {
+export async function toguilded(
+	msg: message<unknown>,
+	channel?: string,
+	plugin?: guilded_plugin
+): Promise<guilded_msg> {
 	const message: guilded_msg = {
 		content: msg.content,
 		avatar_url: msg.author.profile,
 		username: get_valid_username(msg),
-		embeds: fix_embed<string>(msg.embeds, String)
+		embeds: [
+			...fix_embed<string>(msg.embeds, String),
+			...(await get_reply_embeds(msg, channel, plugin))
+		]
 	};
 
-	// TODO: fix replies
 	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
 
 	if (msg.attachments?.length) {
@@ -100,30 +106,35 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 	return message;
 }
 
-export function toguildedid(msg: message<unknown>) {
+export async function toguildedid(
+	msg: message<unknown>,
+	channel?: string,
+	plugin?: guilded_plugin
+) {
 	const senddat: guilded_msg & {
 		embeds: APIEmbed[];
 	} = {
-		embeds: fix_embed<Date>(
-			[
-				{
-					author: {
-						name: msg.author.username,
-						icon_url: msg.author.profile
+		embeds: [
+			...fix_embed<Date>(
+				[
+					{
+						author: {
+							name: msg.author.username,
+							icon_url: msg.author.profile
+						},
+						description: msg.content || '*empty message*',
+						footer: {
+							text: 'please migrate to webhook bridges'
+						}
 					},
-					description: msg.content || '*empty message*',
-					footer: {
-						text: 'please migrate to webhook bridges'
-					}
-				},
-				...(msg.embeds || [])
-			],
-			d => {
-				return new Date(d);
-			}
-		),
-		// TODO: fix replies
-		replyMessageIds: msg.replytoid ? [msg.replytoid] : undefined
+					...(msg.embeds || [])
+				],
+				d => {
+					return new Date(d);
+				}
+			),
+			...(await get_reply_embeds(msg, channel, plugin))
+		]
 	};
 	if (msg.attachments?.length) {
 		senddat.embeds[0].description += `\n**Attachments:**\n${msg.attachments
@@ -151,6 +162,39 @@ function get_valid_username(msg: message<unknown>) {
 function is_valid_username(e: string) {
 	if (!e || e.length === 0 || e.length > 32) return false;
 	return /^[a-zA-Z0-9_ ()]*$/gms.test(e);
+}
+
+async function get_reply_embeds(
+	msg: message<unknown>,
+	channel?: string,
+	plugin?: guilded_plugin
+) {
+	if (!msg.replytoid || !channel || !plugin) return [];
+	try {
+		const msg_replied_to = await plugin.bot.messages.fetch(
+			channel,
+			msg.replytoid
+		);
+		let author;
+		if (!msg_replied_to.createdByWebhookId) {
+			author = await plugin.bot.members.fetch(
+				msg_replied_to.serverId!,
+				msg_replied_to.authorId
+			);
+		}
+		return [
+			{
+				author: {
+					name: `reply to ${author?.nickname || author?.username || 'a user'}`,
+					icon_url: author?.user?.avatar || undefined
+				},
+				description: msg_replied_to.content
+			},
+			...(msg_replied_to.embeds || [])
+		] as EmbedPayload[];
+	} catch {
+		return [];
+	}
 }
 
 function fix_embed<t>(embeds: embed[] = [], timestamp_fix: (s: number) => t) {

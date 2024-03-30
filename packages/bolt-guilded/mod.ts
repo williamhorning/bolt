@@ -16,6 +16,7 @@ export class guilded_plugin extends plugin<{ token: string }> {
 	name = 'bolt-guilded';
 	version = '0.6.1';
 	support = ['0.6.1'];
+	base = 'https://dcb3a3q5nenlj.cloudfront.net/api/v1';
 
 	constructor(l: lightning, config: { token: string }) {
 		super(l, config);
@@ -47,14 +48,11 @@ export class guilded_plugin extends plugin<{ token: string }> {
 
 	async create_bridge(channel: string) {
 		const ch = await this.bot.channels.fetch(channel);
-		const srvwhs = await fetch(
-			`https://guilded.gg/api/v1/servers/${ch.serverId}/webhooks`,
-			{
-				headers: {
-					Authorization: `Bearer ${this.config.token}`
-				}
+		const srvwhs = await fetch(`${this.base}/servers/${ch.serverId}/webhooks`, {
+			headers: {
+				Authorization: `Bearer ${this.config.token}`
 			}
-		);
+		});
 		if (!srvwhs.ok) {
 			throw new Error('Server webhooks not found!', {
 				cause: await srvwhs.text()
@@ -70,20 +68,14 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		if (found_wh && found_wh.token) {
 			return { id: found_wh.id, token: found_wh.token };
 		}
-		const new_wh = await fetch(
-			`https://guilded.gg/api/v1/servers/${ch.serverId}/webhooks`,
-			{
-				method: 'POST',
-				headers: {
-					Authorization: `Bearer ${this.config.token}`,
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					name: 'Lightning Bridges',
-					channelId: channel
-				})
-			}
-		);
+		const new_wh = await fetch(`${this.base}/servers/${ch.serverId}/webhooks`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${this.config.token}`,
+				'Content-Type': 'application/json'
+			},
+			body: `{"name":"Lightning Bridges","channelId":"${channel}"}`
+		});
 		if (!new_wh.ok) {
 			throw new Error('Webhook creation failed!', {
 				cause: await new_wh.text()
@@ -105,7 +97,7 @@ export class guilded_plugin extends plugin<{ token: string }> {
 			try {
 				const resp = await new WebhookClient(
 					platform.senddata as { token: string; id: string }
-				).send(toguilded(message));
+				).send(await toguilded(message, platform.channel, this));
 				return {
 					channel: resp.channelId,
 					id: resp.id,
