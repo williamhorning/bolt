@@ -46,7 +46,13 @@ export async function messageToCore(
 	intent: Intent,
 	homeserverUrl: string
 ): Promise<message<WeakEvent>> {
+	console.log(event.content.formatted_body);
 	const sender = await intent.getProfileInfo(event.sender);
+	const is_reply = event.content['m.relates_to']
+		? event.content['m.relates_to']['m.in_reply_to'] != undefined
+			? true
+			: false
+		: false;
 	return {
 		author: {
 			username: sender.displayname || event.sender,
@@ -65,8 +71,13 @@ export async function messageToCore(
 				? event.content['m.relates_to'].event_id
 				: event.event_id,
 		timestamp: Temporal.Instant.fromEpochMilliseconds(event.origin_server_ts),
-		content: (event.content['m.new_content']?.body ||
-			event.content.body) as string,
+		content: is_reply
+			? (event.content.formatted_body as string).replace(
+					/<mx-reply>(.*?)<\/mx-reply>/i,
+					''
+			  )
+			: ((event.content['m.new_content']?.body ||
+					event.content.body) as string),
 		reply: async (msg: message<unknown>) => {
 			await intent.sendMessage(event.room_id, coreToMessage(msg));
 		},
