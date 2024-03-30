@@ -12,7 +12,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: setup deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@v1
         with:
           deno-version: v1.42.0
       - name: run tests
