@@ -34,9 +34,9 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 			controller: {
 				onEvent: onEvent.bind(this)
 			},
-			roomStore: './db/roomStore.db',
-			userStore: './db/userStore.db',
-			userActivityStore: './db/userActivityStore.db'
+			roomStore: './config/roomStore.db',
+			userStore: './config/userStore.db',
+			userActivityStore: './config/userActivityStore.db'
 		});
 		if (!existsSync(this.config.reg_path)) {
 			const reg = new AppServiceRegistration(this.config.appserviceUrl);
@@ -65,7 +65,6 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 		const room = platform.senddata as string;
 		const name = `@${platform.plugin}_${msg.author.id}:${this.config.domain}`;
 		const intent = this.bot.getIntent(name);
-		// check for profile
 		await intent.ensureProfile(msg.author.username);
 		const store = this.bot.getUserStore();
 		let storeUser = await store?.getMatrixUser(name);
@@ -74,10 +73,10 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 		}
 		if (storeUser?.get('avatar') != msg.author.profile) {
 			storeUser?.set('avatar', msg.author.profile);
-			const b = await (await fetch(msg.author.profile || '')).blob();
+			const r = await fetch(msg.author.profile || '');
 			const newMxc = await intent.uploadContent(
-				Buffer.from(await b.arrayBuffer()),
-				{ type: b.type }
+				Buffer.from(await r.arrayBuffer()),
+				{ type: r.headers.get('content-type') || 'image/png' }
 			);
 			await intent.ensureProfile(msg.author.username, newMxc);
 			await store?.setMatrixUser(storeUser);

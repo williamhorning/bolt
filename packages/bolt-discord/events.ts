@@ -32,7 +32,7 @@ export function register_events(plugin: discord_plugin) {
 				await interaction.api.interactions.reply(
 					interaction.data.id,
 					interaction.data.token,
-					await todiscord(msg)
+					await todiscord(msg, interaction.data.channel?.id || '')
 				);
 			},
 			channel: interaction.data.channel.id,

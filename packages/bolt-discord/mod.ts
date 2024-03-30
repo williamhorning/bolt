@@ -50,8 +50,9 @@ export class discord_plugin extends plugin<discord_config> {
 		message: message<unknown>,
 		bridge: bridge_platform
 	): Promise<bridge_platform> {
-		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
+		const webhook = await this.bot.api.webhooks.get(senddata.id, senddata);
+		const msg = await todiscord(message, webhook.channel_id, webhook.guild_id!);
 		try {
 			const wh = await this.bot.api.webhooks.execute(
 				senddata.id,
@@ -75,8 +76,9 @@ export class discord_plugin extends plugin<discord_config> {
 		message: message<unknown>,
 		bridge: bridge_platform & { id: string }
 	): Promise<bridge_platform> {
-		const msg = await todiscord(message);
 		const senddata = bridge.senddata as { token: string; id: string };
+		const webhook = await this.bot.api.webhooks.get(senddata.id, senddata);
+		const msg = await todiscord(message, webhook.channel_id, webhook.guild_id!);
 		try {
 			const wh = await this.bot.api.webhooks.editMessage(
 				senddata.id,

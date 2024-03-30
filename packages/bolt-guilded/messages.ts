@@ -39,7 +39,7 @@ export async function tocore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-						}
+					  }
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,
@@ -79,6 +79,7 @@ export function toguilded(msg: message<unknown>): guilded_msg {
 		embeds: fix_embed<string>(msg.embeds, String)
 	};
 
+	// TODO: fix replies
 	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
 
 	if (msg.attachments?.length) {
@@ -121,6 +122,7 @@ export function toguildedid(msg: message<unknown>) {
 				return new Date(d);
 			}
 		),
+		// TODO: fix replies
 		replyMessageIds: msg.replytoid ? [msg.replytoid] : undefined
 	};
 	if (msg.attachments?.length) {

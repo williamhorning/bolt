@@ -52,10 +52,12 @@ export async function messageToCore(
 			username: sender.displayname || event.sender,
 			rawname: event.sender,
 			id: event.sender,
-			profile: `${sender.avatar_url?.replace(
-				'mxc://',
-				`${homeserverUrl}/_matrix/media/v3/thumbnail/`
-			)}?width=96&height=96&method=scale`
+			profile: sender.avatar_url
+				? `${sender.avatar_url?.replace(
+						'mxc://',
+						`${homeserverUrl}/_matrix/media/v3/thumbnail/`
+				  )}?width=96&height=96&method=scale`
+				: undefined
 		},
 		channel: event.room_id,
 		id:
@@ -68,6 +70,9 @@ export async function messageToCore(
 		reply: async (msg: message<unknown>) => {
 			await intent.sendMessage(event.room_id, coreToMessage(msg));
 		},
+		replytoid: event.content['m.relates_to']
+			? event.content['m.relates_to']['m.in_reply_to']?.event_id
+			: undefined,
 		platform: { name: 'bolt-matrix', message: event }
 	};
 }

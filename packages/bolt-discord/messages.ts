@@ -100,8 +100,26 @@ export async function tocore(
 }
 
 export async function todiscord(
-	message: message<unknown>
+	message: message<unknown>,
+	channel?: string,
+	server?: string
 ): Promise<wh_query & wh_token & { files?: RawFile[]; wait: true }> {
+	let components;
+	if (message.replytoid && channel && server) {
+		components = [
+			{
+				components: [
+					{
+						label: 'view message being replied to',
+						url: `https://discord.com/channels/${server}/${channel}/${message.replytoid}`,
+						style: 5,
+						type: 2
+					}
+				],
+				type: 1
+			}
+		];
+	}
 	return {
 		avatar_url: message.author.profile,
 		content: message.content,
@@ -121,9 +139,10 @@ export async function todiscord(
 							data: new Uint8Array(await (await fetch(a.file)).arrayBuffer())
 						}
 					];
-				})
+			  })
 			: undefined,
 		username: message.author.username,
+		components: components,
 		wait: true
 	};
 }
