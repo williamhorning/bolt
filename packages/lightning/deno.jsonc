@@ -1,6 +1,6 @@
 {
 	"name": "@jersey/lightning",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"imports": {
 		"assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
 		"event": "jsr:@denosaurs/event@^2.0.2",
