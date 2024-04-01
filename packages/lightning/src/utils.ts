@@ -1,4 +1,4 @@
-import type { Document } from 'mongo';
+import type { Document } from '../deps.ts';
 import { fourbetafive, fourfourbeta } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
@@ -69,7 +69,7 @@ export async function log_error(
 	const uuid = _id ? _id() : crypto.randomUUID();
 	const error_hook = Deno.env.get('LIGHTNING_ERROR_HOOK');
 
-	if (error_hook)
+	if (error_hook) {
 		await (
 			await fetch(error_hook, {
 				method: 'POST',
@@ -79,6 +79,7 @@ export async function log_error(
 				})
 			})
 		).text();
+	}
 
 	console.error(`%cLightning Error ${uuid}`, 'color: red');
 	console.error(e, extra);

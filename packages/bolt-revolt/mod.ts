@@ -27,7 +27,7 @@ export class revolt_plugin extends plugin<{ token: string }> {
 				timestamp: message.editedAt
 					? Temporal.Instant.fromEpochMilliseconds(
 							message.editedAt?.getUTCMilliseconds()
-					  )
+						)
 					: Temporal.Now.instant()
 			});
 		});

@@ -1,4 +1,4 @@
-import { parseArgs } from 'std_args';
+import { parseArgs } from '../deps.ts';
 import type { lightning } from '../lightning.ts';
 import { default_commands } from './default_commands.ts';
 import type { command, command_arguments } from './types.ts';

@@ -39,7 +39,7 @@ export async function tocore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-					  }
+						}
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,

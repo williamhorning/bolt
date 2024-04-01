@@ -1,4 +1,4 @@
-import type { Collection } from 'mongo';
+import type { Collection } from '../../deps.ts';
 import type { lightning } from '../../lightning.ts';
 import type {
 	bridge_document,

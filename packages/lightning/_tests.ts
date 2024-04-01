@@ -1,4 +1,4 @@
-import { assertEquals } from 'assert_eq';
+import { assertEquals } from 'jsr:@std/assert@^0.219.1/assert_equals';
 import {
 	cmd_help_output,
 	migrations_five,

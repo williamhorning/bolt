@@ -1,4 +1,4 @@
-import type { Document } from 'mongo';
+import type { Document } from '../deps.ts';
 import type { lightning } from '../lightning.ts';
 import type { commands } from './commands.ts';
 import type { plugin } from './plugins.ts';

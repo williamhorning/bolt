@@ -1,13 +1,6 @@
 {
 	"name": "@jersey/lightning",
-	"version": "0.6.1",
-	"imports": {
-		"assert_eq": "jsr:@std/assert@^0.219.1/assert_equals",
-		"event": "jsr:@denosaurs/event@^2.0.2",
-		"mongo": "jsr:@db/mongo@^0.33.0",
-		"r2d2": "jsr:@iuioiua/r2d2@2.1.1",
-		"std_args": "jsr:@std/cli@^0.219.1/parse_args"
-	},
+	"version": "0.6.2",
 	"exports": {
 		".": "./mod.ts",
 		"./bridges": "./src/bridges/mod.ts",

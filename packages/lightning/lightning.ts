@@ -1,6 +1,5 @@
-import { EventEmitter } from 'event';
-import type { MongoClient } from 'mongo';
-import { RedisClient } from 'r2d2';
+import type { MongoClient } from './deps.ts';
+import { EventEmitter, RedisClient } from './deps.ts';
 import { bridges } from './src/bridges/mod.ts';
 import { commands } from './src/commands.ts';
 import type { plugin } from './src/plugins.ts';

@@ -1,4 +1,4 @@
-import type { Document } from 'mongo';
+import type { Document } from '../deps.ts';
 import type { versions } from './types.ts';
 
 type doc = {

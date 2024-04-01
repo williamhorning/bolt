@@ -1,4 +1,4 @@
-import { EventEmitter } from 'event';
+import { EventEmitter } from '../deps.ts';
 import type { lightning } from '../lightning.ts';
 import type {
 	bridge_platform,
