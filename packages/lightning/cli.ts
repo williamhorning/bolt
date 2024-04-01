@@ -1,5 +1,4 @@
-import { MongoClient } from 'mongo';
-import { parseArgs } from 'std_args';
+import { MongoClient, parseArgs } from './deps.ts';
 import { lightning } from './lightning.ts';
 import { type config, versions } from './src/types.ts';
 import {
