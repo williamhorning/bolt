@@ -62,8 +62,7 @@ export const utils_msg = {
 
 export const utils_cfg = {
 	plugins: [],
-	mongo_uri: 'mongodb://localhost:27017',
-	mongo_database: 'lightning',
+	commands: [],
 	redis_host: 'localhost',
 	redis_port: 6379
 };
