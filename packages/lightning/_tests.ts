@@ -1,9 +1,6 @@
 import { assertEquals } from 'jsr:@std/assert@^0.219.1/assert_equals';
 import {
-	cmd_help_output,
 	migrations_five,
-	migrations_four_one,
-	migrations_four_two,
 	migrations_fourbeta,
 	utils_cfg,
 	utils_err,
@@ -13,9 +10,8 @@ import {
 	utils_extra,
 	utils_msg
 } from './_testdata.ts';
-import { commands } from './src/commands.ts';
-import { fourbetafive, fourfourbeta } from './src/migrations.ts';
-import { type message, versions } from './src/types.ts';
+import { fourbetafive } from './src/migrations.ts';
+import { versions } from './src/types.ts';
 import {
 	apply_migrations,
 	create_message,
@@ -34,57 +30,15 @@ globalThis.Temporal.Now.instant = () => {
 
 console.log = console.error = () => {};
 
-// cmds
-
-Deno.test('cmds', async t => {
-	const cmds = new commands();
-
-	await t.step('run help command', async () => {
-		let res: (value: message<unknown>) => void;
-
-		const promise = new Promise<message<unknown>>(resolve => {
-			res = resolve;
-		});
-
-		await cmds.run({
-			channel: '',
-			cmd: 'help',
-			opts: {},
-			platform: 'lightning',
-			// deno-lint-ignore require-await
-			replyfn: async msg => res(msg),
-			timestamp: temporal_instant
-		});
-
-		const result = await promise;
-
-		result.reply = cmd_help_output.reply;
-
-		assertEquals(result, cmd_help_output);
-	});
-});
-
 // migrations
 
 Deno.test('migrations', async t => {
 	await t.step('get a migration', () => {
-		const migrations = get_migrations(versions.Four, versions.FourBeta);
-		assertEquals(migrations, [fourfourbeta]);
+		const migrations = get_migrations(versions.FourBeta, versions.Five);
+		assertEquals(migrations, [fourbetafive]);
 	});
 
 	await t.step('apply migrations', async t => {
-		await t.step('0.4 => 0.4-beta (one platform)', () => {
-			const result = apply_migrations([fourfourbeta], migrations_four_one);
-
-			assertEquals(result, []);
-		});
-
-		await t.step('0.4 => 0.4-beta (two platforms)', () => {
-			const result = apply_migrations([fourfourbeta], migrations_four_two);
-
-			assertEquals(result, migrations_fourbeta);
-		});
-
 		await t.step('0.4-beta => 0.5', () => {
 			const result = apply_migrations([fourbetafive], migrations_fourbeta);
 

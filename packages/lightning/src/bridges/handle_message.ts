@@ -63,23 +63,21 @@ export async function handle_message(
 				continue;
 			}
 		}
-		sessionStorage.setItem(d.id!, 'true');
+		await l.redis.sendCommand(["SET", `lightning-isbridged-${d.id}`, "1"])
 		data.push(d as bridge_platform & { id: string });
 	}
 
 	for (const i of data) {
 		await l.redis.sendCommand([
-			'JSON.SET',
-			`lightning-bridge-${i.id}`,
-			'$',
+			'SET',
+			`lightning-bridged-${i.id}`,
 			JSON.stringify(data)
 		]);
 	}
 
 	await l.redis.sendCommand([
-		'JSON.SET',
-		`lightning-bridge-${msg.id}`,
-		'$',
+		'SET',
+		`lightning-bridged-${msg.id}`,
 		JSON.stringify(data)
 	]);
 }

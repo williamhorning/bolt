@@ -1,10 +1,8 @@
 {
 	"name": "@jersey/lightning",
-	"version": "0.6.2",
+	"version": "0.7.0",
 	"exports": {
 		".": "./mod.ts",
-		"./bridges": "./src/bridges/mod.ts",
-		"./commands": "./src/commands.ts",
 		"./plugins": "./src/plugins.ts",
 		"./types": "./src/types.ts",
 		"./utils": "./src/utils.ts"

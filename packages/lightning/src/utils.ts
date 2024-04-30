@@ -1,12 +1,11 @@
-import type { Document } from '../deps.ts';
-import { fourbetafive, fourfourbeta } from './migrations.ts';
+import { fourbetafive } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
-/** apply many migrations given mongodb documents */
+/** apply many migrations given data */
 export function apply_migrations(
 	migrations: migration[],
-	data: Document[]
-): Document[] {
+	data: [string, unknown][]
+): [string, unknown][] {
 	return migrations.reduce((acc, migration) => migration.translate(acc), data);
 }
 
@@ -27,10 +26,7 @@ export function create_message(text: string): message<undefined> {
 		id: '',
 		reply: async () => {},
 		timestamp: Temporal.Now.instant(),
-		platform: {
-			name: 'lightning',
-			message: undefined
-		}
+		platform: { name: 'lightning', message: undefined }
 	};
 	return data;
 }
@@ -39,20 +35,20 @@ export function create_message(text: string): message<undefined> {
 export function define_config(config?: Partial<config>): config {
 	return {
 		plugins: [],
-		mongo_uri: 'mongodb://localhost:27017',
-		mongo_database: 'lightning',
 		redis_host: 'localhost',
 		redis_port: 6379,
+		commands: [],
 		...(config || {})
 	};
 }
 
 /** get migrations that can then be applied using apply_migrations */
 export function get_migrations(from: versions, to: versions): migration[] {
-	const migrations: migration[] = [fourfourbeta, fourbetafive];
-	const indexoffrom = migrations.findIndex(i => i.from === from);
-	const indexofto = migrations.findLastIndex(i => i.to === to);
-	return migrations.slice(indexoffrom, indexofto + 1);
+	const migrations: migration[] = [fourbetafive];
+	return migrations.slice(
+		migrations.findIndex(i => i.from === from),
+		migrations.findLastIndex(i => i.to === to) + 1
+	);
 }
 
 /**
@@ -84,13 +80,9 @@ export async function log_error(
 	console.error(`%cLightning Error ${uuid}`, 'color: red');
 	console.error(e, extra);
 
-	return {
-		e,
-		cause: e.cause,
-		uuid,
-		extra,
-		message: create_message(
-			`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
-		)
-	};
+	const message = create_message(
+		`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
+	);
+
+	return { e, cause: e.cause, uuid, extra, message };
 }

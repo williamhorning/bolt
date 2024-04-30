@@ -1,6 +1,4 @@
-import type { Document } from '../deps.ts';
 import type { lightning } from '../lightning.ts';
-import type { commands } from './commands.ts';
 import type { plugin } from './plugins.ts';
 
 export interface attachment {
@@ -50,6 +48,7 @@ export interface bridge_settings {
 export interface create_plugin<T extends plugin<T['config']>> {
 	type: new (l: lightning, config: T['config']) => T;
 	config: T['config'];
+	support: string;
 }
 
 export interface config {
@@ -60,10 +59,6 @@ export interface config {
 	cmd_prefix?: string;
 	/** the set of commands to use */
 	commands?: [string, command][];
-	/** the URI that points to your instance of mongodb */
-	mongo_uri: string;
-	/** the database to use */
-	mongo_database: string;
 	/** the hostname of your redis instance */
 	redis_host: string;
 	/** the port of your redis instance */
@@ -72,15 +67,14 @@ export interface config {
 	errorURL?: string;
 }
 
-export interface command_arguments {
-	channel: string;
+/** arguments passed to a command */
+export interface command_arguments extends message<unknown> {
+	/** the name of the command */
 	cmd: string;
+	/** options passed by the user */
 	opts: Record<string, string>;
-	platform: string;
-	replyfn: message<unknown>['reply'];
+	/** the subcommand being run, if any */
 	subcmd?: string;
-	timestamp: Temporal.Instant;
-	commands: commands;
 }
 
 export interface command {
@@ -137,11 +131,17 @@ export interface embed {
 	video?: Omit<embed_media, 'url'> & { url?: string };
 }
 
+/** the error returned from log_error */
 export interface err {
+	/** the original error */
 	e: Error;
+	/** the cause of the error */
 	cause: unknown;
+	/** extra information about the error */
 	extra: Record<string, unknown>;
+	/** the uuid associated with the error */
 	uuid: string;
+	/** the message associated with the error */
 	message: message<unknown>;
 }
 
@@ -181,8 +181,12 @@ export interface migration {
 	from_db: string;
 	/** the database to translate to */
 	to_db: string;
+	/** the type of database to use to get data */
+	from_type: 'mongo' | 'redis'
+	/** the type of database to put data in */
+	to_type: 'mongo' | 'redis'
 	/** translate a document from one version to another */
-	translate: (data: Document[]) => Document[];
+	translate: (data: [string,unknown][]) => [string,unknown][];
 }
 
 export interface platform<t> {
@@ -194,7 +198,10 @@ export interface platform<t> {
 	webhookid?: string;
 }
 
+/** the events emitted by a plugin */
 export type plugin_events = {
+	/** add command */
+	add_command: [command];
 	/** when a message is created */
 	create_message: [message<unknown>];
 	/** when a command is run (not a text command) */
@@ -208,12 +215,13 @@ export type plugin_events = {
 	/** when your plugin is ready */
 	ready: [];
 };
+
 /** all of the versions with migrations to/from them */
 export enum versions {
-	/** all versions below 0.5 */
-	Four = '0.4',
 	/** versions after commit 7de1cf2 but below 0.5 */
 	FourBeta = '0.4-beta',
-	/** versions 0.5 and above */
-	Five = '0.5'
+	/** versions 0.5 through 0.6 */
+	Five = '0.5',
+	/** versions 0.7 and above*/
+	Seven = '0.7'
 }

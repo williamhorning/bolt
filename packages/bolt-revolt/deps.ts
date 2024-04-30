@@ -9,4 +9,4 @@ export {
 	plugin,
 	type bridge_platform,
 	type message
-} from '../lightning/mod.ts';
+} from 'jsr:@jersey/lightning@0.6.2';

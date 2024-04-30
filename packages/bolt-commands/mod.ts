@@ -1,9 +1,7 @@
-import type { command } from './types.ts';
-import { create_message } from './utils.ts';
+import type { command } from '../lightning/src/types.ts';
+import { create_message } from '../lightning/src/utils.ts';
 
-// TODO: move outside of core
-
-export const default_commands: [string, command][] = [
+export default [
 	[
 		'help',
 		{
@@ -36,4 +34,4 @@ export const default_commands: [string, command][] = [
 				)
 		}
 	]
-];
+] as [string, command][]

@@ -1,134 +1,116 @@
 import type { lightning } from '../../lightning.ts';
 import type { command_arguments } from '../types.ts';
-import { create_message, log_error } from '../utils.ts';
+import { log_error } from '../utils.ts';
 
 export async function join(
-	{ channel, platform, opts, commands }: command_arguments,
+	opts: command_arguments,
 	l: lightning
-) {
-	const current = await l.bridge.get_bridge({ channel });
-
-	if (current) {
-		return {
-			text: create_message(
-				`You're already in a bridge. To learn more, run \`${commands.prefix} help\``
-			)
-		};
+): Promise<[boolean, string]> {
+	if (await l.bridge.is_in_bridge(opts.channel)) {
+		return [
+			false,
+			"You're already in a bridge. To learn more, run the help command."
+		];
 	}
 
-	const _idraw = opts.name?.split(' ')[0];
+	const _id = opts.opts.name?.split(' ')[0];
 
-	if (!_idraw) {
-		return {
-			text: create_message(
-				`You need to name your bridge. Try \`${commands.prefix}\`bridge join --name <name>`
-			)
-		};
+	if (!_id) {
+		return [
+			false,
+			'You need to name your bridge. To learn more, run the help command.'
+		];
 	}
 
-	const _id = `bridge-${_idraw}`;
-	const errorargs = { channel, platform, _id };
-	const plugin = l.plugins.get(platform)!;
-
-	const bridge = (await l.bridge.get_bridge({ _id })) || {
+	const plugin = l.plugins.get(opts.platform.name);
+	const bridge = (await l.bridge.get_bridge({
+		_id: `lightning-bridge-${_id}`
+	})) || {
 		_id,
 		platforms: []
 	};
 
 	try {
 		bridge.platforms.push({
-			channel,
-			plugin: platform,
-			senddata: await plugin.create_bridge(channel)
+			channel: opts.channel,
+			plugin: opts.platform.name,
+			senddata: await plugin!.create_bridge(opts.channel)
 		});
-		await l.bridge.update_bridge(bridge);
-		return {
-			text: create_message('Joined a bridge!'),
-			ok: true
-		};
+		await l.bridge.set_bridge(bridge);
+		return [true, 'Joined a bridge!'];
 	} catch (e) {
-		return { text: (await log_error(e, errorargs)).message };
+		return [false, (await log_error(e, { opts, bridge })).message.content!];
 	}
 }
 
 export async function leave(
-	{ channel, platform, commands }: command_arguments,
+	opts: command_arguments,
 	l: lightning
-) {
-	const current = await l.bridge.get_bridge({ channel });
+): Promise<[boolean, string]> {
+	const bridge = await l.bridge.get_bridge({
+		channel: opts.channel
+	});
 
-	if (!current) {
-		return {
-			text: create_message(
-				`To run this command you need to be in a bridge. To learn more, run \`${commands.prefix}help\`.`
-			),
-			ok: true
-		};
+	if (!bridge) {
+		return [
+			true,
+			"You're not in a bridge. To learn more, run the help command."
+		];
 	}
 
 	try {
-		await l.bridge.update_bridge({
-			_id: current._id,
-			platforms: current.platforms.filter(
-				i => i.channel !== channel && i.plugin !== platform
+		await l.bridge.set_bridge({
+			_id: bridge._id,
+			platforms: bridge.platforms.filter(
+				i => i.channel !== opts.channel && i.plugin !== opts.platform.name
 			)
 		});
-
-		return {
-			text: create_message('Left a bridge!'),
-			ok: true
-		};
+		return [true, 'Left a bridge!'];
 	} catch (e) {
-		return {
-			text: (await log_error(e, { channel, platform, current })).message
-		};
+		return [false, (await log_error(e, { opts, bridge })).message.content!];
 	}
 }
 
-export async function reset(args: command_arguments, l: lightning) {
-	if (!args.opts.name) {
-		const [_, ...rest] = ((await l.bridge.get_bridge(args))?._id || '').split(
-			'bridge-'
-		);
-		args.opts.name = rest.join('bridge-');
-	}
-	let result = await leave(args, l);
-	if (!result.ok) return result.text;
-	result = await join(args, l);
-	if (!result.ok) return result.text;
-	return create_message('Reset this bridge!');
+export async function reset(opts: command_arguments, l: lightning) {
+	if (!opts.opts.name)
+		opts.opts.name =
+			(await l.bridge.get_bridge({ channel: opts.channel }))?._id ||
+			opts.channel;
+
+	let [ok, text] = await leave(opts, l);
+	if (!ok) return text;
+	[ok, text] = await join(opts, l);
+	if (!ok) return text;
+	return 'Reset this bridge!';
 }
 
-export async function toggle(args: command_arguments, l: lightning) {
-	const current = await l.bridge.get_bridge(args);
+export async function toggle(opts: command_arguments, l: lightning) {
+	const bridge = await l.bridge.get_bridge({ channel: opts.channel });
 
-	if (!current) {
-		return create_message('You need to be in a bridge to toggle settings');
+	if (!bridge) {
+		return "You're not in a bridge right now. To learn more, run the help command";
 	}
 
-	if (!args.opts.setting) {
-		return create_message('You need to specify a setting to toggle');
+	if (!opts.opts.setting) {
+		return 'You need to specify a setting to toggle';
 	}
 
-	if (!['realnames', 'editing_allowed'].includes(args.opts.setting)) {
-		return create_message("That setting doesn't exist");
+	if (!['realnames', 'editing_allowed'].includes(opts.opts.setting)) {
+		return "That setting doesn't exist";
 	}
 
-	const setting = args.opts.setting as 'realnames' | 'editing_allowed';
+	const setting = opts.opts.setting as 'realnames' | 'editing_allowed';
 
-	const bridge = {
-		...current,
-		settings: {
-			...(current.settings || {}),
-			[args.opts.setting]: !(current.settings?.[setting] || false)
-		}
+	bridge.settings = {
+		...(bridge.settings || {}),
+		[setting]: !(bridge.settings?.[setting] || false)
 	};
 
 	try {
-		await l.bridge.update_bridge(bridge);
-		return create_message('Toggled that setting!');
+		await l.bridge.set_bridge(bridge);
+		return 'Toggled that setting!';
 	} catch (e) {
-		return (await log_error(e, { ...args, bridge })).message;
+		return (await log_error(e, { opts, bridge })).message.content!;
 	}
 }
 
@@ -136,7 +118,7 @@ export async function status(args: command_arguments, l: lightning) {
 	const current = await l.bridge.get_bridge(args);
 
 	if (!current) {
-		return create_message("You're not in any bridges right now.");
+		return "You're not in any bridges right now.";
 	}
 
 	const settings_keys = Object.entries(current.settings || {}).filter(
@@ -148,9 +130,7 @@ export async function status(args: command_arguments, l: lightning) {
 			? `as well as the following settings: \n\`${settings_keys.join('`, `')}\``
 			: 'as well as no settings';
 
-	return create_message(
-		`This channel is connected to \`${current._id}\`, a bridge with ${
-			current.platforms.length - 1
-		} other channels connected to it, ${settings_text}`
-	);
+	return `This channel is connected to \`${current._id}\`, a bridge with ${
+		current.platforms.length - 1
+	} other channels connected to it, ${settings_text}`;
 }

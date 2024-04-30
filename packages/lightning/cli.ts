@@ -1,6 +1,6 @@
-import { MongoClient, parseArgs } from './deps.ts';
+import { parseArgs, MongoClient } from './deps.ts';
 import { lightning } from './lightning.ts';
-import { type config, versions } from './src/types.ts';
+import { versions } from './src/types.ts';
 import {
 	apply_migrations,
 	define_config,
@@ -12,99 +12,103 @@ function log(text: string, color?: string, type?: 'error' | 'log') {
 	console[type || 'log'](`%c${text}`, `color: ${color || 'white'}`);
 }
 
-const f = parseArgs(Deno.args, {
-	boolean: ['help', 'version', 'run', 'migrations'],
+const args = parseArgs(Deno.args, {
 	string: ['config']
 });
 
-if (f.version) {
-	log('0.6.0');
-	Deno.exit();
-}
-
-if (!f.run && !f.migrations) {
-	log('lightning v0.6.0 - cross-platform bot connecting communities', 'blue');
-	log('Usage: lightning [options]', 'purple');
-	log('Options:', 'green');
-	log('--help: show this');
-	log('--version: shows version');
-	log('--config <string>: absolute path to config file');
-	log('--run: run an of lightning using the settings in config.ts');
-	log('--migrations: start interactive tool to migrate databases');
-	Deno.exit();
-}
-
-try {
-	if (!Deno) throw new Error('not running on deno, exiting...');
-
-	const cfg = define_config(
-		(await import(f.config || `${Deno.cwd()}/config.ts`))?.default
-	);
-
-	Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
-
-	const mongo = new MongoClient();
-	await mongo.connect(cfg.mongo_uri);
-
-	const redis = await Deno.connect({
-		hostname: cfg.redis_host,
-		port: cfg.redis_port || 6379
-	});
-
-	if (f.run) {
-		new lightning(cfg, mongo, redis);
-	} else if (f.migrations) {
-		await migrations(cfg, mongo);
+switch (args._[0]) {
+	case 'version': {
+		log('0.6.0');
+		break;
 	}
-} catch (e) {
-	await log_error(e);
-	Deno.exit(1);
-}
+	case 'run': {
+		try {
+			const cfg = define_config(
+				(await import(args.config || `${Deno.cwd()}/config.ts`))?.default
+			);
 
-async function migrations(cfg: config, mongo: MongoClient) {
-	log(`Available versions are: ${Object.values(versions).join(', ')}`, 'blue');
+			Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
 
-	const from = prompt('what version is the DB currently set up for?');
-	const to = prompt('what version of lightning do you want to move to?');
+			const redis = await Deno.connect({
+				hostname: cfg.redis_host,
+				port: cfg.redis_port || 6379
+			});
 
-	const is_invalid = (val: string) =>
-		!(Object.values(versions) as string[]).includes(val);
+			new lightning(cfg, redis);
+		} catch (e) {
+			await log_error(e);
+			Deno.exit(1);
+		}
+		break;
+	}
+	case 'migrations': {
+		log(
+			`Available versions are: ${Object.values(versions).join(', ')}`,
+			'blue'
+		);
 
-	if (!from || !to || is_invalid(from) || is_invalid(to)) return Deno.exit(1);
+		const from = prompt('what version is the DB currently set up for?');
+		const to = prompt('what version of lightning do you want to move to?');
+		const uri = prompt('what is your database uri?');
+		const db = prompt('which database are you using right now?');
 
-	const migrationlist = get_migrations(from as versions, to as versions);
+		const is_invalid = (val: string) =>
+			!(Object.values(versions) as string[]).includes(val);
 
-	if (migrationlist.length < 1) Deno.exit();
+		if (!from || !to || !uri || !db || is_invalid(from) || is_invalid(to))
+			Deno.exit(1);
 
-	const database = mongo.database(cfg.mongo_database);
+		const migrationlist = get_migrations(from as versions, to as versions);
 
-	log('Migrating your data..', 'blue');
+		if (migrationlist.length < 1) break;
 
-	const dumped = await database
-		.collection(migrationlist[0].from_db)
-		.find()
-		.toArray();
+		const mongo = new MongoClient();
 
-	const data = apply_migrations(migrationlist, dumped);
+		await mongo.connect(uri);
 
-	const filepath = Deno.makeTempFileSync();
-	Deno.writeTextFileSync(filepath, JSON.stringify(data));
+		const database = mongo.database(db);
 
-	const writeconfirm = confirm(
-		`Do you want to write the data at ${filepath} to the DB?`
-	);
+		log('Migrating your data..', 'blue');
 
-	if (!writeconfirm) Deno.exit();
+		const dumped = (
+			await database.collection(migrationlist[0].from_db).find().toArray()
+		).map<[string, unknown]>(i => [i._id, i]);
 
-	const tocollection = database.collection(migrationlist.slice(-1)[0].to_db);
+		const data = apply_migrations(migrationlist, dumped);
 
-	await Promise.all(
-		data.map(i => {
-			return tocollection.replaceOne({ _id: i._id }, i, { upsert: true });
-		})
-	);
+		const filepath = Deno.makeTempFileSync();
+		Deno.writeTextFileSync(filepath, JSON.stringify(data));
 
-	log('Wrote data to the DB', 'green');
+		const writeconfirm = confirm(
+			`Do you want to write the data at ${filepath} to the DB?`
+		);
 
-	Deno.exit();
+		if (!writeconfirm) break;
+
+		const tocollection = database.collection(migrationlist.slice(-1)[0].to_db);
+
+		await Promise.all(
+			data.map(([_id, value]) => {
+				return tocollection.replaceOne({ _id }, value as Record<string, unknown>, {
+					upsert: true
+				});
+			})
+		);
+
+		log('Wrote data to the DB', 'green');
+
+		break;
+	}
+	default: {
+		log('lightning v0.6.0 - cross-platform bot connecting communities', 'blue');
+		log('Usage: lightning [subcommand] <options>', 'purple');
+		log('Subcommands:', 'green');
+		log('help: show this');
+		log('run: run an of lightning using the settings in config.ts');
+		log('migrations: run migration script');
+		log('version: shows version');
+		log('Options:', 'green');
+		log('--config <string>: absolute path to config file');
+		break;
+	}
 }

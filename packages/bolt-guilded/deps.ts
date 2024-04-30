@@ -15,4 +15,4 @@ export {
 	lightning,
 	type message,
 	plugin
-} from '../lightning/mod.ts';
+} from 'jsr:@jersey/lightning@0.6.2';

@@ -1,88 +1,46 @@
-export const cmd_help_output = {
-	author: {
-		username: 'lightning',
-		profile: 'https://williamhorning.dev/assets/lightning.png',
-		rawname: 'lightning',
-		id: 'lightning'
-	},
-	content: 'check out [the docs](https://williamhorning.dev/bolt/) for help.',
-	channel: '',
-	id: '',
-	reply: async () => {},
-	timestamp: Temporal.Instant.from('2021-01-01T00:00:00Z'),
-	platform: {
-		name: 'lightning',
-		message: undefined
-	}
-};
-
-export const migrations_four_one = [
-	{
-		_id: 'discord-bridge-a',
-		value: { id: '1', token: '2' }
-	},
-	{
-		_id: 'discord-000000000000000000',
-		value: 'bridge-a'
-	}
-];
-
-export const migrations_four_two = [
-	{
-		_id: 'discord-bridge-a',
-		value: { id: '1', token: '2' }
-	},
-	{
-		_id: 'discord-000000000000000000',
-		value: 'bridge-a'
-	},
-	{
-		_id: 'guilded-bridge-a',
-		value: { id: '1', token: '2' }
-	},
-	{
-		_id: 'guilded-6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
-		value: 'bridge-a'
-	}
-];
-
 export const migrations_fourbeta = [
-	{
-		_id: 'bridge-a',
-		value: {
-			bridges: [
+	[
+		'bridge-a',
+		{
+			_id: 'bridge-a',
+			value: {
+				bridges: [
+					{
+						platform: 'discord',
+						channel: '000000000000000000',
+						senddata: { id: '1', token: '2' }
+					},
+					{
+						platform: 'guilded',
+						channel: '6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
+						senddata: { id: '1', token: '2' }
+					}
+				]
+			}
+		}
+	]
+] as [string, unknown][];
+
+export const migrations_five = [
+	[
+		'bridge-a',
+		{
+			_id: 'bridge-a',
+			platforms: [
 				{
-					platform: 'discord',
+					plugin: 'bolt-discord',
 					channel: '000000000000000000',
 					senddata: { id: '1', token: '2' }
 				},
 				{
-					platform: 'guilded',
+					plugin: 'bolt-guilded',
 					channel: '6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
 					senddata: { id: '1', token: '2' }
 				}
 			]
 		}
-	}
-];
-
-export const migrations_five = [
-	{
-		_id: 'bridge-a',
-		platforms: [
-			{
-				plugin: 'bolt-discord',
-				channel: '000000000000000000',
-				senddata: { id: '1', token: '2' }
-			},
-			{
-				plugin: 'bolt-guilded',
-				channel: '6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
-				senddata: { id: '1', token: '2' }
-			}
-		]
-	}
-];
+	]
+] as [string, unknown][];
 
 export const utils_msg = {
 	author: {

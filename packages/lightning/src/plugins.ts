@@ -20,16 +20,15 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	abstract name: string;
 	/** the version of your plugin */
 	abstract version: string;
-	/** a list of major versions supported by your plugin, should include 0.5.5 */
-	abstract support: string[];
 
 	/** create a new plugin instance */
 	static new<T extends plugin<unknown>>(
-		this: new (l: lightning, config: T['config']) => T,
+		this: (new (l: lightning, config: T['config']) => T),
 		config: T['config']
 	): create_plugin<T> {
-		return { type: this, config };
+		return { type: this, config, support: '0.7.0'};
 	}
+	
 	constructor(l: lightning, config: cfg) {
 		super();
 		this.lightning = l;

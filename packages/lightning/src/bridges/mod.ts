@@ -1,4 +1,3 @@
-import type { Collection } from '../../deps.ts';
 import type { lightning } from '../../lightning.ts';
 import type {
 	bridge_document,
@@ -12,50 +11,52 @@ import { handle_message } from './handle_message.ts';
 export class bridges {
 	/** the parent instance of lightning */
 	private l: lightning;
-	/** the database collection containing all the bridges */
-	private bridge_collection: Collection<bridge_document>;
 
 	/** create a bridge instance and attach to lightning */
 	constructor(l: lightning) {
 		this.l = l;
-		this.bridge_collection = l.mongo
-			.database(l.config.mongo_database)
-			.collection('bridges');
 		l.on('create_message', async msg => {
-			await new Promise(res => setTimeout(res, 50));
-			if (this.is_bridged(msg)) return;
+			await new Promise(res => setTimeout(res, 250));
+			if (await this.is_bridged(msg)) return;
 			l.emit('create_nonbridged_message', msg);
 			handle_message(this, this.l, msg, 'create_message');
 		});
 		l.on('edit_message', async msg => {
-			await new Promise(res => setTimeout(res, 50));
-			if (this.is_bridged(msg)) return;
+			await new Promise(res => setTimeout(res, 250));
+			if (await this.is_bridged(msg)) return;
 			handle_message(this, this.l, msg, 'edit_message');
 		});
 		l.on('delete_message', async msg => {
 			await new Promise(res => setTimeout(res, 250));
 			handle_message(this, this.l, msg, 'delete_message');
 		});
-		l.cmds.set('bridge', bridge_commands(l));
+		l.emit('add_command', bridge_commands(l))
 	}
 
 	/** get all the platforms a message was bridged to */
 	async get_bridge_message(id: string): Promise<bridge_platform[] | null> {
 		const rdata = await this.l.redis.sendCommand([
-			'JSON.GET',
-			`lightning-bridge-${id}`
+			'GET',
+			`lightning-bridged-${id}`
 		]);
 		if (!rdata || rdata == 'OK') return [] as bridge_platform[];
 		return JSON.parse(rdata as string) as bridge_platform[];
 	}
 
 	/** check if a message was bridged */
-	is_bridged(msg: deleted_message<unknown>): boolean {
-		try {
-			return Boolean(sessionStorage.getItem(msg.id));
-		} finally {
-			sessionStorage.removeItem(msg.id);
-		}
+	async is_bridged(msg: deleted_message<unknown>): Promise<boolean> {
+		return Boolean(Number(await this.l.redis.sendCommand([
+			'EXISTS',
+			`lightning-isbridged-${msg.id}`
+		])))
+	}
+
+	/** check if a channel is in a bridge */
+	async is_in_bridge(channel: string): Promise<boolean> {
+		return Boolean(Number(await this.l.redis.sendCommand([
+			'EXISTS',
+			`lightning-bchannel-${channel}`
+		])));
 	}
 
 	/** get a bridge using the bridges name or a channel in it */
@@ -66,21 +67,20 @@ export class bridges {
 		_id?: string;
 		channel?: string;
 	}): Promise<bridge_document | undefined> {
-		const query = {} as Record<string, string>;
-
-		if (_id) {
-			query._id = _id;
-		}
-		if (channel) {
-			query['platforms.channel'] = channel;
-		}
-		return (await this.bridge_collection.findOne(query)) || undefined;
+		return JSON.parse(
+			(await this.l.redis.sendCommand([
+				'GET',
+				`lightning-${_id ? 'bridge' : 'bchannel'}-${_id || channel}`
+			])) as string
+		);
 	}
 
 	/** update a bridge in a database */
-	async update_bridge(bridge: bridge_document): Promise<void> {
-		await this.bridge_collection.replaceOne({ _id: bridge._id }, bridge, {
-			upsert: true
-		});
+	async set_bridge(bridge: bridge_document): Promise<void> {
+		await this.l.redis.sendCommand([
+			'SET',
+			`lightning-bridge-${bridge._id}`,
+			JSON.stringify(bridge)
+		]);
 	}
 }
