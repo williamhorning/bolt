@@ -30,7 +30,7 @@ export class bridges {
 			await new Promise(res => setTimeout(res, 250));
 			handle_message(this, this.l, msg, 'delete_message');
 		});
-		l.emit('add_command', bridge_commands(l))
+		l.commands.set('bridge', bridge_commands(l))
 	}
 
 	/** get all the platforms a message was bridged to */
