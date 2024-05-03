@@ -1,13 +1,20 @@
-import { EventEmitter, RedisClient } from './deps.ts';
+import { EventEmitter, RedisClient, parseArgs } from './deps.ts';
 import { bridges } from './src/bridges/mod.ts';
-import { setup_commands } from './src/commands.ts';
 import type { plugin } from './src/plugins.ts';
-import type { config, create_plugin, plugin_events } from './src/types.ts';
-import { log_error } from './src/utils.ts';
+import type {
+	command,
+	command_arguments,
+	config,
+	create_plugin,
+	plugin_events
+} from './src/types.ts';
+import { create_message, log_error } from './src/utils.ts';
 
 /** an instance of lightning */
 export class lightning extends EventEmitter<plugin_events> {
 	bridge: bridges;
+	/** the commands registered */
+	commands: Map<string, command>;
 	/** the config used */
 	config: config;
 	/** a redis client */
@@ -19,21 +26,19 @@ export class lightning extends EventEmitter<plugin_events> {
 	constructor(config: config, redis_conn: Deno.TcpConn) {
 		super();
 		this.config = config;
+		this.commands = new Map(config.commands);
 		this.redis = new RedisClient(redis_conn);
-		setup_commands(this);
+		this.listen_commands();
 		this.bridge = new bridges(this);
 		this.load(this.config.plugins);
 	}
 
 	/** load plugins */
-	async load(plugins: create_plugin<plugin<unknown>>[]) {
+	load(plugins: create_plugin<plugin<unknown>>[]) {
+		let unsupported = 0;
 		for (const p of plugins) {
 			if (p.support !== '0.7.0') {
-				await log_error(
-					new Error(
-						`plugin doesn't support this version of lightning, not loading it...`
-					)
-				);
+				unsupported++;
 				continue;
 			} else {
 				const plugin = new p.type(this, p.config);
@@ -44,6 +49,64 @@ export class lightning extends EventEmitter<plugin_events> {
 					}
 				})();
 			}
+		}
+		if (unsupported > 0) {
+			log_error(
+				new Error(
+					`${unsupported} of you plugins aren't supported by lightning and weren't loaded`
+				)
+			);
+		}
+	}
+
+	private listen_commands() {
+		const prefix = this.config.cmd_prefix || 'l!';
+
+		this.on('create_command', this.run_command);
+
+		this.on('create_nonbridged_message', m => {
+			if (!m.content?.startsWith(prefix)) return;
+
+			const {
+				_: [cmd, subcmd],
+				...opts
+			} = parseArgs(m.content.replace(prefix, '').split(' '));
+
+			this.run_command({
+				cmd: cmd as string,
+				subcmd: subcmd as string,
+				opts,
+				channel: m.channel,
+				platform: m.platform.name,
+				reply: m.reply,
+				timestamp: m.timestamp
+			});
+		});
+	}
+
+	/** run a command */
+	async run_command(args: command_arguments) {
+		let reply;
+
+		try {
+			const cmd = this.commands.get(args.cmd) || this.commands.get('help')!;
+
+			const exec =
+				cmd.options?.subcommands?.find(i => i.name === args.subcmd)?.execute ||
+				cmd.execute;
+
+			reply = await exec(args);
+		} catch (e) {
+			reply = (await log_error(e, { ...args, reply: undefined })).message;
+		}
+
+		try {
+			await args.reply(
+				typeof reply == 'string' ? create_message(reply) : reply,
+				false
+			);
+		} catch (e) {
+			await log_error(e, { ...args, reply: undefined });
 		}
 	}
 }

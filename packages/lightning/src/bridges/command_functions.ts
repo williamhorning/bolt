@@ -1,6 +1,5 @@
 import type { lightning } from '../../lightning.ts';
 import type { command_arguments } from '../types.ts';
-import { log_error } from '../utils.ts';
 
 export async function join(
 	opts: command_arguments,
@@ -9,7 +8,7 @@ export async function join(
 	if (await l.bridge.is_in_bridge(opts.channel)) {
 		return [
 			false,
-			"You're already in a bridge. To learn more, run the help command."
+			"To do this, you can't be in a bridge. Try leaving your bridge first."
 		];
 	}
 
@@ -18,11 +17,11 @@ export async function join(
 	if (!_id) {
 		return [
 			false,
-			'You need to name your bridge. To learn more, run the help command.'
+			'You need to provide a name your bridge. Try `join --name=<something>` instead.'
 		];
 	}
 
-	const plugin = l.plugins.get(opts.platform.name);
+	const plugin = l.plugins.get(opts.platform);
 	const bridge = (await l.bridge.get_bridge({
 		_id: `lightning-bridge-${_id}`
 	})) || {
@@ -30,17 +29,15 @@ export async function join(
 		platforms: []
 	};
 
-	try {
-		bridge.platforms.push({
-			channel: opts.channel,
-			plugin: opts.platform.name,
-			senddata: await plugin!.create_bridge(opts.channel)
-		});
-		await l.bridge.set_bridge(bridge);
-		return [true, 'Joined a bridge!'];
-	} catch (e) {
-		return [false, (await log_error(e, { opts, bridge })).message.content!];
-	}
+	bridge.platforms.push({
+		channel: opts.channel,
+		plugin: opts.platform,
+		senddata: await plugin!.create_bridge(opts.channel)
+	});
+
+	await l.bridge.set_bridge(bridge);
+
+	return [true, 'Joined a bridge!'];
 }
 
 export async function leave(
@@ -52,23 +49,17 @@ export async function leave(
 	});
 
 	if (!bridge) {
-		return [
-			true,
-			"You're not in a bridge. To learn more, run the help command."
-		];
+		return [true, "You're not in a bridge, so try joining a bridge first."];
 	}
 
-	try {
-		await l.bridge.set_bridge({
-			_id: bridge._id,
-			platforms: bridge.platforms.filter(
-				i => i.channel !== opts.channel && i.plugin !== opts.platform.name
-			)
-		});
-		return [true, 'Left a bridge!'];
-	} catch (e) {
-		return [false, (await log_error(e, { opts, bridge })).message.content!];
-	}
+	await l.bridge.set_bridge({
+		_id: bridge._id,
+		platforms: bridge.platforms.filter(
+			i => i.channel !== opts.channel && i.plugin !== opts.platform
+		)
+	});
+
+	return [true, 'Left a bridge!'];
 }
 
 export async function reset(opts: command_arguments, l: lightning) {
@@ -88,15 +79,15 @@ export async function toggle(opts: command_arguments, l: lightning) {
 	const bridge = await l.bridge.get_bridge({ channel: opts.channel });
 
 	if (!bridge) {
-		return "You're not in a bridge right now. To learn more, run the help command";
+		return "You're not in a bridge right now. Try joining one first.";
 	}
 
 	if (!opts.opts.setting) {
-		return 'You need to specify a setting to toggle';
+		return 'You need to specify a setting to toggle. Try `toggle --setting=<realnames|editing_allowed>` instead.';
 	}
 
 	if (!['realnames', 'editing_allowed'].includes(opts.opts.setting)) {
-		return "That setting doesn't exist";
+		return "That setting doesn't exist! Try `realnames` or `editing_allowed` instead.";
 	}
 
 	const setting = opts.opts.setting as 'realnames' | 'editing_allowed';
@@ -106,12 +97,9 @@ export async function toggle(opts: command_arguments, l: lightning) {
 		[setting]: !(bridge.settings?.[setting] || false)
 	};
 
-	try {
-		await l.bridge.set_bridge(bridge);
-		return 'Toggled that setting!';
-	} catch (e) {
-		return (await log_error(e, { opts, bridge })).message.content!;
-	}
+	await l.bridge.set_bridge(bridge);
+
+	return 'Toggled that setting!';
 }
 
 export async function status(args: command_arguments, l: lightning) {

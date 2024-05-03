@@ -12,14 +12,6 @@ type fourbetadoc = [
 	}
 ][];
 
-
-function map_plugins(pluginname: string): string {
-	if (pluginname === 'discord') return 'bolt-discord';
-	if (pluginname === 'guilded') return 'bolt-guilded';
-	if (pluginname === 'revolt') return 'bolt-revolt';
-	return 'unknown';
-}
-
 export const fourbetafive = {
 	from: '0.4-beta' as versions,
 	to: '0.5' as versions,
@@ -28,20 +20,19 @@ export const fourbetafive = {
 	from_type: 'mongo' as const,
 	to_type: 'mongo' as const,
 	translate: (itemslist: doc | fourbetadoc) =>
-		(itemslist as fourbetadoc).flatMap(([_id, { value }]) => {
-			if (_id.startsWith('message-')) return [];
-			return [
-				[
+		(itemslist as fourbetadoc)
+			.filter(([_id]) => !_id.startsWith('message-'))
+			.map(([_id, { value }]) => {
+				return [
 					_id,
 					{
 						_id,
 						platforms: value.bridges.map(({ platform, channel, senddata }) => ({
-							plugin: map_plugins(platform),
+							plugin: `bolt-${platform}`,
 							channel,
 							senddata
 						}))
 					}
-				]
-			];
-		}) as doc
+				];
+			}) as doc
 };

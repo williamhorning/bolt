@@ -68,13 +68,21 @@ export interface config {
 }
 
 /** arguments passed to a command */
-export interface command_arguments extends message<unknown> {
+export interface command_arguments {
 	/** the name of the command */
 	cmd: string;
-	/** options passed by the user */
-	opts: Record<string, string>;
 	/** the subcommand being run, if any */
 	subcmd?: string;
+	/** the channel its being run in */
+	channel: string;
+	/** the platform its being run on */
+	platform: string;
+	/** timestamp given */
+	timestamp: Temporal.Instant;
+	/** options passed by the user */
+	opts: Record<string, string>;
+	/** the function to reply to the command */
+	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
 }
 
 export interface command {
@@ -93,7 +101,7 @@ export interface command {
 	/** a function that returns a message */
 	execute: (
 		options: command_arguments
-	) => Promise<message<unknown>> | message<unknown>;
+	) => Promise<string> | string;
 }
 
 export interface deleted_message<t> {
@@ -200,8 +208,6 @@ export interface platform<t> {
 
 /** the events emitted by a plugin */
 export type plugin_events = {
-	/** add command */
-	add_command: [command];
 	/** when a message is created */
 	create_message: [message<unknown>];
 	/** when a command is run (not a text command) */
@@ -212,8 +218,6 @@ export type plugin_events = {
 	edit_message: [message<unknown>];
 	/** when a message is deleted */
 	delete_message: [deleted_message<unknown>];
-	/** when your plugin is ready */
-	ready: [];
 };
 
 /** all of the versions with migrations to/from them */
