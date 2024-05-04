@@ -39,7 +39,7 @@ Deno.test('migrations', async t => {
 	});
 
 	await t.step('apply migrations', async t => {
-		await t.step('0.4-beta => 0.5', () => {
+		await t.step('0.5 -> 0.7', () => {
 			const result = apply_migrations([fivesevenbridges], migrations_five);
 
 			assertEquals(result, migrations_seven as [string, unknown][]);

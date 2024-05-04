@@ -22,7 +22,7 @@ export const fivesevenbridges = {
 			return [
 				id,
 				{
-					allow_editing: val.settings.editing_allowed ?? false,
+					allow_editing: val.settings?.editing_allowed ?? false,
 					channels: val.platforms.map(i => {
 						return {
 							id: i.channel,
@@ -31,7 +31,7 @@ export const fivesevenbridges = {
 						};
 					}),
 					id,
-					use_rawname: val.settings.realnames ?? false
+					use_rawname: val.settings?.realnames ?? false
 				}
 			];
 		}) as doc
