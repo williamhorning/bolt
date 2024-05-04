@@ -1,7 +1,7 @@
 import { assertEquals } from 'jsr:@std/assert@^0.219.1/assert_equals';
 import {
 	migrations_five,
-	migrations_fourbeta,
+	migrations_seven,
 	utils_cfg,
 	utils_err,
 	utils_err_hook,
@@ -10,7 +10,7 @@ import {
 	utils_extra,
 	utils_msg
 } from './_testdata.ts';
-import { fourbetafive } from './src/migrations.ts';
+import { fivesevenbridges } from './src/migrations.ts';
 import { versions } from './src/types.ts';
 import {
 	apply_migrations,
@@ -34,15 +34,15 @@ console.log = console.error = () => {};
 
 Deno.test('migrations', async t => {
 	await t.step('get a migration', () => {
-		const migrations = get_migrations(versions.FourBeta, versions.Five);
-		assertEquals(migrations, [fourbetafive]);
+		const migrations = get_migrations(versions.Five, versions.Seven);
+		assertEquals(migrations, [fivesevenbridges]);
 	});
 
 	await t.step('apply migrations', async t => {
 		await t.step('0.4-beta => 0.5', () => {
-			const result = apply_migrations([fourbetafive], migrations_fourbeta);
+			const result = apply_migrations([fivesevenbridges], migrations_five);
 
-			assertEquals(result, migrations_five);
+			assertEquals(result, migrations_seven as [string, unknown][]);
 		});
 	});
 });

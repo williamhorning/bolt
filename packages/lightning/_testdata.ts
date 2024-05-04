@@ -1,26 +1,3 @@
-export const migrations_fourbeta = [
-	[
-		'bridge-a',
-		{
-			_id: 'bridge-a',
-			value: {
-				bridges: [
-					{
-						platform: 'discord',
-						channel: '000000000000000000',
-						senddata: { id: '1', token: '2' }
-					},
-					{
-						platform: 'guilded',
-						channel: '6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
-						senddata: { id: '1', token: '2' }
-					}
-				]
-			}
-		}
-	]
-] as [string, unknown][];
-
 export const migrations_five = [
 	[
 		'bridge-a',
@@ -41,6 +18,29 @@ export const migrations_five = [
 		}
 	]
 ] as [string, unknown][];
+
+export const migrations_seven = [
+	[
+		'bridge-a',
+		{
+			allow_editing: false,
+			channels: [
+				{
+					id: '000000000000000000',
+					data: { id: '1', token: '2' },
+					plugin: 'bolt-discord'
+				},
+				{
+					id: '6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
+					data: { id: '1', token: '2' },
+					plugin: 'bolt-guilded'
+				}
+			],
+			id: 'bridge-a',
+			use_rawname: false
+		}
+	]
+]
 
 export const utils_msg = {
 	author: {
