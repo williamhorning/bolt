@@ -12,9 +12,9 @@ export async function join(
 		];
 	}
 
-	const _id = opts.opts.name?.split(' ')[0];
+	const id = opts.opts.name?.split(' ')[0];
 
-	if (!_id) {
+	if (!id) {
 		return [
 			false,
 			'You need to provide a name your bridge. Try `join --name=<something>` instead.'
@@ -23,16 +23,18 @@ export async function join(
 
 	const plugin = l.plugins.get(opts.platform);
 	const bridge = (await l.bridge.get_bridge({
-		_id: `lightning-bridge-${_id}`
+		id: `lightning-bridge-${id}`
 	})) || {
-		_id,
-		platforms: []
+		allow_editing: false,
+		channels: [],
+		id: `lightning-bridge-${id}`,
+		use_rawname: false
 	};
 
-	bridge.platforms.push({
-		channel: opts.channel,
+	bridge.channels.push({
+		id: opts.channel,
 		plugin: opts.platform,
-		senddata: await plugin!.create_bridge(opts.channel)
+		data: await plugin!.create_bridge(opts.channel)
 	});
 
 	await l.bridge.set_bridge(bridge);
@@ -53,9 +55,9 @@ export async function leave(
 	}
 
 	await l.bridge.set_bridge({
-		_id: bridge._id,
-		platforms: bridge.platforms.filter(
-			i => i.channel !== opts.channel && i.plugin !== opts.platform
+		...bridge,
+		channels: bridge.channels.filter(
+			i => i.id !== opts.channel && i.plugin !== opts.platform
 		)
 	});
 
@@ -65,7 +67,7 @@ export async function leave(
 export async function reset(opts: command_arguments, l: lightning) {
 	if (!opts.opts.name)
 		opts.opts.name =
-			(await l.bridge.get_bridge({ channel: opts.channel }))?._id ||
+			(await l.bridge.get_bridge({ channel: opts.channel }))?.id ||
 			opts.channel;
 
 	let [ok, text] = await leave(opts, l);
@@ -83,19 +85,16 @@ export async function toggle(opts: command_arguments, l: lightning) {
 	}
 
 	if (!opts.opts.setting) {
-		return 'You need to specify a setting to toggle. Try `toggle --setting=<realnames|editing_allowed>` instead.';
+		return 'You need to specify a setting to toggle. Try `toggle --setting=<allow_editing|use_rawname>` instead.';
 	}
 
-	if (!['realnames', 'editing_allowed'].includes(opts.opts.setting)) {
-		return "That setting doesn't exist! Try `realnames` or `editing_allowed` instead.";
+	if (!['allow_editing', 'use_rawname'].includes(opts.opts.setting)) {
+		return "That setting doesn't exist! Try `allow_editing` or `use_rawname` instead.";
 	}
 
-	const setting = opts.opts.setting as 'realnames' | 'editing_allowed';
+	const setting = opts.opts.setting as 'allow_editing' | 'use_rawname';
 
-	bridge.settings = {
-		...(bridge.settings || {}),
-		[setting]: !(bridge.settings?.[setting] || false)
-	};
+	bridge[setting] = !bridge[setting];
 
 	await l.bridge.set_bridge(bridge);
 
@@ -109,16 +108,14 @@ export async function status(args: command_arguments, l: lightning) {
 		return "You're not in any bridges right now.";
 	}
 
-	const settings_keys = Object.entries(current.settings || {}).filter(
-		i => i[1]
-	);
+	const editing_text = current.allow_editing
+		? 'with editing enabled'
+		: 'with editing disabled';
+	const rawname_text = current.use_rawname
+		? 'and nicknames disabled'
+		: 'and nicknames enabled';
 
-	const settings_text =
-		settings_keys.length > 0
-			? `as well as the following settings: \n\`${settings_keys.join('`, `')}\``
-			: 'as well as no settings';
-
-	return `This channel is connected to \`${current._id}\`, a bridge with ${
-		current.platforms.length - 1
-	} other channels connected to it, ${settings_text}`;
+	return `This channel is connected to \`${current.id}\`, a bridge with ${
+		current.channels.length - 1
+	} other channels connected to it, ${editing_text} ${rawname_text}`;
 }

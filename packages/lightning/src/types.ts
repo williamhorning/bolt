@@ -14,34 +14,28 @@ export interface attachment {
 	size: number;
 }
 
-/** the database's representation of a bridge */
-export interface bridge_document {
-	/** the bridge's id */
-	_id: string;
-	/** each platform within the bridge */
-	platforms: bridge_platform[];
-	/** the settings for the bridge */
-	settings?: bridge_settings;
-}
-
-/** platform within a bridge */
-export interface bridge_platform {
-	/** the channel to be bridged */
-	channel: string;
-	/** the plugin used for this platform */
+/** channel within a bridge */
+export interface bridge_channel<datatype = unknown> {
+	/** the id of this channel */
+	id: string;
+	/** the data needed to bridge this channel */
+	data: datatype;
+	/** the plugin used to bridge this channel */
 	plugin: string;
-	/** the data needed for a message to be sent */
-	senddata: unknown;
-	/** the id of a sent message */
-	id?: string;
 }
 
-/** bridge settings */
-export interface bridge_settings {
-	/** use an authors rawname instead of username */
-	realnames?: boolean;
-	/** whether or not to allow editing to be bridged */
-	editing_allowed?: boolean;
+/** the representation of a bridge */
+export interface bridge_document {
+	/** whether or not to allow editing */
+	allow_editing: boolean;
+	/** the channels to be bridged */
+	channels: bridge_channel[];
+	/** the id of the bridge */
+	id: string;
+	/** messages bridged using these channels */
+	messages?: string[];
+	/** whether or not to use nicknames */
+	use_rawname: boolean;
 }
 
 /** the constructor for a plugin */
@@ -186,9 +180,7 @@ export interface migration {
 	/** the version to translate to */
 	to: versions;
 	/** the database to translate from */
-	from_db: string;
-	/** the database to translate to */
-	to_db: string;
+	from_db?: string;
 	/** the type of database to use to get data */
 	from_type: 'mongo' | 'redis'
 	/** the type of database to put data in */

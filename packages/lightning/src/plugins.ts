@@ -1,7 +1,7 @@
 import { EventEmitter } from '../deps.ts';
 import type { lightning } from '../lightning.ts';
 import type {
-	bridge_platform,
+	bridge_channel,
 	create_plugin,
 	deleted_message,
 	message,
@@ -41,18 +41,24 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** this is used to bridge a NEW message */
 	abstract create_message(
 		message: message<unknown>,
-		bridge: bridge_platform
-	): Promise<bridge_platform>;
+		channel: bridge_channel,
+		_?: string,
+		reply_id?: string
+	): Promise<string>;
 
 	/** this is used to bridge an EDITED message */
 	abstract edit_message(
-		new_message: message<unknown>,
-		bridge: bridge_platform & { id: string }
-	): Promise<bridge_platform>;
+		message: message<unknown>,
+		channel: bridge_channel,
+		edit_id: string,
+		reply_id?: string
+	): Promise<string>;
 
 	/** this is used to bridge a DELETED message */
 	abstract delete_message(
 		message: deleted_message<unknown>,
-		bridge: bridge_platform & { id: string }
-	): Promise<bridge_platform>;
+		channel: bridge_channel,
+		delete_id: string,
+		reply_id?: string
+	): Promise<string>;
 }

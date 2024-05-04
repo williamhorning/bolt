@@ -1,38 +1,38 @@
-import type { versions } from './types.ts';
+import { versions } from './types.ts';
 
 type doc = [string, unknown][];
 
-type fourbetadoc = [
+type fivedoc = [
 	string,
 	{
 		_id: string;
-		value: {
-			bridges: { platform: string; channel: string; senddata: unknown }[];
-		};
+		platforms: { plugin: string; channel: string; senddata: unknown }[];
+		settings: { realnames?: boolean; editing_allowed?: boolean };
 	}
 ][];
 
-export const fourbetafive = {
-	from: '0.4-beta' as versions,
-	to: '0.5' as versions,
-	from_db: 'bridgev1',
-	to_db: 'bridges',
+export const fivesevenbridges = {
+	from: versions.Five,
+	to: versions.Seven,
+	from_db: 'bridges',
 	from_type: 'mongo' as const,
-	to_type: 'mongo' as const,
-	translate: (itemslist: doc | fourbetadoc) =>
-		(itemslist as fourbetadoc)
-			.filter(([_id]) => !_id.startsWith('message-'))
-			.map(([_id, { value }]) => {
-				return [
-					_id,
-					{
-						_id,
-						platforms: value.bridges.map(({ platform, channel, senddata }) => ({
-							plugin: `bolt-${platform}`,
-							channel,
-							senddata
-						}))
-					}
-				];
-			}) as doc
+	to_type: 'redis' as const,
+	translate: (items: doc | fivedoc) =>
+		(items as fivedoc).map(([id, val]) => {
+			return [
+				id,
+				{
+					allow_editing: val.settings.editing_allowed ?? false,
+					channels: val.platforms.map(i => {
+						return {
+							id: i.channel,
+							data: i.senddata,
+							plugin: i.plugin
+						};
+					}),
+					id,
+					use_rawname: val.settings.realnames ?? false
+				}
+			];
+		}) as doc
 };
