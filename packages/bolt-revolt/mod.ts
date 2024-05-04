@@ -1,11 +1,11 @@
-import { bridge_platform, Client, lightning, message, plugin } from './deps.ts';
+import { Client, plugin } from './deps.ts';
+import type { bridge_platform, lightning, message } from './deps.ts';
 import { tocore, torevolt } from './messages.ts';
 
 export class revolt_plugin extends plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-revolt';
 	version = '0.6.1';
-	support = ['0.6.1'];
 
 	constructor(l: lightning, config: { token: string }) {
 		super(l, config);
@@ -27,12 +27,9 @@ export class revolt_plugin extends plugin<{ token: string }> {
 				timestamp: message.editedAt
 					? Temporal.Instant.fromEpochMilliseconds(
 							message.editedAt?.getUTCMilliseconds()
-						)
+					  )
 					: Temporal.Now.instant()
 			});
-		});
-		this.bot.on('ready', () => {
-			this.emit('ready');
 		});
 		this.bot.loginBot(this.config.token);
 	}

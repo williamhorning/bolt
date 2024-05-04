@@ -1,12 +1,12 @@
 export {
-	API,
+	type API,
 	Client,
-	Message,
-	TextEmbed
+	type Message,
+	type TextEmbed
 } from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
 export {
-	lightning,
+	type lightning,
 	plugin,
 	type bridge_platform,
 	type message
-} from 'jsr:@jersey/lightning@0.6.2';
+} from '../lightning/mod.ts';

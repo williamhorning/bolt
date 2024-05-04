@@ -1,4 +1,4 @@
-import { API, Message, TextEmbed, message } from './deps.ts';
+import type { API, Message, TextEmbed, message } from './deps.ts';
 
 export async function torevolt(
 	message: message<unknown>,
