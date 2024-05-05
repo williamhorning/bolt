@@ -30,7 +30,7 @@ if (cmd === 'version') {
 
 async function setup_shim() {
 	if ("Deno" in globalThis) return;
-	const Deno = await import("npm:@deno/shim-deno")
+	const Deno = await import("npm:@deno/shim-deno@0.19.1")
 	// @ts-ignore this works
 	globalThis.Deno = Deno.Deno
 }
