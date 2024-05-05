@@ -1,4 +1,4 @@
-import { assertEquals } from '../../deps.ts';
+import { assertEquals, setEnv, test } from '../../deps.ts';
 import { log_error } from '../utils.ts';
 
 const temporal_instant = Temporal.Instant.from('2021-01-01T00:00:00Z');
@@ -9,8 +9,8 @@ globalThis.Temporal.Now.instant = () => {
 
 console.log = console.error = () => {};
 
-Deno.test('basic error handling', async () => {
-	Deno.env.set('LIGHTNING_ERROR_HOOK', '');
+test('basic error handling', async () => {
+	setEnv('LIGHTNING_ERROR_HOOK', '');
 
 	const result = await log_error(err, extra, error_id);
 
@@ -19,8 +19,8 @@ Deno.test('basic error handling', async () => {
 	assertEquals(result, error_return);
 });
 
-Deno.test('webhook error handling', async () => {
-	Deno.env.set('LIGHTNING_ERROR_HOOK', 'http://localhost:8000');
+test('webhook error handling', async () => {
+	setEnv('LIGHTNING_ERROR_HOOK', 'http://localhost:8000');
 
 	let res: (value: unknown) => void;
 

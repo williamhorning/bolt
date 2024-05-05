@@ -1,30 +1,36 @@
-import { parseArgs } from '../../deps.ts';
+import { parseArgs, args } from '../../deps.ts';
 import { migrations } from './migrations.ts';
 import { run } from './run.ts';
 
-const args = parseArgs(Deno.args, {
+const cli_args = parseArgs(args(), {
 	string: ['config']
 });
 
-const cmd = args._[0];
+const cmd = cli_args._[0];
 
 if (cmd === 'version') {
 	console.log('0.6.0');
 } else if (cmd === 'run') {
-	run(args.config);
+	await setup_shim()
+	run(cli_args.config);
 } else if (cmd === 'migrations') {
+	await setup_shim()
 	migrations();
 } else {
-	console.log(
-		'lightning v0.6.0 - cross-platform bot connecting communities',
-		'blue'
-	);
-	console.log('Usage: lightning [subcommand] <options>', 'purple');
-	console.log('Subcommands:', 'green');
+	console.log('lightning v0.6.0 - cross-platform bot connecting communities');
+	console.log('Usage: lightning [subcommand] <options>');
+	console.log('Subcommands:');
 	console.log('help: show this');
 	console.log('run: run an of lightning using the settings in config.ts');
 	console.log('migrations: run migration script');
 	console.log('version: shows version');
-	console.log('Options:', 'green');
+	console.log('Options:');
 	console.log('--config <string>: absolute path to config file');
+}
+
+async function setup_shim() {
+	if ("Deno" in globalThis) return;
+	const Deno = await import("npm:@deno/shim-deno")
+	// @ts-ignore this works
+	globalThis.Deno = Deno.Deno
 }

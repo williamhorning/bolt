@@ -1,7 +1,8 @@
-import { MongoClient, RedisClient } from '../../deps.ts';
+import { MongoClient, RedisClient, tempfile } from '../../deps.ts';
 import { convert_five_to_seven_redis } from '../migrations.ts';
 import { versions } from '../types.ts';
 import { apply_migrations, get_migrations } from '../utils.ts';
+import { writeFile } from "node:fs/promises";
 
 export async function migrations() {
 	const redis_hostname = prompt(
@@ -14,9 +15,10 @@ export async function migrations() {
 	);
 	const mongo = confirm(`are you migrating from a mongo database?`);
 
-	if (!redis_hostname || !redis_port) Deno.exit();
+	if (!redis_hostname || !redis_port) return;
 
 	const redis = new RedisClient(
+		// TODO: make this work
 		await Deno.connect({
 			hostname: redis_hostname,
 			port: Number(redis_port)
@@ -32,7 +34,7 @@ export async function migrations() {
 		const mongo_db = prompt('what is your mongo database?');
 		const mongo_collection = prompt('what is your mongo collection?');
 
-		if (!mongo_str || !mongo_db || !mongo_collection) Deno.exit();
+		if (!mongo_str || !mongo_db || !mongo_collection) return;
 
 		const client = new MongoClient();
 
@@ -62,11 +64,11 @@ export async function migrations() {
 			| versions
 			| undefined;
 
-		if (!from_version || !to_version) Deno.exit();
+		if (!from_version || !to_version) return;
 
 		const migrations = get_migrations(from_version, to_version);
 
-		if (migrations.length < 1) Deno.exit();
+		if (migrations.length < 1) return;
 
 		console.log(`downloading data from redis...`);
 
@@ -99,18 +101,15 @@ export async function migrations() {
 
 	console.log(`migrated your data!`);
 
-	const file = await Deno.makeTempFile({
-		prefix: 'migrated-redis-data-',
-		suffix: '.json'
-	});
+	const file = await tempfile()
 
-	await Deno.writeTextFile(file, JSON.stringify(final_data));
+	await writeFile(file, JSON.stringify(final_data));
 
 	const write = confirm(
 		`do you want the data in ${file} to be written to the database?`
 	);
 
-	if (!write) Deno.exit();
+	if (!write) return;
 
 	const cmd = ['MSET', ...final_data.flat()];
 

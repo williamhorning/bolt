@@ -1,14 +1,16 @@
+import { setEnv, cwd, exit } from "../../deps.ts";
 import { lightning } from '../lightning.ts';
 import { define_config, log_error } from '../utils.ts';
 
 export async function run(config?: string) {
 	try {
 		const cfg = define_config(
-			(await import(config || `${Deno.cwd()}/config.ts`))?.default
+			(await import(config || `${cwd()}/config.ts`))?.default
 		);
 
-		Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
+		setEnv('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
 
+		// TODO: find way to make work other places
 		const redis = await Deno.connect({
 			hostname: cfg.redis_host,
 			port: cfg.redis_port || 6379
@@ -17,6 +19,6 @@ export async function run(config?: string) {
 		new lightning(cfg, redis);
 	} catch (e) {
 		await log_error(e);
-		Deno.exit(1);
+		exit(1);
 	}
 }

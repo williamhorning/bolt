@@ -1,22 +1,18 @@
-import { assertEquals } from '../../deps.ts';
+import { assertEquals, test } from '../../deps.ts';
 import { fivesevenredis } from '../migrations.ts';
 import { versions } from '../types.ts';
 import { apply_migrations, get_migrations } from '../utils.ts';
 
-Deno.test('migrations', async t => {
-	await t.step('get a migration', () => {
-		const migrations = get_migrations(versions.Five, versions.Seven);
-		assertEquals(migrations, [fivesevenredis]);
-	});
+test('get a migration', () => {
+	const migrations = get_migrations(versions.Five, versions.Seven);
+	assertEquals(migrations, [fivesevenredis]);
+})
 
-	await t.step('apply migrations', async t => {
-		await t.step('0.5 -> 0.7', () => {
-			const result = apply_migrations([fivesevenredis], migrations_five);
+test('apply migrations', () => {
+	const result = apply_migrations([fivesevenredis], migrations_five);
 
-			assertEquals(result, migrations_seven as [string, unknown][]);
-		});
-	});
-});
+	assertEquals(result, migrations_seven as [string, unknown][]);
+})
 
 const migrations_five = [
 	[
