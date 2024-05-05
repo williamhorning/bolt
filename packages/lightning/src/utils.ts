@@ -1,6 +1,11 @@
 import { fivesevenredis } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
+/**
+ * utilities used by lightning
+ * @module
+ */
+
 /** 
  * apply many migrations given data 
  * @param migrations the migrations to apply
@@ -88,7 +93,7 @@ export async function log_error(
 		).text();
 	}
 
-	console.error(`%cLightning Error ${uuid}`, 'color: red');
+	console.error(`%clightning error ${uuid}`, 'color: red');
 	console.error(e, extra);
 
 	const message = create_message(

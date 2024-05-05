@@ -1,7 +1,7 @@
 /**
- * @module
- * Lightning is a Typescript-based chatbot that supports
+ * lightning is a typescript-based chatbot that supports
  * bridging multiple chat platforms via plugins.
+ * @module
  */
 
 export { bridges } from './src/bridges/mod.ts';

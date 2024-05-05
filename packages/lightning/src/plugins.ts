@@ -9,8 +9,11 @@ import type {
 } from './types.ts';
 
 /**
- * a plugin for lightning
+ * lightning plugins are used to add support for new platforms to lightning
+ * @module
  */
+
+/** a plugin for lightning */
 export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** access the instance of lightning you're connected to */
 	lightning: lightning;

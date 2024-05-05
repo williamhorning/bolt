@@ -29,7 +29,10 @@ export class bridges {
 		l.commands.set('bridge', bridge_commands(l));
 	}
 
-	/** get all the platforms a message was bridged to */
+	/**
+	 * get all the platforms a message was bridged to 
+	 * @param id the id of the message to get the platforms for
+	 */
 	async get_bridge_message(id: string): Promise<bridge_document | undefined> {
 		const rdata = await this.l.redis.sendCommand([
 			'GET',
@@ -39,7 +42,10 @@ export class bridges {
 		return JSON.parse(rdata as string) as bridge_document;
 	}
 
-	/** check if a message was bridged */
+	/** 
+	 * check if a message was bridged 
+	 * @param id the id of the message to check
+	 */
 	async is_bridged(id: string): Promise<boolean> {
 		return Boolean(
 			Number(
@@ -48,7 +54,10 @@ export class bridges {
 		);
 	}
 
-	/** check if a channel is in a bridge */
+	/** 
+	 * check if a channel is in a bridge 
+	 * @param channel the channel to check
+	 */
 	async is_in_bridge(channel: string): Promise<boolean> {
 		return Boolean(
 			Number(
@@ -60,7 +69,10 @@ export class bridges {
 		);
 	}
 
-	/** get a bridge using the bridges name or a channel in it */
+	/** 
+	 * get a bridge using the bridges name or a channel in it 
+	 * @param param0 the id or channel of the bridge
+	 */
 	async get_bridge({
 		id,
 		channel
@@ -76,7 +88,10 @@ export class bridges {
 		);
 	}
 
-	/** update a bridge in a database */
+	/**
+	 * update a bridge in a database 
+	 * @param bridge the bridge to update
+	 */
 	async set_bridge(bridge: bridge_document): Promise<void> {
 		await this.l.redis.sendCommand([
 			'SET',

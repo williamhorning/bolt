@@ -1,6 +1,11 @@
 import type { lightning } from './lightning.ts';
 import type { plugin } from './plugins.ts';
 
+/**
+ * types used by lightning
+ * @module
+ */
+
 /** attachments within a message */
 export interface attachment {
 	/** alt text for images */
