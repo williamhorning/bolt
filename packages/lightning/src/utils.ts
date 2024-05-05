@@ -1,4 +1,3 @@
-import { getEnv } from "../deps.ts";
 import { fivesevenredis } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
@@ -64,7 +63,7 @@ export async function log_error(
 	_id?: () => string
 ): Promise<err> {
 	const uuid = _id ? _id() : crypto.randomUUID();
-	const error_hook = getEnv('LIGHTNING_ERROR_HOOK');
+	const error_hook = Deno.env.get('LIGHTNING_ERROR_HOOK');
 
 	if (error_hook) {
 		await (

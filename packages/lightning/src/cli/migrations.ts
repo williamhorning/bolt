@@ -1,4 +1,4 @@
-import { MongoClient, RedisClient, tempfile } from '../../deps.ts';
+import { MongoClient, RedisClient } from '../../deps.ts';
 import { convert_five_to_seven_redis } from '../migrations.ts';
 import { versions } from '../types.ts';
 import { apply_migrations, get_migrations } from '../utils.ts';
@@ -18,7 +18,6 @@ export async function migrations() {
 	if (!redis_hostname || !redis_port) return;
 
 	const redis = new RedisClient(
-		// TODO: make this work
 		await Deno.connect({
 			hostname: redis_hostname,
 			port: Number(redis_port)
@@ -101,7 +100,7 @@ export async function migrations() {
 
 	console.log(`migrated your data!`);
 
-	const file = await tempfile()
+	const file = await Deno.makeTempFile()
 
 	await writeFile(file, JSON.stringify(final_data));
 

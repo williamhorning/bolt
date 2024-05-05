@@ -1,4 +1,4 @@
-import { assertEquals, test } from '../../deps.ts';
+import { assertEquals } from '../../deps.ts';
 import { create_message, define_config } from '../utils.ts';
 
 const temporal_instant = Temporal.Instant.from('2021-01-01T00:00:00Z');
@@ -9,11 +9,11 @@ globalThis.Temporal.Now.instant = () => {
 
 console.log = console.error = () => {};
 
-test('config handling', () => {
+Deno.test('config handling', () => {
 	assertEquals(define_config(), cfg);
 });
 
-test('message creation', () => {
+Deno.test('message creation', () => {
 	const result = create_message('test');
 
 	result.reply = msg.reply;

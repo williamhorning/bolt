@@ -1,18 +1,12 @@
-import { parseArgs, args } from '../../deps.ts';
+import { parseArgs } from '../../deps.ts';
 import { migrations } from './migrations.ts';
 import { run } from './run.ts';
 
-const cli_args = parseArgs(args(), {
+const cli_args = parseArgs(Deno.args, {
 	string: ['config']
 });
 
 const cmd = cli_args._[0];
-
-if (!("Deno" in globalThis)) {
-	const { Deno } = await import("npm:@deno/shim-deno@0.19.1")
-	// @ts-ignore this works
-	globalThis.Deno = Deno
-}
 
 if (cmd === 'version') {
 	console.log('0.6.0');
