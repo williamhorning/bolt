@@ -1,6 +1,6 @@
 import { Message, message } from './deps.ts';
-import { guilded_plugin } from './mod.ts';
 import { convert_msg } from './guilded.ts';
+import { guilded_plugin } from './mod.ts';
 
 export async function tocore(
 	message: Message,

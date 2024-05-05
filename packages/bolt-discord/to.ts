@@ -1,9 +1,8 @@
-import type { API, bridge_platform, message } from './deps.ts';
 import { to_discord } from './conv.ts';
+import type { API, bridge_channel, message } from './deps.ts';
 
-export type discord_platform = bridge_platform & {
-	id: string;
-	senddata: { token: string; id: string };
+export type channel = bridge_channel & {
+	data: { token: string; id: string };
 };
 
 export async function webhook_on_discord(api: API, channel: string) {
@@ -17,17 +16,15 @@ export async function webhook_on_discord(api: API, channel: string) {
 export async function send_to_discord(
 	api: API,
 	message: message<unknown>,
-	plat: discord_platform,
-	edit?: boolean
+	channel: channel,
+	edit_id?: string,
+	replytoid?: string
 ) {
 	let replied_message;
 
-	if (message.replytoid) {
+	if (replytoid) {
 		try {
-			replied_message = await api.channels.getMessage(
-				plat.channel,
-				message.replytoid
-			);
+			replied_message = await api.channels.getMessage(channel.id, replytoid);
 		} catch {
 			// safe to ignore
 		}
@@ -38,42 +35,38 @@ export async function send_to_discord(
 	try {
 		let wh;
 
-		if (edit) {
+		if (edit_id) {
 			wh = await api.webhooks.editMessage(
-				plat.senddata.id,
-				plat.senddata.token,
-				plat.id,
+				channel.data.id,
+				channel.data.token,
+				edit_id,
 				msg
 			);
 		} else {
-			wh = await api.webhooks.execute(
-				plat.senddata.id,
-				plat.senddata.token,
-				msg
-			);
+			wh = await api.webhooks.execute(channel.data.id, channel.data.token, msg);
 		}
 
-		return { ...plat, id: wh.id };
+		return wh.id;
 	} catch (e) {
 		if (e.status === 404) {
-			return plat;
+			return '';
 		} else {
 			throw e;
 		}
 	}
 }
 
-export async function delete_on_discord(api: API, platform: discord_platform) {
+export async function delete_on_discord(
+	api: API,
+	channel: channel,
+	id: string
+) {
 	try {
-		await api.webhooks.deleteMessage(
-			platform.senddata.id,
-			platform.senddata.token,
-			platform.id
-		);
-		return platform;
+		await api.webhooks.deleteMessage(channel.data.id, channel.data.token, id);
+		return id;
 	} catch (e) {
 		if (e.status === 404) {
-			return platform;
+			return '';
 		} else {
 			throw e;
 		}

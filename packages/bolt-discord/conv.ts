@@ -70,7 +70,7 @@ export async function to_discord(
 							data: new Uint8Array(await (await fetch(a.file)).arrayBuffer())
 						}
 					];
-			  })
+				})
 			: undefined,
 		username: message.author.username,
 		wait: true
@@ -159,10 +159,7 @@ export async function to_core(
 	return data;
 }
 
-export function to_command(interaction: {
-	api: API;
-	data: APIInteraction;
-}) {
+export function to_command(interaction: { api: API; data: APIInteraction }) {
 	if (interaction.data.type !== 2 || interaction.data.data.type !== 1) return;
 	const opts = {} as Record<string, string>;
 	let subcmd = '';
@@ -216,7 +213,7 @@ export function to_intent_opts({ options }: command) {
 									type: 3,
 									required: i.options.argument_required || false
 								}
-						  ]
+							]
 						: undefined
 				};
 			})

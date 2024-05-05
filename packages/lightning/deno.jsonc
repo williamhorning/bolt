@@ -3,18 +3,16 @@
 	"version": "0.7.0",
 	"exports": {
 		".": "./mod.ts",
+		"./cli": "./src/cli/mod.ts",
 		"./plugins": "./src/plugins.ts",
 		"./types": "./src/types.ts",
 		"./utils": "./src/utils.ts"
 	},
 	"publish": {
-		"exclude": ["./_testdata.ts", "./_tests.ts"]
+		"exclude": ["./src/tests/*"]
 	},
 	"test": {
-		"include": ["./_tests.ts"]
-	},
-	"lint": {
-		"exclude": ["./_testdata.ts", "./_tests.ts"]
+		"include": ["./src/tests/*"]
 	},
 	"lock": false,
 	"unstable": ["temporal"]

@@ -1,4 +1,4 @@
-import type { lightning } from '../../lightning.ts';
+import type { lightning } from '../lightning.ts';
 import type { bridge_document } from '../types.ts';
 import { bridge_commands } from './commands.ts';
 import { handle_message } from './handle_message.ts';

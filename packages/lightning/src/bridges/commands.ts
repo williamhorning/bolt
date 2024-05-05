@@ -1,4 +1,4 @@
-import type { lightning } from '../../lightning.ts';
+import type { lightning } from '../lightning.ts';
 import type { command } from '../types.ts';
 import { join, leave, reset, status, toggle } from './command_functions.ts';
 

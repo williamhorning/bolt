@@ -1,4 +1,4 @@
-import { fivesevenbridges } from './migrations.ts';
+import { fivesevenredis } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
 /** apply many migrations given data */
@@ -44,7 +44,7 @@ export function define_config(config?: Partial<config>): config {
 
 /** get migrations that can then be applied using apply_migrations */
 export function get_migrations(from: versions, to: versions): migration[] {
-	const migrations: migration[] = [fivesevenbridges];
+	const migrations: migration[] = [fivesevenredis];
 	return migrations.slice(
 		migrations.findIndex(i => i.from === from),
 		migrations.findLastIndex(i => i.to === to) + 1

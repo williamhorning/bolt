@@ -1,13 +1,12 @@
 import type {
-	bridge_platform,
+	bridge_channel,
 	deleted_message,
 	lightning,
-	message,
+	message
 } from './deps.ts';
 import { Client, WebhookClient, plugin } from './deps.ts';
-import { create_webhook } from './guilded.ts';
+import { convert_msg, create_webhook } from './guilded.ts';
 import { tocore } from './messages.ts';
-import { convert_msg } from './guilded.ts';
 
 export class guilded_plugin extends plugin<{ token: string }> {
 	bot: Client;
@@ -47,32 +46,30 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		return await create_webhook(this.bot, channel, this.config.token);
 	}
 
-	async create_message(message: message<unknown>, platform: bridge_platform) {
-		const resp = await new WebhookClient(
-			platform.senddata as { token: string; id: string }
-		).send(await convert_msg(message, platform.channel, this));
-
-		return {
-			channel: resp.channelId,
-			id: resp.id,
-			plugin: 'bolt-guilded',
-			senddata: platform.senddata
-		};
+	async create_message(
+		message: message<unknown>,
+		channel: bridge_channel,
+		_?: undefined,
+		replytoid?: string
+	) {
+		const { id } = await new WebhookClient(
+			channel.data as { token: string; id: string }
+		).send(await convert_msg({ ...message, replytoid }, channel.id, this));
+		return id;
 	}
 
 	// deno-lint-ignore require-await
-	async edit_message(message: message<unknown>, bridge: bridge_platform) {
-		return { id: message.id, ...bridge };
+	async edit_message(_: message<unknown>, __: bridge_channel, edit_id: string) {
+		return edit_id;
 	}
 
 	async delete_message(
 		_message: deleted_message<unknown>,
-		bridge: bridge_platform
+		channel: bridge_channel,
+		id: string
 	) {
-		const msg = await this.bot.messages.fetch(bridge.channel, bridge.id!);
-
+		const msg = await this.bot.messages.fetch(channel.id, id);
 		await msg.delete();
-
-		return bridge;
+		return id;
 	}
 }

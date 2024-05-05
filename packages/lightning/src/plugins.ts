@@ -1,5 +1,5 @@
 import { EventEmitter } from '../deps.ts';
-import type { lightning } from '../lightning.ts';
+import type { lightning } from './lightning.ts';
 import type {
 	bridge_channel,
 	create_plugin,
@@ -23,12 +23,12 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 
 	/** create a new plugin instance */
 	static new<T extends plugin<unknown>>(
-		this: (new (l: lightning, config: T['config']) => T),
+		this: new (l: lightning, config: T['config']) => T,
 		config: T['config']
 	): create_plugin<T> {
-		return { type: this, config, support: '0.7.0'};
+		return { type: this, config, support: '0.7.0' };
 	}
-	
+
 	constructor(l: lightning, config: cfg) {
 		super();
 		this.lightning = l;
@@ -42,7 +42,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	abstract create_message(
 		message: message<unknown>,
 		channel: bridge_channel,
-		_?: string,
+		edit_id?: string,
 		reply_id?: string
 	): Promise<string>;
 

@@ -1,5 +1,5 @@
-import type { lightning } from '../../lightning.ts';
-import type { message, deleted_message, bridge_channel } from '../types.ts';
+import type { lightning } from '../lightning.ts';
+import type { bridge_channel, deleted_message, message } from '../types.ts';
 import { log_error } from '../utils.ts';
 
 export async function handle_message(

@@ -1,4 +1,4 @@
-import type { lightning } from '../lightning.ts';
+import type { lightning } from './lightning.ts';
 import type { plugin } from './plugins.ts';
 
 export interface attachment {
@@ -93,9 +93,7 @@ export interface command {
 		subcommands?: command[];
 	};
 	/** a function that returns a message */
-	execute: (
-		options: command_arguments
-	) => Promise<string> | string;
+	execute: (options: command_arguments) => Promise<string> | string;
 }
 
 export interface deleted_message<t> {
@@ -179,14 +177,8 @@ export interface migration {
 	from: versions;
 	/** the version to translate to */
 	to: versions;
-	/** the database to translate from */
-	from_db?: string;
-	/** the type of database to use to get data */
-	from_type: 'mongo' | 'redis'
-	/** the type of database to put data in */
-	to_type: 'mongo' | 'redis'
 	/** translate a document from one version to another */
-	translate: (data: [string,unknown][]) => [string,unknown][];
+	translate: (data: [string, unknown][]) => [string, unknown][];
 }
 
 export interface platform<t> {

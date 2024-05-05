@@ -1,14 +1,14 @@
-import { EventEmitter, RedisClient, parseArgs } from './deps.ts';
-import { bridges } from './src/bridges/mod.ts';
-import type { plugin } from './src/plugins.ts';
+import { EventEmitter, RedisClient, parseArgs } from '../deps.ts';
+import { bridges } from './bridges/mod.ts';
+import type { plugin } from './plugins.ts';
 import type {
 	command,
 	command_arguments,
 	config,
 	create_plugin,
 	plugin_events
-} from './src/types.ts';
-import { create_message, log_error } from './src/utils.ts';
+} from './types.ts';
+import { create_message, log_error } from './utils.ts';
 
 /** an instance of lightning */
 export class lightning extends EventEmitter<plugin_events> {

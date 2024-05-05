@@ -1,4 +1,4 @@
-import type { lightning } from '../../lightning.ts';
+import type { lightning } from '../lightning.ts';
 import type { command_arguments } from '../types.ts';
 
 export async function join(

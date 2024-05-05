@@ -62,7 +62,7 @@ export async function messageToCore(
 				? `${sender.avatar_url?.replace(
 						'mxc://',
 						`${homeserverUrl}/_matrix/media/v3/thumbnail/`
-					)}?width=96&height=96&method=scale`
+				  )}?width=96&height=96&method=scale`
 				: undefined
 		},
 		channel: event.room_id,
@@ -75,7 +75,7 @@ export async function messageToCore(
 			? (event.content.formatted_body as string).replace(
 					/<mx-reply>(.*?)<\/mx-reply>/i,
 					''
-				)
+			  )
 			: ((event.content['m.new_content']?.body ||
 					event.content.body) as string),
 		reply: async (msg: message<unknown>) => {

@@ -1,9 +1,5 @@
-import type {
-	bridge_platform,
-	deleted_message,
-	lightning,
-	message
-} from './deps.ts';
+import * as conv from './conv.ts';
+import type { deleted_message, lightning, message } from './deps.ts';
 import {
 	Client,
 	GatewayDispatchEvents,
@@ -11,7 +7,6 @@ import {
 	WebSocketManager,
 	plugin
 } from './deps.ts';
-import * as conv from './conv.ts';
 import * as to from './to.ts';
 
 export type discord_config = {
@@ -92,19 +87,27 @@ export class discord_plugin extends plugin<discord_config> {
 
 	create_message(
 		msg: message<unknown>,
-		bridge: to.discord_platform
-	): Promise<bridge_platform> {
-		return to.send_to_discord(this.bot.api, msg, bridge);
+		bridge: to.channel,
+		_?: undefined,
+		replytoid?: string
+	): Promise<string> {
+		return to.send_to_discord(this.bot.api, msg, bridge, _, replytoid);
 	}
 
 	edit_message(
 		msg: message<unknown>,
-		bridge: to.discord_platform
-	): Promise<bridge_platform> {
-		return to.send_to_discord(this.bot.api, msg, bridge, true);
+		bridge: to.channel,
+		edit_id: string,
+		replytoid?: string
+	): Promise<string> {
+		return to.send_to_discord(this.bot.api, msg, bridge, edit_id, replytoid);
 	}
 
-	delete_message(_msg: deleted_message<unknown>, bridge: to.discord_platform) {
-		return to.delete_on_discord(this.bot.api, bridge);
+	delete_message(
+		_msg: deleted_message<unknown>,
+		bridge: to.channel,
+		id: string
+	) {
+		return to.delete_on_discord(this.bot.api, bridge, id);
 	}
 }

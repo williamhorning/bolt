@@ -1,5 +1,10 @@
+import type {
+	bridge_channel,
+	deleted_message,
+	lightning,
+	message
+} from './deps.ts';
 import { Client, plugin } from './deps.ts';
-import type { bridge_platform, lightning, message } from './deps.ts';
 import { tocore, torevolt } from './messages.ts';
 
 export class revolt_plugin extends plugin<{ token: string }> {
@@ -42,30 +47,37 @@ export class revolt_plugin extends plugin<{ token: string }> {
 		return ch.id;
 	}
 
-	async create_message(msg: message<unknown>, bridge: bridge_platform) {
-		const channel = await this.bot.channels.fetch(bridge.channel);
-		const result = await channel.sendMessage(await torevolt(msg));
-		return {
-			...bridge,
-			id: result.id
-		};
+	async create_message(
+		msg: message<unknown>,
+		bridge: bridge_channel,
+		_: undefined,
+		replytoid?: string
+	) {
+		const channel = await this.bot.channels.fetch(bridge.id);
+		const result = await channel.sendMessage(
+			await torevolt({ ...msg, replytoid })
+		);
+		return result.id;
 	}
 
 	async edit_message(
 		msg: message<unknown>,
-		bridge: bridge_platform & { id: string }
+		bridge: bridge_channel,
+		edit_id: string,
+		replytoid?: string
 	) {
-		const message = await this.bot.messages.fetch(bridge.channel, bridge.id);
-		await message.edit(await torevolt(msg));
-		return bridge;
+		const message = await this.bot.messages.fetch(bridge.id, edit_id);
+		await message.edit(await torevolt({ ...msg, replytoid }));
+		return edit_id;
 	}
 
 	async delete_message(
-		_msg: message<unknown>,
-		bridge: bridge_platform & { id: string }
+		_: deleted_message<unknown>,
+		bridge: bridge_channel,
+		id: string
 	) {
-		const message = await this.bot.messages.fetch(bridge.channel, bridge.id);
+		const message = await this.bot.messages.fetch(bridge.id, id);
 		await message.delete();
-		return bridge;
+		return id;
 	}
 }
