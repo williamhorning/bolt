@@ -1,7 +1,11 @@
 import { fivesevenredis } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
-/** apply many migrations given data */
+/** 
+ * apply many migrations given data 
+ * @param migrations the migrations to apply
+ * @param data the data to apply the migrations to
+ */
 export function apply_migrations(
 	migrations: migration[],
 	data: [string, unknown][]
@@ -31,7 +35,10 @@ export function create_message(text: string): message<undefined> {
 	return data;
 }
 
-/** a function that returns a config object when given a partial config object */
+/** 
+ * a function that returns a config object when given a partial config object 
+ * @param config a partial config object
+ */
 export function define_config(config?: Partial<config>): config {
 	return {
 		plugins: [],
@@ -42,7 +49,11 @@ export function define_config(config?: Partial<config>): config {
 	};
 }
 
-/** get migrations that can then be applied using apply_migrations */
+/** 
+ * get migrations that can then be applied using apply_migrations
+ * @param from the version that the data is currently in
+ * @param to the version that the data will be migrated to
+ */
 export function get_migrations(from: versions, to: versions): migration[] {
 	const migrations: migration[] = [fivesevenredis];
 	return migrations.slice(

@@ -9,8 +9,8 @@ export async function handle_message(
 ): Promise<void> {
 	const bridge =
 		type === 'create_message'
-			? await lightning.bridge.get_bridge(msg)
-			: await lightning.bridge.get_bridge_message(msg.id);
+			? await lightning.bridges.get_bridge(msg)
+			: await lightning.bridges.get_bridge_message(msg.id);
 
 	if (!bridge) return;
 
@@ -101,7 +101,7 @@ async function get_reply_id(
 ) {
 	if ('replytoid' in msg && msg.replytoid) {
 		try {
-			const bridge_from_msg = await lightning.bridge.get_bridge_message(
+			const bridge_from_msg = await lightning.bridges.get_bridge_message(
 				msg.replytoid
 			);
 

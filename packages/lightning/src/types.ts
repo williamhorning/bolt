@@ -1,6 +1,7 @@
 import type { lightning } from './lightning.ts';
 import type { plugin } from './plugins.ts';
 
+/** attachments within a message */
 export interface attachment {
 	/** alt text for images */
 	alt?: string;
@@ -15,11 +16,11 @@ export interface attachment {
 }
 
 /** channel within a bridge */
-export interface bridge_channel<datatype = unknown> {
+export interface bridge_channel<data_type = unknown> {
 	/** the id of this channel */
 	id: string;
 	/** the data needed to bridge this channel */
-	data: datatype;
+	data: data_type;
 	/** the plugin used to bridge this channel */
 	plugin: string;
 }
@@ -38,13 +39,19 @@ export interface bridge_document {
 	use_rawname: boolean;
 }
 
-/** the constructor for a plugin */
-export interface create_plugin<T extends plugin<T['config']>> {
-	type: new (l: lightning, config: T['config']) => T;
-	config: T['config'];
+/** the way to make a plugin */
+export interface create_plugin<
+	plugin_type extends plugin<plugin_type['config']>
+> {
+	/** the actual constructor of the plugin */
+	type: new (l: lightning, config: plugin_type['config']) => plugin_type;
+	/** the configuration options for the plugin */
+	config: plugin_type['config'];
+	/** what version the plugin supports */
 	support: string;
 }
 
+/** configuration options for bolt */
 export interface config {
 	/** a list of plugins */
 	// deno-lint-ignore no-explicit-any
@@ -79,30 +86,36 @@ export interface command_arguments {
 	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
 }
 
+/** options when parsing a command */
+export interface command_options {
+	/** this will be the key passed to options.opts in the execute function */
+	argument_name?: string;
+	/** whether or not the argument provided is required */
+	argument_required?: boolean;
+	/** an array of commands that show as subcommands */
+	subcommands?: command[];
+}
+
+/** commands are a way for users to interact with the bot */
 export interface command {
 	/** the name of the command */
 	name: string;
 	/** an optional description */
 	description?: string;
-	options?: {
-		/** this will be the key passed to options.opts in the execute function */
-		argument_name?: string;
-		/** whether or not the argument provided is required */
-		argument_required?: boolean;
-		/** an array of commands that show as subcommands */
-		subcommands?: command[];
-	};
+	/** options when parsing the command */
+	options?: command_options;
 	/** a function that returns a message */
 	execute: (options: command_arguments) => Promise<string> | string;
 }
 
-export interface deleted_message<t> {
+/** a representation of a message that has been deleted */
+export interface deleted_message<platform_message> {
 	/** the message's id */
 	id: string;
 	/** the channel the message was sent in */
 	channel: string;
 	/** the platform the message was sent on */
-	platform: platform<t>;
+	platform: platform<platform_message>;
 	/**
 	 * the time the message was sent/edited as a temporal instant
 	 * @see https://tc39.es/proposal-temporal/docs/instant.html
@@ -110,24 +123,67 @@ export interface deleted_message<t> {
 	timestamp: Temporal.Instant;
 }
 
+/** the author of an embed */
+export interface embed_author {
+	/** the name of the author */
+	name: string;
+	/** the url of the author */
+	url?: string;
+	/** the icon of the author */
+	icon_url?: string;
+}
+
+/** a field within an embed */
+export interface embed_field {
+	/** the name of the field */
+	name: string;
+	/** the value of the field */
+	value: string;
+	/** whether or not the field is inline */
+	inline?: boolean;
+}
+
+/** the footer of an embed */
+export interface embed_footer {
+	/** the footer text */
+	text: string;
+	/** the icon of the footer */
+	icon_url?: string;
+}
+
+/** media inside of an embed */
 export interface embed_media {
+	/** the height of the media */
 	height?: number;
+	/** the url of the media */
 	url: string;
+	/** the width of the media */
 	width?: number;
 }
 
 /** a discord-style embed */
 export interface embed {
-	author?: { name: string; url?: string; icon_url?: string };
+	/** the author of the embed */
+	author?: embed_author;
+	/** the color of the embed */
 	color?: number;
+	/** the text in an embed */
 	description?: string;
-	fields?: { name: string; value: string; inline?: boolean }[];
-	footer?: { text: string; icon_url?: string };
+	/** fields within the embed */
+	fields?: embed_field[];
+	/** a footer shown in the embed */
+	footer?: embed_footer;
+	/** an image shown in the embed */
 	image?: embed_media;
+	/** a thumbnail shown in the embed */
 	thumbnail?: embed_media;
+	/** the time (in epoch ms) shown in the embed */
 	timestamp?: number;
+	/** the title of the embed */
 	title?: string;
+	/** a site linked to by the embed */
 	url?: string;
+	/** a video inside of the embed */
 	video?: Omit<embed_media, 'url'> & { url?: string };
 }
 
@@ -145,22 +201,29 @@ export interface err {
 	message: message<unknown>;
 }
 
-export interface message<t> extends deleted_message<t> {
+/** the author of a message */
+export interface message_author {
+	/** the nickname of the author */
+	username: string;
+	/** the author's username */
+	rawname: string;
+	/** a url pointing to the authors profile picture */
+	profile?: string;
+	/** a url pointing to the authors banner */
+	banner?: string;
+	/** the author's id on their platform */
+	id: string;
+	/** the color of an author */
+	color?: string;
+}
+
+/** a message recieved by a plugin */
+export interface message<platform_message>
+	extends deleted_message<platform_message> {
+	/** the attachments sent with the message */
 	attachments?: attachment[];
-	author: {
-		/** the nickname of the author */
-		username: string;
-		/** the author's username */
-		rawname: string;
-		/** a url pointing to the authors profile picture */
-		profile?: string;
-		/** a url pointing to the authors banner */
-		banner?: string;
-		/** the author's id on their platform */
-		id: string;
-		/** the color of an author */
-		color?: string;
-	};
+	/** the author of the message */
+	author: message_author;
 	/** message content (can be markdown) */
 	content?: string;
 	/** discord-style embeds */
@@ -177,15 +240,16 @@ export interface migration {
 	from: versions;
 	/** the version to translate to */
 	to: versions;
-	/** translate a document from one version to another */
+	/** a function to translate a document */
 	translate: (data: [string, unknown][]) => [string, unknown][];
 }
 
-export interface platform<t> {
+/** the platform that recieved a message */
+export interface platform<message_type> {
 	/** the name of a plugin */
 	name: string;
 	/** the platforms representation of a message */
-	message: t;
+	message: message_type;
 	/** the webhook the message was sent with */
 	webhookid?: string;
 }
@@ -206,8 +270,6 @@ export type plugin_events = {
 
 /** all of the versions with migrations to/from them */
 export enum versions {
-	/** versions after commit 7de1cf2 but below 0.5 */
-	FourBeta = '0.4-beta',
 	/** versions 0.5 through 0.6 */
 	Five = '0.5',
 	/** versions 0.7 and above*/

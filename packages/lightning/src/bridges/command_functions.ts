@@ -5,7 +5,7 @@ export async function join(
 	opts: command_arguments,
 	l: lightning
 ): Promise<[boolean, string]> {
-	if (await l.bridge.is_in_bridge(opts.channel)) {
+	if (await l.bridges.is_in_bridge(opts.channel)) {
 		return [
 			false,
 			"To do this, you can't be in a bridge. Try leaving your bridge first."
@@ -22,7 +22,7 @@ export async function join(
 	}
 
 	const plugin = l.plugins.get(opts.platform);
-	const bridge = (await l.bridge.get_bridge({
+	const bridge = (await l.bridges.get_bridge({
 		id: `lightning-bridge-${id}`
 	})) || {
 		allow_editing: false,
@@ -37,7 +37,7 @@ export async function join(
 		data: await plugin!.create_bridge(opts.channel)
 	});
 
-	await l.bridge.set_bridge(bridge);
+	await l.bridges.set_bridge(bridge);
 
 	return [true, 'Joined a bridge!'];
 }
@@ -46,7 +46,7 @@ export async function leave(
 	opts: command_arguments,
 	l: lightning
 ): Promise<[boolean, string]> {
-	const bridge = await l.bridge.get_bridge({
+	const bridge = await l.bridges.get_bridge({
 		channel: opts.channel
 	});
 
@@ -54,7 +54,7 @@ export async function leave(
 		return [true, "You're not in a bridge, so try joining a bridge first."];
 	}
 
-	await l.bridge.set_bridge({
+	await l.bridges.set_bridge({
 		...bridge,
 		channels: bridge.channels.filter(
 			i => i.id !== opts.channel && i.plugin !== opts.platform
@@ -67,7 +67,7 @@ export async function leave(
 export async function reset(opts: command_arguments, l: lightning) {
 	if (!opts.opts.name)
 		opts.opts.name =
-			(await l.bridge.get_bridge({ channel: opts.channel }))?.id ||
+			(await l.bridges.get_bridge({ channel: opts.channel }))?.id ||
 			opts.channel;
 
 	let [ok, text] = await leave(opts, l);
@@ -78,7 +78,7 @@ export async function reset(opts: command_arguments, l: lightning) {
 }
 
 export async function toggle(opts: command_arguments, l: lightning) {
-	const bridge = await l.bridge.get_bridge({ channel: opts.channel });
+	const bridge = await l.bridges.get_bridge({ channel: opts.channel });
 
 	if (!bridge) {
 		return "You're not in a bridge right now. Try joining one first.";
@@ -96,13 +96,13 @@ export async function toggle(opts: command_arguments, l: lightning) {
 
 	bridge[setting] = !bridge[setting];
 
-	await l.bridge.set_bridge(bridge);
+	await l.bridges.set_bridge(bridge);
 
 	return 'Toggled that setting!';
 }
 
 export async function status(args: command_arguments, l: lightning) {
-	const current = await l.bridge.get_bridge(args);
+	const current = await l.bridges.get_bridge(args);
 
 	if (!current) {
 		return "You're not in any bridges right now.";

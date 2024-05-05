@@ -12,7 +12,8 @@ import { create_message, log_error } from './utils.ts';
 
 /** an instance of lightning */
 export class lightning extends EventEmitter<plugin_events> {
-	bridge: bridges;
+	/** the bridge system */
+	bridges: bridges;
 	/** the commands registered */
 	commands: Map<string, command>;
 	/** the config used */
@@ -29,7 +30,7 @@ export class lightning extends EventEmitter<plugin_events> {
 		this.commands = new Map(config.commands);
 		this.redis = new RedisClient(redis_conn);
 		this.listen_commands();
-		this.bridge = new bridges(this);
+		this.bridges = new bridges(this);
 		this.load(this.config.plugins);
 	}
 
