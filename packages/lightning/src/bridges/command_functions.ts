@@ -22,12 +22,13 @@ export async function join(
 	}
 
 	const plugin = l.plugins.get(opts.platform);
+	
 	const bridge = (await l.bridges.get_bridge({
-		id: `lightning-bridge-${id}`
+		id
 	})) || {
 		allow_editing: false,
 		channels: [],
-		id: `lightning-bridge-${id}`,
+		id,
 		use_rawname: false
 	};
 
@@ -38,6 +39,8 @@ export async function join(
 	});
 
 	await l.bridges.set_bridge(bridge);
+
+	await l.redis.sendCommand(['SET', `lightning-bchannel-${opts.channel}`, bridge.id])
 
 	return [true, 'Joined a bridge!'];
 }
@@ -60,6 +63,8 @@ export async function leave(
 			i => i.id !== opts.channel && i.plugin !== opts.platform
 		)
 	});
+
+	await l.redis.sendCommand(['DEL', `lightning-bchannel-${opts.channel}`])
 
 	return [true, 'Left a bridge!'];
 }
@@ -102,7 +107,7 @@ export async function toggle(opts: command_arguments, l: lightning) {
 }
 
 export async function status(args: command_arguments, l: lightning) {
-	const current = await l.bridges.get_bridge(args);
+	const current = await l.bridges.get_bridge({ channel: args.channel });
 
 	if (!current) {
 		return "You're not in any bridges right now.";

@@ -12,25 +12,25 @@ export class bridges {
 	constructor(l: lightning) {
 		this.l = l;
 		l.on('create_message', async msg => {
-			await new Promise(res => setTimeout(res, 250));
+			await new Promise(res => setTimeout(res, 15));
 			if (await this.is_bridged(msg.id)) return;
 			l.emit('create_nonbridged_message', msg);
 			handle_message(l, msg, 'create_message');
 		});
 		l.on('edit_message', async msg => {
-			await new Promise(res => setTimeout(res, 250));
+			await new Promise(res => setTimeout(res, 15));
 			if (await this.is_bridged(msg.id)) return;
 			handle_message(l, msg, 'edit_message');
 		});
 		l.on('delete_message', async msg => {
-			await new Promise(res => setTimeout(res, 250));
+			await new Promise(res => setTimeout(res, 15));
 			handle_message(l, msg, 'delete_message');
 		});
 		l.commands.set('bridge', bridge_commands(l));
 	}
 
 	/**
-	 * get all the platforms a message was bridged to 
+	 * get all the platforms a message was bridged to
 	 * @param id the id of the message to get the platforms for
 	 */
 	async get_bridge_message(id: string): Promise<bridge_document | undefined> {
@@ -42,20 +42,19 @@ export class bridges {
 		return JSON.parse(rdata as string) as bridge_document;
 	}
 
-	/** 
-	 * check if a message was bridged 
+	/**
+	 * check if a message was bridged
 	 * @param id the id of the message to check
 	 */
 	async is_bridged(id: string): Promise<boolean> {
-		return Boolean(
-			Number(
-				await this.l.redis.sendCommand(['EXISTS', `lightning-isbridged-${id}`])
-			)
-		);
+		return Boolean(await this.l.redis.sendCommand([
+			'EXISTS',
+			`lightning-bridged-${id}`
+		]));
 	}
 
-	/** 
-	 * check if a channel is in a bridge 
+	/**
+	 * check if a channel is in a bridge
 	 * @param channel the channel to check
 	 */
 	async is_in_bridge(channel: string): Promise<boolean> {
@@ -69,8 +68,8 @@ export class bridges {
 		);
 	}
 
-	/** 
-	 * get a bridge using the bridges name or a channel in it 
+	/**
+	 * get a bridge using the bridges name or a channel in it
 	 * @param param0 the id or channel of the bridge
 	 */
 	async get_bridge({
@@ -80,16 +79,22 @@ export class bridges {
 		id?: string;
 		channel?: string;
 	}): Promise<bridge_document | undefined> {
+		if (channel) {
+			id = (await this.l.redis.sendCommand([
+				'GET',
+				`lightning-bchannel-${channel}`
+			])) as string;
+		}
 		return JSON.parse(
 			(await this.l.redis.sendCommand([
 				'GET',
-				`lightning-${id ? 'bridge' : 'bchannel'}-${id || channel}`
+				`lightning-bridge-${id}`
 			])) as string
 		);
 	}
 
 	/**
-	 * update a bridge in a database 
+	 * update a bridge in a database
 	 * @param bridge the bridge to update
 	 */
 	async set_bridge(bridge: bridge_document): Promise<void> {

@@ -30,6 +30,16 @@ export interface bridge_channel<data_type = unknown> {
 	plugin: string;
 }
 
+/** bridged messages */
+export interface bridge_message {
+	/** the id of the message */
+	id: string;
+	/** the id of the channel the message was sent in */
+	channel: string;
+	/** the platform the message was sent on */
+	platform: string;
+}
+
 /** the representation of a bridge */
 export interface bridge_document {
 	/** whether or not to allow editing */
@@ -39,7 +49,7 @@ export interface bridge_document {
 	/** the id of the bridge */
 	id: string;
 	/** messages bridged using these channels */
-	messages?: string[];
+	messages?: bridge_message[];
 	/** whether or not to use nicknames */
 	use_rawname: boolean;
 }

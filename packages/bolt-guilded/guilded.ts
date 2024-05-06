@@ -49,12 +49,12 @@ export async function create_webhook(
 		});
 	}
 	const wh = await new_wh.json();
-	if (!wh.token) {
+	if (!wh.webhook.token) {
 		throw new Error('Webhook lacks token!', {
 			cause: JSON.stringify(wh)
 		});
 	}
-	return { id: wh.id, token: wh.token };
+	return { id: wh.webhook.id, token: wh.webhook.token };
 }
 
 type guilded_msg = RESTPostWebhookBody & { replyMessageIds?: string[] };
@@ -97,7 +97,7 @@ export async function convert_msg(
 function get_valid_username(msg: message<unknown>) {
 	function valid(e: string) {
 		if (!e || e.length === 0 || e.length > 32) return false;
-		return /^[a-zA-Z0-9_ ()]*$/gms.test(e);
+		return /^[a-zA-Z0-9_ ()-]*$/gms.test(e);
 	}
 
 	if (valid(msg.author.username)) {

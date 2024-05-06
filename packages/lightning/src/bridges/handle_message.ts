@@ -1,5 +1,10 @@
 import type { lightning } from '../lightning.ts';
-import type { bridge_channel, deleted_message, message } from '../types.ts';
+import type {
+	bridge_channel,
+	bridge_message,
+	deleted_message,
+	message
+} from '../types.ts';
 import { log_error } from '../utils.ts';
 
 export async function handle_message(
@@ -16,11 +21,16 @@ export async function handle_message(
 
 	if (type !== 'create_message' && bridge.allow_editing !== true) return;
 
-	if (!bridge.channels || bridge.channels.length < 1) return;
+	const channels = bridge.channels.filter(
+		i => i.id !== msg.channel && i.plugin !== msg.platform.name
+	);
 
-	const messages = [];
+	if (channels.length < 1) return;
 
-	for (const index in bridge.channels) {
+	const messages = [] as bridge_message[];
+
+	for (const channel of channels) {
+		const index = bridge.channels.indexOf(channel);
 		const platform = bridge.channels[index];
 		const bridged_id = bridge.messages?.[index];
 
@@ -48,7 +58,7 @@ export async function handle_message(
 			dat = await plugin[type](
 				msg as message<unknown>,
 				platform,
-				bridged_id!,
+				bridged_id?.id!,
 				reply_id
 			);
 		} catch (e) {
@@ -57,7 +67,7 @@ export async function handle_message(
 			try {
 				const err_msg = (await log_error(e, { platform, bridged_id })).message;
 
-				dat = await plugin[type](err_msg, platform, bridged_id!, reply_id);
+				dat = await plugin[type](err_msg, platform, bridged_id?.id!, reply_id);
 			} catch (e) {
 				await log_error(
 					new Error(
@@ -76,13 +86,13 @@ export async function handle_message(
 			'1'
 		]);
 
-		messages.push(dat);
+		messages.push({ id: dat, channel: platform.id, platform: platform.plugin });
 	}
 
 	for (const i of messages) {
 		await lightning.redis.sendCommand([
 			'SET',
-			`lightning-bridged-${i}`,
+			`lightning-bridged-${i.id}`,
 			JSON.stringify({ ...bridge, messages })
 		]);
 	}
@@ -101,23 +111,18 @@ async function get_reply_id(
 ) {
 	if ('replytoid' in msg && msg.replytoid) {
 		try {
-			const bridge_from_msg = await lightning.bridges.get_bridge_message(
-				msg.replytoid
+			const bridged = await lightning.bridges.get_bridge_message(msg.replytoid);
+
+			if (!bridged) return;
+
+			const bridge_channel = bridged.messages?.find(
+				i => i.channel === channel.id && i.platform === channel.plugin
 			);
 
-			if (!bridge_from_msg) return;
-
-			const bridge_channel = bridge_from_msg.channels.find(
-				i => i.id === channel.id && i.plugin === channel.plugin
-			);
-
-			if (!bridge_channel) return;
-
-			return bridge_from_msg.messages![
-				bridge_from_msg.channels.indexOf(bridge_channel)
-			];
+			return bridge_channel?.id;
 		} catch {
 			return;
 		}
 	}
+	return;
 }

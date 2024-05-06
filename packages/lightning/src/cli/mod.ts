@@ -16,12 +16,12 @@ if (cmd === 'version') {
 	migrations();
 } else {
 	console.log('lightning v0.6.0 - cross-platform bot connecting communities');
-	console.log('Usage: lightning [subcommand] <options>');
-	console.log('Subcommands:');
-	console.log('help: show this');
-	console.log('run: run an of lightning using the settings in config.ts');
-	console.log('migrations: run migration script');
-	console.log('version: shows version');
-	console.log('Options:');
-	console.log('--config <string>: absolute path to config file');
+	console.log('  Usage: lightning [subcommand] <options>');
+	console.log('  Subcommands:');
+	console.log('    help: show this');
+	console.log('    run: run an of lightning using the settings in config.ts');
+	console.log('    migrations: run migration script');
+	console.log('    version: shows version');
+	console.log('  Options:');
+	console.log('    --config <string>: absolute path to config file');
 }

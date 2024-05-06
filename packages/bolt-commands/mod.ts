@@ -1,6 +1,6 @@
 import type { command } from '../lightning/src/types.ts';
 
-export default [
+export const bolt_commands = [
 	[
 		'help',
 		{

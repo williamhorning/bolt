@@ -8,7 +8,7 @@ export async function tocore(
 ): Promise<message<Message> | undefined> {
 	if (!message.serverId) return;
 	let author;
-	if (!message.createdByWebhookId) {
+	if (!message.createdByWebhookId && message.authorId !== 'Ann6LewA') {
 		author = await plugin.bot.members.fetch(message.serverId, message.authorId);
 	}
 	const update_content = message.content.replaceAll('\n```\n```\n', '\n');
