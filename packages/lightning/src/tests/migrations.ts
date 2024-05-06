@@ -52,7 +52,18 @@ const migrations_seven = [
 				}
 			],
 			id: 'oldeditsupport-1',
-			messages: ['1', '2'],
+			messages: [
+				{
+					channel: '000000000000000000',
+					id: '1',
+					plugin: 'bolt-discord'
+				},
+				{
+					channel: '6cb2f623-8eee-44a3-b5bf-cf9b147e46d7',
+					id: '2',
+					plugin: 'bolt-guilded'
+				}
+			],
 			use_rawname: false
 		}
 	]
