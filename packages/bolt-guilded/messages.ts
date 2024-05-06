@@ -5,7 +5,7 @@ import { guilded_plugin } from './mod.ts';
 export async function tocore(
 	message: Message,
 	plugin: guilded_plugin
-): Promise<message<Message> | undefined> {
+): Promise<message | undefined> {
 	if (!message.serverId) return;
 	let author;
 	if (!message.createdByWebhookId && message.authorId !== 'Ann6LewA') {
@@ -33,7 +33,7 @@ export async function tocore(
 							name: embed.author.name || 'embed author',
 							iconUrl: embed.author.iconURL || undefined,
 							url: embed.author.url || undefined
-					  }
+						}
 					: undefined,
 				image: embed.image || undefined,
 				thumbnail: embed.thumbnail || undefined,
@@ -52,15 +52,11 @@ export async function tocore(
 				video: embed.video || undefined
 			};
 		}),
-		platform: {
-			name: 'bolt-guilded',
-			message,
-			webhookid: message.createdByWebhookId || undefined
-		},
-		reply: async (msg: message<unknown>) => {
+		plugin: 'bolt-guilded',
+		reply: async (msg: message) => {
 			await message.reply(await convert_msg(msg));
 		},
 		content: update_content,
-		replytoid: message.isReply ? message.replyMessageIds[0] : undefined
+		reply_id: message.isReply ? message.replyMessageIds[0] : undefined
 	};
 }

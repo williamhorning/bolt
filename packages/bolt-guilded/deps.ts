@@ -14,4 +14,3 @@ export {
 	type lightning,
 	type message
 } from '../lightning/mod.ts';
-

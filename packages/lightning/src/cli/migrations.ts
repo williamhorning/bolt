@@ -2,7 +2,7 @@ import { MongoClient, RedisClient } from '../../deps.ts';
 import { convert_five_to_seven_redis } from '../migrations.ts';
 import { versions } from '../types.ts';
 import { apply_migrations, get_migrations } from '../utils.ts';
-import { writeFile } from "node:fs/promises";
+import { writeFile } from 'node:fs/promises';
 
 export async function migrations() {
 	const redis_hostname = prompt(
@@ -100,7 +100,7 @@ export async function migrations() {
 
 	console.log(`migrated your data!`);
 
-	const file = await Deno.makeTempFile()
+	const file = await Deno.makeTempFile();
 
 	await writeFile(file, JSON.stringify(final_data));
 

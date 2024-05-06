@@ -33,7 +33,7 @@ export class guilded_plugin extends plugin<{ token: string }> {
 			this.emit('delete_message', {
 				channel: del.channelId,
 				id: del.id,
-				platform: { message: del, name: 'bolt-guilded' },
+				plugin: 'bolt-guilded',
 				timestamp: Temporal.Instant.from(del.deletedAt)
 			});
 		});
@@ -47,24 +47,24 @@ export class guilded_plugin extends plugin<{ token: string }> {
 	}
 
 	async create_message(
-		message: message<unknown>,
+		message: message,
 		channel: bridge_channel,
 		_?: undefined,
-		replytoid?: string
+		reply_id?: string
 	) {
 		const { id } = await new WebhookClient(
 			channel.data as { token: string; id: string }
-		).send(await convert_msg({ ...message, replytoid }, channel.id, this));
+		).send(await convert_msg({ ...message, reply_id }, channel.id, this));
 		return id;
 	}
 
 	// deno-lint-ignore require-await
-	async edit_message(_: message<unknown>, __: bridge_channel, edit_id: string) {
+	async edit_message(_: message, __: bridge_channel, edit_id: string) {
 		return edit_id;
 	}
 
 	async delete_message(
-		_message: deleted_message<unknown>,
+		_message: deleted_message,
 		channel: bridge_channel,
 		id: string
 	) {

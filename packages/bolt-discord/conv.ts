@@ -25,10 +25,10 @@ type discord_message = Omit<update_data, 'mentions'>;
 type webhook_message = wh_query & wh_token & { files?: RawFile[]; wait: true };
 
 export async function to_discord(
-	message: message<unknown>,
+	message: message,
 	replied_message?: discord_message
 ): Promise<webhook_message> {
-	if (message.replytoid && replied_message) {
+	if (message.reply_id && replied_message) {
 		if (!message.embeds) message.embeds = [];
 		message.embeds.push(
 			{
@@ -46,7 +46,8 @@ export async function to_discord(
 			...(replied_message.embeds || []).map(i => {
 				return {
 					...i,
-					timestamp: i.timestamp ? Number(i.timestamp) : undefined
+					timestamp: i.timestamp ? Number(i.timestamp) : undefined,
+					video : i.video ? { ...i.video, url: i.video.url || "" } : undefined
 				};
 			})
 		);
@@ -80,7 +81,7 @@ export async function to_discord(
 export async function to_core(
 	api: API,
 	message: discord_message
-): Promise<message<discord_message>> {
+): Promise<message> {
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
 	if (message.type === 7) message.content = '*joined on discord*';
 	if (message.sticker_items) {
@@ -132,7 +133,7 @@ export async function to_core(
 				timestamp: i.timestamp ? Number(i.timestamp) : undefined
 			};
 		}),
-		reply: async (msg: message<unknown>) => {
+		reply: async (msg: message) => {
 			if (!data.author.id || data.author.id == '') return;
 			await api.channels.createMessage(message.channel_id, {
 				...(await to_discord(msg)),
@@ -141,11 +142,7 @@ export async function to_core(
 				}
 			});
 		},
-		platform: {
-			name: 'bolt-discord',
-			message,
-			webhookid: message.webhook_id
-		},
+		plugin: 'bolt-discord',
 		attachments: message.attachments?.map(i => {
 			return {
 				file: i.url,
@@ -154,9 +151,9 @@ export async function to_core(
 				size: i.size / 1000000
 			};
 		}),
-		replytoid: message.referenced_message?.id
+		reply_id: message.referenced_message?.id
 	};
-	return data;
+	return data as message;
 }
 
 export function to_command(interaction: { api: API; data: APIInteraction }) {
@@ -180,7 +177,7 @@ export function to_command(interaction: { api: API; data: APIInteraction }) {
 			);
 		},
 		channel: interaction.data.channel.id,
-		platform: 'bolt-discord',
+		plugin: 'bolt-discord',
 		opts,
 		timestamp: to_instant(interaction.data.id)
 	} as command_arguments;

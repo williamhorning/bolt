@@ -3,7 +3,7 @@ import { log_error } from '../utils.ts';
 
 const temporal_instant = Temporal.Instant.from('2021-01-01T00:00:00Z');
 
-globalThis.Temporal.Now.instant = () => {
+Temporal.Now.instant = () => {
 	return temporal_instant;
 };
 
@@ -46,7 +46,6 @@ const error_id = () => 'test';
 
 const error_return = {
 	e: err,
-	cause: err.cause,
 	uuid: 'test',
 	extra: { test: 'test' },
 	message: {
@@ -62,10 +61,7 @@ const error_return = {
 		id: '',
 		reply: async () => {},
 		timestamp: Temporal.Instant.from('2021-01-01T00:00:00Z'),
-		platform: {
-			name: 'lightning',
-			message: undefined
-		}
+		plugin: 'lightning'
 	}
 };
 

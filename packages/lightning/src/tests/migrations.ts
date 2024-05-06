@@ -1,18 +1,18 @@
 import { assertEquals } from '../../deps.ts';
-import { fivesevenredis } from '../migrations.ts';
+import { fivesevenexistingredis } from '../migrations.ts';
 import { versions } from '../types.ts';
 import { apply_migrations, get_migrations } from '../utils.ts';
 
 Deno.test('get a migration', () => {
 	const migrations = get_migrations(versions.Five, versions.Seven);
-	assertEquals(migrations, [fivesevenredis]);
-})
+	assertEquals(migrations, [fivesevenexistingredis]);
+});
 
 Deno.test('apply migrations', () => {
-	const result = apply_migrations([fivesevenredis], migrations_five);
+	const result = apply_migrations([fivesevenexistingredis], migrations_five);
 
 	assertEquals(result, migrations_seven as [string, unknown][]);
-})
+});
 
 const migrations_five = [
 	[

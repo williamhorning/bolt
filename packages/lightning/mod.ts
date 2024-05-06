@@ -1,6 +1,6 @@
 /**
  * lightning is a typescript-based chatbot that supports
- * bridging multiple chat platforms via plugins.
+ * bridging multiple chat apps via plugins.
  * @module
  */
 

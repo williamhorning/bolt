@@ -3,7 +3,7 @@ import type { bridge_document } from '../types.ts';
 import { bridge_commands } from './commands.ts';
 import { handle_message } from './handle_message.ts';
 
-/** a thing that bridges messages between platforms defined by plugins */
+/** a thing that bridges messages between plugins */
 export class bridges {
 	/** the parent instance of lightning */
 	private l: lightning;
@@ -30,8 +30,8 @@ export class bridges {
 	}
 
 	/**
-	 * get all the platforms a message was bridged to
-	 * @param id the id of the message to get the platforms for
+	 * get all the channels a message was bridged to
+	 * @param id the id of the message to get the channels for
 	 */
 	async get_bridge_message(id: string): Promise<bridge_document | undefined> {
 		const rdata = await this.l.redis.sendCommand([
@@ -47,10 +47,9 @@ export class bridges {
 	 * @param id the id of the message to check
 	 */
 	async is_bridged(id: string): Promise<boolean> {
-		return Boolean(await this.l.redis.sendCommand([
-			'EXISTS',
-			`lightning-bridged-${id}`
-		]));
+		return Boolean(
+			await this.l.redis.sendCommand(['EXISTS', `lightning-bridged-${id}`])
+		);
 	}
 
 	/**

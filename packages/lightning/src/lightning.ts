@@ -63,8 +63,6 @@ export class lightning extends EventEmitter<plugin_events> {
 	private listen_commands() {
 		const prefix = this.config.cmd_prefix || 'l!';
 
-		this.on('create_command', this.run_command);
-
 		this.on('create_nonbridged_message', m => {
 			if (!m.content?.startsWith(prefix)) return;
 
@@ -78,7 +76,7 @@ export class lightning extends EventEmitter<plugin_events> {
 				subcmd: subcmd as string,
 				opts,
 				channel: m.channel,
-				platform: m.platform.name,
+				plugin: m.plugin,
 				reply: m.reply,
 				timestamp: m.timestamp
 			});

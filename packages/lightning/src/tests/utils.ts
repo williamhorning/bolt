@@ -3,7 +3,7 @@ import { create_message, define_config } from '../utils.ts';
 
 const temporal_instant = Temporal.Instant.from('2021-01-01T00:00:00Z');
 
-globalThis.Temporal.Now.instant = () => {
+Temporal.Now.instant = () => {
 	return temporal_instant;
 };
 
@@ -33,15 +33,11 @@ const msg = {
 	id: '',
 	reply: async () => {},
 	timestamp: Temporal.Instant.from('2021-01-01T00:00:00Z'),
-	platform: {
-		name: 'lightning',
-		message: undefined
-	}
+	plugin: 'lightning'
 };
 
 const cfg = {
 	plugins: [],
-	commands: [],
 	redis_host: 'localhost',
 	redis_port: 6379
 };

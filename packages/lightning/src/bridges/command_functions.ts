@@ -21,8 +21,8 @@ export async function join(
 		];
 	}
 
-	const plugin = l.plugins.get(opts.platform);
-	
+	const plugin = l.plugins.get(opts.plugin);
+
 	const bridge = (await l.bridges.get_bridge({
 		id
 	})) || {
@@ -34,13 +34,17 @@ export async function join(
 
 	bridge.channels.push({
 		id: opts.channel,
-		plugin: opts.platform,
+		plugin: opts.plugin,
 		data: await plugin!.create_bridge(opts.channel)
 	});
 
 	await l.bridges.set_bridge(bridge);
 
-	await l.redis.sendCommand(['SET', `lightning-bchannel-${opts.channel}`, bridge.id])
+	await l.redis.sendCommand([
+		'SET',
+		`lightning-bchannel-${opts.channel}`,
+		bridge.id
+	]);
 
 	return [true, 'Joined a bridge!'];
 }
@@ -60,11 +64,11 @@ export async function leave(
 	await l.bridges.set_bridge({
 		...bridge,
 		channels: bridge.channels.filter(
-			i => i.id !== opts.channel && i.plugin !== opts.platform
+			i => i.id !== opts.channel && i.plugin !== opts.plugin
 		)
 	});
 
-	await l.redis.sendCommand(['DEL', `lightning-bchannel-${opts.channel}`])
+	await l.redis.sendCommand(['DEL', `lightning-bchannel-${opts.channel}`]);
 
 	return [true, 'Left a bridge!'];
 }

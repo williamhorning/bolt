@@ -60,7 +60,7 @@ export async function create_webhook(
 type guilded_msg = RESTPostWebhookBody & { replyMessageIds?: string[] };
 
 export async function convert_msg(
-	msg: message<unknown>,
+	msg: message,
 	channel?: string,
 	plugin?: guilded_plugin
 ): Promise<guilded_msg> {
@@ -74,7 +74,7 @@ export async function convert_msg(
 		]
 	} as guilded_msg;
 
-	if (msg.replytoid) message.replyMessageIds = [msg.replytoid];
+	if (msg.reply_id) message.replyMessageIds = [msg.reply_id];
 
 	if (msg.attachments?.length) {
 		if (!message.embeds) message.embeds = [];
@@ -94,7 +94,7 @@ export async function convert_msg(
 	return message;
 }
 
-function get_valid_username(msg: message<unknown>) {
+function get_valid_username(msg: message) {
 	function valid(e: string) {
 		if (!e || e.length === 0 || e.length > 32) return false;
 		return /^[a-zA-Z0-9_ ()-]*$/gms.test(e);
@@ -110,15 +110,15 @@ function get_valid_username(msg: message<unknown>) {
 }
 
 async function get_reply_embeds(
-	msg: message<unknown>,
+	msg: message,
 	channel?: string,
 	plugin?: guilded_plugin
 ) {
-	if (!msg.replytoid || !channel || !plugin) return [];
+	if (!msg.reply_id || !channel || !plugin) return [];
 	try {
 		const msg_replied_to = await plugin.bot.messages.fetch(
 			channel,
-			msg.replytoid
+			msg.reply_id
 		);
 		let author;
 		if (!msg_replied_to.createdByWebhookId) {

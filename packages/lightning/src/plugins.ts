@@ -9,7 +9,7 @@ import type {
 } from './types.ts';
 
 /**
- * lightning plugins are used to add support for new platforms to lightning
+ * lightning plugins are used to add support for new chat apps to lightning
  * @module
  */
 
@@ -43,7 +43,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 
 	/** this is used to bridge a NEW message */
 	abstract create_message(
-		message: message<unknown>,
+		message: message,
 		channel: bridge_channel,
 		edit_id?: string,
 		reply_id?: string
@@ -51,7 +51,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 
 	/** this is used to bridge an EDITED message */
 	abstract edit_message(
-		message: message<unknown>,
+		message: message,
 		channel: bridge_channel,
 		edit_id: string,
 		reply_id?: string
@@ -59,7 +59,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 
 	/** this is used to bridge a DELETED message */
 	abstract delete_message(
-		message: deleted_message<unknown>,
+		message: deleted_message,
 		channel: bridge_channel,
 		delete_id: string,
 		reply_id?: string

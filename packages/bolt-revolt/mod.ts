@@ -28,11 +28,11 @@ export class revolt_plugin extends plugin<{ token: string }> {
 			this.emit('delete_message', {
 				channel: message.channelId,
 				id: message.id,
-				platform: { message, name: 'bolt-revolt' },
+				plugin: 'bolt-revolt',
 				timestamp: message.editedAt
 					? Temporal.Instant.fromEpochMilliseconds(
 							message.editedAt?.getUTCMilliseconds()
-					  )
+						)
 					: Temporal.Now.instant()
 			});
 		});
@@ -48,34 +48,30 @@ export class revolt_plugin extends plugin<{ token: string }> {
 	}
 
 	async create_message(
-		msg: message<unknown>,
+		msg: message,
 		bridge: bridge_channel,
 		_: undefined,
-		replytoid?: string
+		reply_id?: string
 	) {
 		const channel = await this.bot.channels.fetch(bridge.id);
 		const result = await channel.sendMessage(
-			await torevolt({ ...msg, replytoid })
+			await torevolt({ ...msg, reply_id })
 		);
 		return result.id;
 	}
 
 	async edit_message(
-		msg: message<unknown>,
+		msg: message,
 		bridge: bridge_channel,
 		edit_id: string,
-		replytoid?: string
+		reply_id?: string
 	) {
 		const message = await this.bot.messages.fetch(bridge.id, edit_id);
-		await message.edit(await torevolt({ ...msg, replytoid }));
+		await message.edit(await torevolt({ ...msg, reply_id }));
 		return edit_id;
 	}
 
-	async delete_message(
-		_: deleted_message<unknown>,
-		bridge: bridge_channel,
-		id: string
-	) {
+	async delete_message(_: deleted_message, bridge: bridge_channel, id: string) {
 		const message = await this.bot.messages.fetch(bridge.id, id);
 		await message.delete();
 		return id;

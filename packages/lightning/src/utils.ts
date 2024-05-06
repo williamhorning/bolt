@@ -1,4 +1,4 @@
-import { fivesevenredis } from './migrations.ts';
+import { fivesevenexistingredis } from './migrations.ts';
 import type { config, err, message, migration, versions } from './types.ts';
 
 /**
@@ -6,8 +6,8 @@ import type { config, err, message, migration, versions } from './types.ts';
  * @module
  */
 
-/** 
- * apply many migrations given data 
+/**
+ * apply many migrations given data
  * @param migrations the migrations to apply
  * @param data the data to apply the migrations to
  */
@@ -22,7 +22,7 @@ export function apply_migrations(
  * creates a message that can be sent using lightning
  * @param text the text of the message (can be markdown)
  */
-export function create_message(text: string): message<undefined> {
+export function create_message(text: string): message {
 	const data = {
 		author: {
 			username: 'lightning',
@@ -35,13 +35,13 @@ export function create_message(text: string): message<undefined> {
 		id: '',
 		reply: async () => {},
 		timestamp: Temporal.Now.instant(),
-		platform: { name: 'lightning', message: undefined }
+		plugin: 'lightning'
 	};
 	return data;
 }
 
-/** 
- * a function that returns a config object when given a partial config object 
+/**
+ * a function that returns a config object when given a partial config object
  * @param config a partial config object
  */
 export function define_config(config?: Partial<config>): config {
@@ -49,18 +49,17 @@ export function define_config(config?: Partial<config>): config {
 		plugins: [],
 		redis_host: 'localhost',
 		redis_port: 6379,
-		commands: [],
 		...(config || {})
 	};
 }
 
-/** 
+/**
  * get migrations that can then be applied using apply_migrations
  * @param from the version that the data is currently in
  * @param to the version that the data will be migrated to
  */
 export function get_migrations(from: versions, to: versions): migration[] {
-	const migrations: migration[] = [fivesevenredis];
+	const migrations: migration[] = [fivesevenexistingredis];
 	return migrations.slice(
 		migrations.findIndex(i => i.from === from),
 		migrations.findLastIndex(i => i.to === to) + 1
@@ -100,5 +99,5 @@ export async function log_error(
 		`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
 	);
 
-	return { e, cause: e.cause, uuid, extra, message };
+	return { e, uuid, extra, message };
 }

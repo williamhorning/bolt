@@ -1,9 +1,9 @@
 export {
 	lightning,
 	plugin,
-	type bridge_platform,
+	type bridge_channel,
 	type message
-} from 'jsr:@jersey/lightning@0.6.2';
+} from '../lightning/mod.ts';
 export { existsSync } from 'jsr:@std/fs@0.221.0/exists';
 export { Buffer } from 'node:buffer';
 export {

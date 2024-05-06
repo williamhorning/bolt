@@ -1,4 +1,4 @@
-import { versions } from './types.ts';
+import { type bridge_document, versions } from './types.ts';
 
 type doc = [string, unknown][];
 
@@ -36,7 +36,7 @@ export function convert_five_to_seven_redis(items: doc | fivedoc) {
 	}) as doc;
 }
 
-export const fivesevenredis = {
+export const fivesevenexistingredis = {
 	from: versions.Five,
 	to: versions.Seven,
 	translate: (items: doc | fivedocredis) =>
@@ -52,9 +52,15 @@ export const fivesevenredis = {
 								return { id: i.channel, data: i.senddata, plugin: i.plugin };
 							}),
 							id: `oldeditsupport-${msg_id}`,
-							messages: val.map(i => i.id),
+							messages: val.map(i => {
+								return {
+									channel: i.channel,
+									id: i.id,
+									plugin: i.plugin
+								}
+							}),
 							use_rawname: false
-						}
+						} as bridge_document
 					]
 				];
 			}

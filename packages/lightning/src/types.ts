@@ -36,8 +36,8 @@ export interface bridge_message {
 	id: string;
 	/** the id of the channel the message was sent in */
 	channel: string;
-	/** the platform the message was sent on */
-	platform: string;
+	/** the plugin the message was sent using */
+	plugin: string;
 }
 
 /** the representation of a bridge */
@@ -91,14 +91,14 @@ export interface command_arguments {
 	subcmd?: string;
 	/** the channel its being run in */
 	channel: string;
-	/** the platform its being run on */
-	platform: string;
+	/** the plugin its being run on */
+	plugin: string;
 	/** timestamp given */
 	timestamp: Temporal.Instant;
 	/** options passed by the user */
 	opts: Record<string, string>;
 	/** the function to reply to the command */
-	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
+	reply: (message: message, optional?: unknown) => Promise<void>;
 }
 
 /** options when parsing a command */
@@ -124,13 +124,13 @@ export interface command {
 }
 
 /** a representation of a message that has been deleted */
-export interface deleted_message<platform_message> {
+export interface deleted_message {
 	/** the message's id */
 	id: string;
 	/** the channel the message was sent in */
 	channel: string;
-	/** the platform the message was sent on */
-	platform: platform<platform_message>;
+	/** the plugin that recieved the message */
+	plugin: string;
 	/**
 	 * the time the message was sent/edited as a temporal instant
 	 * @see https://tc39.es/proposal-temporal/docs/instant.html
@@ -199,21 +199,19 @@ export interface embed {
 	/** a site linked to by the embed */
 	url?: string;
 	/** a video inside of the embed */
-	video?: Omit<embed_media, 'url'> & { url?: string };
+	video?: embed_media;
 }
 
 /** the error returned from log_error */
 export interface err {
 	/** the original error */
 	e: Error;
-	/** the cause of the error */
-	cause: unknown;
 	/** extra information about the error */
 	extra: Record<string, unknown>;
 	/** the uuid associated with the error */
 	uuid: string;
 	/** the message associated with the error */
-	message: message<unknown>;
+	message: message;
 }
 
 /** the author of a message */
@@ -226,15 +224,14 @@ export interface message_author {
 	profile?: string;
 	/** a url pointing to the authors banner */
 	banner?: string;
-	/** the author's id on their platform */
+	/** the author's id */
 	id: string;
 	/** the color of an author */
 	color?: string;
 }
 
 /** a message recieved by a plugin */
-export interface message<platform_message>
-	extends deleted_message<platform_message> {
+export interface message extends deleted_message {
 	/** the attachments sent with the message */
 	attachments?: attachment[];
 	/** the author of the message */
@@ -244,9 +241,9 @@ export interface message<platform_message>
 	/** discord-style embeds */
 	embeds?: embed[];
 	/** a function to reply to a message */
-	reply: (message: message<unknown>, optional?: unknown) => Promise<void>;
+	reply: (message: message, optional?: unknown) => Promise<void>;
 	/** the id of the message replied to */
-	replytoid?: string;
+	reply_id?: string;
 }
 
 /** the type of a migration */
@@ -259,28 +256,16 @@ export interface migration {
 	translate: (data: [string, unknown][]) => [string, unknown][];
 }
 
-/** the platform that recieved a message */
-export interface platform<message_type> {
-	/** the name of a plugin */
-	name: string;
-	/** the platforms representation of a message */
-	message: message_type;
-	/** the webhook the message was sent with */
-	webhookid?: string;
-}
-
 /** the events emitted by a plugin */
 export type plugin_events = {
 	/** when a message is created */
-	create_message: [message<unknown>];
-	/** when a command is run (not a text command) */
-	create_command: [Omit<command_arguments, 'commands'>];
+	create_message: [message];
 	/** when a message isn't already bridged (don't emit outside of core) */
-	create_nonbridged_message: [message<unknown>];
+	create_nonbridged_message: [message];
 	/** when a message is edited */
-	edit_message: [message<unknown>];
+	edit_message: [message];
 	/** when a message is deleted */
-	delete_message: [deleted_message<unknown>];
+	delete_message: [deleted_message];
 };
 
 /** all of the versions with migrations to/from them */

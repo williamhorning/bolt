@@ -61,7 +61,7 @@ export class discord_plugin extends plugin<discord_config> {
 
 		this.bot.on(GatewayDispatchEvents.InteractionCreate, interaction => {
 			const cmd = conv.to_command(interaction);
-			if (cmd) this.emit('create_command', cmd);
+			if (cmd) this.lightning.run_command(cmd);
 		});
 	}
 
@@ -86,28 +86,24 @@ export class discord_plugin extends plugin<discord_config> {
 	}
 
 	create_message(
-		msg: message<unknown>,
+		msg: message,
 		bridge: to.channel,
 		_?: undefined,
-		replytoid?: string
+		reply_id?: string
 	): Promise<string> {
-		return to.send_to_discord(this.bot.api, msg, bridge, _, replytoid);
+		return to.send_to_discord(this.bot.api, msg, bridge, _, reply_id);
 	}
 
 	edit_message(
-		msg: message<unknown>,
+		msg: message,
 		bridge: to.channel,
 		edit_id: string,
-		replytoid?: string
+		reply_id?: string
 	): Promise<string> {
-		return to.send_to_discord(this.bot.api, msg, bridge, edit_id, replytoid);
+		return to.send_to_discord(this.bot.api, msg, bridge, edit_id, reply_id);
 	}
 
-	delete_message(
-		_msg: deleted_message<unknown>,
-		bridge: to.channel,
-		id: string
-	) {
+	delete_message(_msg: deleted_message, bridge: to.channel, id: string) {
 		return to.delete_on_discord(this.bot.api, bridge, id);
 	}
 }

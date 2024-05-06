@@ -15,16 +15,16 @@ export async function webhook_on_discord(api: API, channel: string) {
 
 export async function send_to_discord(
 	api: API,
-	message: message<unknown>,
+	message: message,
 	channel: channel,
 	edit_id?: string,
-	replytoid?: string
+	reply_id?: string
 ) {
 	let replied_message;
 
-	if (replytoid) {
+	if (reply_id) {
 		try {
-			replied_message = await api.channels.getMessage(channel.id, replytoid);
+			replied_message = await api.channels.getMessage(channel.id, reply_id);
 		} catch {
 			// safe to ignore
 		}
