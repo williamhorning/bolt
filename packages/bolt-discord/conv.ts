@@ -47,7 +47,7 @@ export async function to_discord(
 				return {
 					...i,
 					timestamp: i.timestamp ? Number(i.timestamp) : undefined,
-					video : i.video ? { ...i.video, url: i.video.url || "" } : undefined
+					video: i.video ? { ...i.video, url: i.video.url || '' } : undefined
 				};
 			})
 		);

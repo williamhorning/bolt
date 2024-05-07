@@ -57,7 +57,7 @@ export const fivesevenexistingredis = {
 									channel: i.channel,
 									id: i.id,
 									plugin: i.plugin
-								}
+								};
 							}),
 							use_rawname: false
 						} as bridge_document

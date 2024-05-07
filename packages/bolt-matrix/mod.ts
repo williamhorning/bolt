@@ -82,7 +82,7 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 			await store?.setMatrixUser(storeUser);
 		}
 		// now to our message
-		const message = coreToMessage({...msg, reply_id});
+		const message = coreToMessage({ ...msg, reply_id });
 		let editinfo = {};
 		if (edit) {
 			editinfo = {
@@ -97,7 +97,7 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 			...message,
 			...editinfo
 		});
-		return result.event_id
+		return result.event_id;
 	}
 
 	async edit_message(
@@ -120,6 +120,6 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 			delete_id,
 			'bridge message deletion'
 		);
-		return delete_id
+		return delete_id;
 	}
 }
