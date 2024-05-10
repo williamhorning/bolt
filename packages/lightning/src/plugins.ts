@@ -8,11 +8,6 @@ import type {
 	plugin_events
 } from './types.ts';
 
-/**
- * lightning plugins are used to add support for new chat apps to lightning
- * @module
- */
-
 /** a plugin for lightning */
 export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** access the instance of lightning you're connected to */

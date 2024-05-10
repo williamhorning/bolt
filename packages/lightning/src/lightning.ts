@@ -1,19 +1,16 @@
 import { EventEmitter, RedisClient, parseArgs } from '../deps.ts';
-import { bridges } from './bridges/mod.ts';
+import { setup_bridges } from "./bridges/setup_bridges.ts";
 import type { plugin } from './plugins.ts';
 import type {
 	command,
 	command_arguments,
 	config,
-	create_plugin,
 	plugin_events
 } from './types.ts';
 import { create_message, log_error } from './utils.ts';
 
 /** an instance of lightning */
 export class lightning extends EventEmitter<plugin_events> {
-	/** the bridge system */
-	bridges: bridges;
 	/** the commands registered */
 	commands: Map<string, command>;
 	/** the config used */
@@ -30,14 +27,14 @@ export class lightning extends EventEmitter<plugin_events> {
 		this.commands = new Map(config.commands);
 		this.redis = new RedisClient(redis_conn);
 		this.listen_commands();
-		this.bridges = new bridges(this);
-		this.load(this.config.plugins);
+		setup_bridges(this);
+		this.load();
 	}
 
 	/** load plugins */
-	load(plugins: create_plugin<plugin<unknown>>[]) {
+	load() {
 		let unsupported = 0;
-		for (const p of plugins) {
+		for (const p of this.config.plugins || []) {
 			if (p.support !== '0.7.0') {
 				unsupported++;
 				continue;
@@ -75,16 +72,13 @@ export class lightning extends EventEmitter<plugin_events> {
 				cmd: cmd as string,
 				subcmd: subcmd as string,
 				opts,
-				channel: m.channel,
-				plugin: m.plugin,
-				reply: m.reply,
-				timestamp: m.timestamp
+				...m
 			});
 		});
 	}
 
 	/** run a command */
-	async run_command(args: command_arguments) {
+	async run_command(args: Omit<command_arguments, 'lightning'>) {
 		let reply;
 
 		try {
@@ -94,16 +88,13 @@ export class lightning extends EventEmitter<plugin_events> {
 				cmd.options?.subcommands?.find(i => i.name === args.subcmd)?.execute ||
 				cmd.execute;
 
-			reply = await exec(args);
+			reply = create_message(await exec({ ...args, lightning: this }));
 		} catch (e) {
 			reply = (await log_error(e, { ...args, reply: undefined })).message;
 		}
 
 		try {
-			await args.reply(
-				typeof reply == 'string' ? create_message(reply) : reply,
-				false
-			);
+			await args.reply(reply, false);
 		} catch (e) {
 			await log_error(e, { ...args, reply: undefined });
 		}

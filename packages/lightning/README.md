@@ -8,10 +8,10 @@ apps via plugins.
 ## example config
 
 ```ts
-import { define_config } from 'jsr:@jersey/lightning@0.7.0';
+import type { config } from 'jsr:@jersey/lightning@0.7.0';
 import { discord_plugin } from 'https://williamhorning.dev/bolt/x/bolt-discord/0.7.0/mod.ts';
 
-export default define_config({
+export default {
 	redis_host: 'localhost',
 	redis_port: 6379,
 	plugins: [
@@ -19,5 +19,5 @@ export default define_config({
 			// ...
 		})
 	]
-});
+} as config;
 ```

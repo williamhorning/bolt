@@ -1,11 +1,6 @@
 import type { lightning } from './lightning.ts';
 import type { plugin } from './plugins.ts';
 
-/**
- * types used by lightning
- * @module
- */
-
 /** attachments within a message */
 export interface attachment {
 	/** alt text for images */
@@ -21,11 +16,11 @@ export interface attachment {
 }
 
 /** channel within a bridge */
-export interface bridge_channel<data_type = unknown> {
+export interface bridge_channel {
 	/** the id of this channel */
 	id: string;
 	/** the data needed to bridge this channel */
-	data: data_type;
+	data: unknown;
 	/** the plugin used to bridge this channel */
 	plugin: string;
 }
@@ -70,13 +65,13 @@ export interface create_plugin<
 export interface config {
 	/** a list of plugins */
 	// deno-lint-ignore no-explicit-any
-	plugins: create_plugin<any>[];
+	plugins?: create_plugin<any>[];
 	/** the prefix used for commands */
 	cmd_prefix?: string;
 	/** the set of commands to use */
 	commands?: [string, command][];
 	/** the hostname of your redis instance */
-	redis_host: string;
+	redis_host?: string;
 	/** the port of your redis instance */
 	redis_port?: number;
 	/** the webhook used to send errors to */
@@ -99,6 +94,8 @@ export interface command_arguments {
 	opts: Record<string, string>;
 	/** the function to reply to the command */
 	reply: (message: message, optional?: unknown) => Promise<void>;
+	/** the instance of lightning the command is ran against */
+	lightning: lightning
 }
 
 /** options when parsing a command */
@@ -131,10 +128,7 @@ export interface deleted_message {
 	channel: string;
 	/** the plugin that recieved the message */
 	plugin: string;
-	/**
-	 * the time the message was sent/edited as a temporal instant
-	 * @see https://tc39.es/proposal-temporal/docs/instant.html
-	 */
+	/** the time the message was sent/edited as a temporal instant */
 	timestamp: Temporal.Instant;
 }
 

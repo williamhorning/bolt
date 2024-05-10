@@ -6,6 +6,11 @@ import type {
 	message
 } from '../types.ts';
 import { log_error } from '../utils.ts';
+import {
+	get_channel_bridge,
+	get_message_bridge,
+	set_json
+} from './functions.ts';
 
 export async function handle_message(
 	lightning: lightning,
@@ -14,8 +19,8 @@ export async function handle_message(
 ): Promise<void> {
 	const bridge =
 		type === 'create_message'
-			? await lightning.bridges.get_bridge(msg)
-			: await lightning.bridges.get_bridge_message(msg.id);
+			? await get_channel_bridge(lightning, msg.channel)
+			: await get_message_bridge(lightning, msg.id);
 
 	if (!bridge) return;
 
@@ -75,28 +80,22 @@ export async function handle_message(
 			}
 		}
 
-		await lightning.redis.sendCommand([
-			'SET',
-			`lightning-isbridged-${dat}`,
-			'1'
-		]);
+		await set_json(lightning, `lightning-isbridged-${dat}`, '1');
 
 		messages.push({ id: dat, channel: channel.id, plugin: channel.plugin });
 	}
 
 	for (const i of messages) {
-		await lightning.redis.sendCommand([
-			'SET',
-			`lightning-bridged-${i.id}`,
-			JSON.stringify({ ...bridge, messages })
-		]);
+		await set_json(lightning, `lightning-bridged-${i.id}`, {
+			...bridge,
+			messages
+		});
 	}
 
-	await lightning.redis.sendCommand([
-		'SET',
-		`lightning-bridged-${msg.id}`,
-		JSON.stringify({ ...bridge, messages })
-	]);
+	await set_json(lightning, `lightning-bridged-${msg.id}`, {
+		...bridge,
+		messages
+	});
 }
 
 async function get_reply_id(
@@ -106,7 +105,7 @@ async function get_reply_id(
 ) {
 	if (msg.reply_id) {
 		try {
-			const bridged = await lightning.bridges.get_bridge_message(msg.reply_id);
+			const bridged = await get_message_bridge(lightning, msg.reply_id);
 
 			if (!bridged) return;
 

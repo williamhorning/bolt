@@ -1,11 +1,16 @@
-import type { lightning } from '../lightning.ts';
 import type { command_arguments } from '../types.ts';
+import {
+	del_key,
+	exists,
+	get_bridge,
+	get_channel_bridge,
+	set_bridge
+} from './functions.ts';
 
 export async function join(
-	opts: command_arguments,
-	l: lightning
+	opts: command_arguments
 ): Promise<[boolean, string]> {
-	if (await l.bridges.is_in_bridge(opts.channel)) {
+	if (await exists(opts.lightning, `lightning-bchannel-${opts.channel}`)) {
 		return [
 			false,
 			"To do this, you can't be in a bridge. Try leaving your bridge first."
@@ -21,11 +26,9 @@ export async function join(
 		];
 	}
 
-	const plugin = l.plugins.get(opts.plugin);
+	const plugin = opts.lightning.plugins.get(opts.plugin);
 
-	const bridge = (await l.bridges.get_bridge({
-		id
-	})) || {
+	const bridge = (await get_bridge(opts.lightning, id)) || {
 		allow_editing: false,
 		channels: [],
 		id,
@@ -38,56 +41,47 @@ export async function join(
 		data: await plugin!.create_bridge(opts.channel)
 	});
 
-	await l.bridges.set_bridge(bridge);
-
-	await l.redis.sendCommand([
-		'SET',
-		`lightning-bchannel-${opts.channel}`,
-		bridge.id
-	]);
+	await set_bridge(opts.lightning, bridge);
 
 	return [true, 'Joined a bridge!'];
 }
 
 export async function leave(
-	opts: command_arguments,
-	l: lightning
+	opts: command_arguments
 ): Promise<[boolean, string]> {
-	const bridge = await l.bridges.get_bridge({
-		channel: opts.channel
-	});
+	const bridge = await get_channel_bridge(opts.lightning, opts.channel);
 
 	if (!bridge) {
 		return [true, "You're not in a bridge, so try joining a bridge first."];
 	}
 
-	await l.bridges.set_bridge({
+	await set_bridge(opts.lightning, {
 		...bridge,
 		channels: bridge.channels.filter(
 			i => i.id !== opts.channel && i.plugin !== opts.plugin
 		)
 	});
 
-	await l.redis.sendCommand(['DEL', `lightning-bchannel-${opts.channel}`]);
+	await del_key(opts.lightning, `lightning-bchannel-${opts.channel}`);
 
 	return [true, 'Left a bridge!'];
 }
 
-export async function reset(opts: command_arguments, l: lightning) {
+export async function reset(opts: command_arguments) {
 	if (!opts.opts.name)
 		opts.opts.name =
-			(await l.bridges.get_bridge({ channel: opts.channel }))?.id ||
+			(await get_channel_bridge(opts.lightning, opts.channel))?.id ||
 			opts.channel;
 
-	let [ok, text] = await leave(opts, l);
+	let [ok, text] = await leave(opts);
 	if (!ok) return text;
-	[ok, text] = await join(opts, l);
+	[ok, text] = await join(opts);
 	if (!ok) return text;
 	return 'Reset this bridge!';
 }
 
-export async function toggle(opts: command_arguments, l: lightning) {
-	const bridge = await l.bridges.get_bridge({ channel: opts.channel });
+export async function toggle(opts: command_arguments) {
+	const bridge = await get_channel_bridge(opts.lightning, opts.channel);
 
 	if (!bridge) {
 		return "You're not in a bridge right now. Try joining one first.";
@@ -105,26 +99,21 @@ export async function toggle(opts: command_arguments, l: lightning) {
 
 	bridge[setting] = !bridge[setting];
 
-	await l.bridges.set_bridge(bridge);
+	await set_bridge(opts.lightning, bridge);
 
 	return 'Toggled that setting!';
 }
 
-export async function status(args: command_arguments, l: lightning) {
-	const current = await l.bridges.get_bridge({ channel: args.channel });
+export async function status(args: command_arguments) {
+	const current = await get_channel_bridge(args.lightning, args.channel);
 
 	if (!current) {
 		return "You're not in any bridges right now.";
 	}
 
-	const editing_text = current.allow_editing
-		? 'with editing enabled'
-		: 'with editing disabled';
-	const rawname_text = current.use_rawname
-		? 'and nicknames disabled'
-		: 'and nicknames enabled';
-
 	return `This channel is connected to \`${current.id}\`, a bridge with ${
 		current.channels.length - 1
-	} other channels connected to it, ${editing_text} ${rawname_text}`;
+	} other channels connected to it, with editing ${
+		current.allow_editing ? 'enabled' : 'disabled'
+	} and nicknames ${current.use_rawname ? 'disabled' : 'enabled'}`;
 }

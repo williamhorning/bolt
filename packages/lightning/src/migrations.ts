@@ -1,4 +1,4 @@
-import { type bridge_document, versions } from './types.ts';
+import { versions, type bridge_document, type migration } from './types.ts';
 
 type doc = [string, unknown][];
 
@@ -16,7 +16,7 @@ type fivedocredis = [
 	{ plugin: string; channel: string; senddata: unknown; id: string }[]
 ][];
 
-export function convert_five_to_seven_redis(items: doc | fivedoc) {
+export function conv_mongo_to_redis(items: doc | fivedoc) {
 	return (items as fivedoc).map(([id, val]) => {
 		return [
 			id,
@@ -36,34 +36,36 @@ export function convert_five_to_seven_redis(items: doc | fivedoc) {
 	}) as doc;
 }
 
-export const fivesevenexistingredis = {
-	from: versions.Five,
-	to: versions.Seven,
-	translate: (items: doc | fivedocredis) =>
-		(items as fivedocredis).flatMap(([id, val]) => {
-			if (id.startsWith('lightning-bridge-')) {
-				const [_, _2, msg_id] = id.split('-');
-				return [
-					[
-						`lightning-bridged-${msg_id}`,
-						{
-							allow_editing: true,
-							channels: val.map(i => {
-								return { id: i.channel, data: i.senddata, plugin: i.plugin };
-							}),
-							id: `oldeditsupport-${msg_id}`,
-							messages: val.map(i => {
-								return {
-									channel: i.channel,
-									id: i.id,
-									plugin: i.plugin
-								};
-							}),
-							use_rawname: false
-						} as bridge_document
-					]
-				];
-			}
-			return [];
-		}) as doc
-};
+export const migrations = [
+	{
+		from: versions.Five,
+		to: versions.Seven,
+		translate: (items: doc | fivedocredis) =>
+			(items as fivedocredis).flatMap(([id, val]) => {
+				if (id.startsWith('lightning-bridge-')) {
+					const [_, _2, msg_id] = id.split('-');
+					return [
+						[
+							`lightning-bridged-${msg_id}`,
+							{
+								allow_editing: true,
+								channels: val.map(i => {
+									return { id: i.channel, data: i.senddata, plugin: i.plugin };
+								}),
+								id: `oldeditsupport-${msg_id}`,
+								messages: val.map(i => {
+									return {
+										channel: i.channel,
+										id: i.id,
+										plugin: i.plugin
+									};
+								}),
+								use_rawname: false
+							} as bridge_document
+						]
+					];
+				}
+				return [];
+			}) as doc
+	}
+] as migration[];
