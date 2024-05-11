@@ -1,7 +1,7 @@
 # @jersey/lightning
 
-lightning is a Typescript-based chatbot that supports bridging multiple chat
-apps via plugins.
+lightning is a typescript-based chatbot that supports bridging multiple chat
+apps via plugins
 
 ## [docs](https://williamhorning.dev/bolt)
 

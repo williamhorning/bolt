@@ -1,7 +1,6 @@
 import { parseArgs } from '../../deps.ts';
-import { lightning } from '../lightning.ts';
-import type { config } from '../types.ts';
-import { log_error } from '../utils.ts';
+import { log_error } from '../errors.ts';
+import { lightning, type config } from '../lightning.ts';
 
 const _ = parseArgs(Deno.args, {
 	string: ['config']

@@ -1,11 +1,11 @@
-import type { command_arguments } from '../types.ts';
+import type { command_arguments } from '../commands.ts';
 import {
 	del_key,
 	exists,
 	get_bridge,
 	get_channel_bridge,
 	set_bridge
-} from './functions.ts';
+} from './db_internals.ts';
 
 export async function join(
 	opts: command_arguments

@@ -1,5 +1,5 @@
 import type { lightning } from '../lightning.ts';
-import type { bridge_document } from '../types.ts';
+import type { bridge_document } from './types.ts';
 
 export async function exists(l: lightning, key: string) {
 	return Boolean(await l.redis.sendCommand(['EXISTS', key]));

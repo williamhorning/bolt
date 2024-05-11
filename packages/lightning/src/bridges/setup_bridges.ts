@@ -1,6 +1,6 @@
 import type { lightning } from '../lightning.ts';
 import { join, leave, reset, status, toggle } from './cmd_internals.ts';
-import { exists } from './functions.ts';
+import { exists } from './db_internals.ts';
 import { handle_message } from './handle_message.ts';
 
 export function setup_bridges(l: lightning) {

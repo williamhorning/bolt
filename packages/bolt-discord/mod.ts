@@ -61,7 +61,7 @@ export class discord_plugin extends plugin<discord_config> {
 
 		this.bot.on(GatewayDispatchEvents.InteractionCreate, interaction => {
 			const cmd = conv.to_command(interaction);
-			if (cmd) this.lightning.run_command(cmd);
+			if (cmd) this.emit("run_command", cmd);
 		});
 	}
 

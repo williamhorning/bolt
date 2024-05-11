@@ -1,16 +1,12 @@
+import { log_error } from '../errors.ts';
 import type { lightning } from '../lightning.ts';
-import type {
-	bridge_channel,
-	bridge_message,
-	deleted_message,
-	message
-} from '../types.ts';
-import { log_error } from '../utils.ts';
+import type { deleted_message, message } from '../messages.ts';
 import {
 	get_channel_bridge,
 	get_message_bridge,
 	set_json
-} from './functions.ts';
+} from './db_internals.ts';
+import type { bridge_channel, bridge_message } from './types.ts';
 
 export async function handle_message(
 	lightning: lightning,

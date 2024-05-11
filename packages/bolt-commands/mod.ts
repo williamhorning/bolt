@@ -1,4 +1,4 @@
-import type { command } from '../lightning/src/types.ts';
+import type { command } from '../lightning/src/commands.ts';
 
 export const bolt_commands = [
 	[

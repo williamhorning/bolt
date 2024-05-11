@@ -1,7 +1,5 @@
 import { MongoClient, RedisClient } from '../../deps.ts';
-import { conv_mongo_to_redis } from '../migrations.ts';
-import { versions } from '../types.ts';
-import { get_migrations } from '../utils.ts';
+import { get_migrations, mongo_to_redis, versions } from '../migrations.ts';
 
 const redis_hostname = prompt(
 	`what hostname is used by your redis instance?`,
@@ -39,7 +37,10 @@ if (mongo) {
 	console.log(`connected to mongo!`);
 	console.log(`downloading data from mongo...`);
 
-	const mongo_data = (await collection.find({}).toArray()).map(i => [
+	// TODO: this is borked
+	const mongo_data = await (collection.find()).toArray()
+
+	const final_data = mongo_data.map(i => [
 		i._id,
 		i
 	]) as [string, unknown][];
@@ -47,7 +48,7 @@ if (mongo) {
 	console.log(`downloaded data from mongo!`);
 	console.log(`applying migrations...`);
 
-	data = conv_mongo_to_redis(mongo_data);
+	data = mongo_to_redis(final_data) as [string, unknown][];
 } else {
 	console.log(`available versions: ${Object.values(versions).join(', ')}`);
 
@@ -69,7 +70,7 @@ if (mongo) {
 	const keys = (await redis.sendCommand(['KEYS', '*'])) as string[];
 	const redis_data = [] as [string, unknown][];
 
-	// this is bad for the database, sorry database :(
+	// sorry database :(
 
 	for (const key of keys) {
 		try {
@@ -86,10 +87,7 @@ if (mongo) {
 	console.log(`downloaded data from redis!`);
 	console.log(`applying migrations...`);
 
-	data = migrations.reduce(
-		(acc, migration) => migration.translate(acc),
-		redis_data
-	);
+	data = migrations.reduce((r, m) => m.translate(r), redis_data);
 }
 
 const final_data = data.map(([key, value]) => {
