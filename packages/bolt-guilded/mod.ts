@@ -13,9 +13,14 @@ export class guilded_plugin extends plugin<{ token: string }> {
 	name = 'bolt-guilded';
 	version = '0.7.0';
 
-	constructor(l: lightning, config: { token: string }) {
-		super(l, config);
-		this.bot = new Client(config);
+	constructor(l: lightning, c: { token: string }) {
+		super(l, c);
+		const h = {
+			headers: {
+				'x-guilded-bot-api-use-official-markdown': 'true'
+			}
+		};
+		this.bot = new Client({ token: c.token, rest: h, ws: h });
 		this.setup_events();
 		this.bot.login();
 	}

@@ -2,7 +2,6 @@ import type {
 	Client,
 	EmbedPayload,
 	RESTPostWebhookBody,
-	WebhookPayload,
 	embed,
 	message
 } from './deps.ts';
@@ -14,46 +13,21 @@ export async function create_webhook(
 	token: string
 ) {
 	const ch = await bot.channels.fetch(channel);
-	const base = 'https://www.guilded.gg/api/v1';
-	const srvwhs = await fetch(`${base}/servers/${ch.serverId}/webhooks`, {
+	const resp = await fetch(`https://www.guilded.gg/api/v1/servers/${ch.serverId}/webhooks`, {
+		body: `{"name":"Lightning Bridges","channelId":"${channel}"}`,
 		headers: {
-			Authorization: `Bearer ${token}`
-		}
-	});
-	if (!srvwhs.ok) {
-		throw new Error('Server webhooks not found!', {
-			cause: await srvwhs.text()
-		});
-	}
-	const srvhooks = (await srvwhs.json()).webhooks;
-	const found_wh = srvhooks.find((wh: WebhookPayload) => {
-		if (wh.name === 'Lightning Bridges' && wh.channelId === channel) {
-			return true;
-		}
-		return false;
-	});
-	if (found_wh && found_wh.token) {
-		return { id: found_wh.id, token: found_wh.token };
-	}
-	const new_wh = await fetch(`${base}/servers/${ch.serverId}/webhooks`, {
-		method: 'POST',
-		headers: {
+			Accept: 'application/json',
 			Authorization: `Bearer ${token}`,
 			'Content-Type': 'application/json'
 		},
-		body: `{"name":"Lightning Bridges","channelId":"${channel}"}`
+		method: 'POST'
 	});
-	if (!new_wh.ok) {
+	if (!resp.ok) {
 		throw new Error('Webhook creation failed!', {
-			cause: await new_wh.text()
+			cause: await resp.text()
 		});
 	}
-	const wh = await new_wh.json();
-	if (!wh.webhook.token) {
-		throw new Error('Webhook lacks token!', {
-			cause: JSON.stringify(wh)
-		});
-	}
+	const wh = await resp.json();
 	return { id: wh.webhook.id, token: wh.webhook.token };
 }
 

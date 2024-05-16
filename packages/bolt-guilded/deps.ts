@@ -5,7 +5,7 @@ export {
 	type Message,
 	type RESTPostWebhookBody,
 	type WebhookPayload
-} from 'npm:guilded.js@0.24.0';
+} from 'npm:guilded.js@0.24.2';
 export {
 	plugin,
 	type bridge_channel,
@@ -14,3 +14,4 @@ export {
 	type lightning,
 	type message
 } from '../lightning/mod.ts';
+

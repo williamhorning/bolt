@@ -6,7 +6,6 @@ const redis_hostname = prompt(
 	'localhost'
 );
 const redis_port = prompt(`what port is used by your redis instance?`, '6379');
-const mongo = confirm(`are you migrating from a mongo database?`);
 
 if (!redis_hostname || !redis_port) Deno.exit();
 
@@ -18,6 +17,8 @@ const redis = new RedisClient(
 );
 
 console.log('connected to redis!');
+
+const mongo = confirm(`are you migrating from a mongo database?`);
 
 let data: [string, unknown][];
 
@@ -32,18 +33,14 @@ if (mongo) {
 
 	await client.connect(mongo_str);
 
-	const collection = client.database(mongo_db).collection(mongo_collection);
-
 	console.log(`connected to mongo!`);
 	console.log(`downloading data from mongo...`);
 
-	// TODO: this is borked
-	const mongo_data = await (collection.find()).toArray()
+	const collection = client.database(mongo_db).collection(mongo_collection);
 
-	const final_data = mongo_data.map(i => [
-		i._id,
-		i
-	]) as [string, unknown][];
+	const final_data = (
+		await collection.find({ _id: { $regex: '.*' } }).toArray()
+	).map(i => [i._id, i]) as [string, unknown][];
 
 	console.log(`downloaded data from mongo!`);
 	console.log(`applying migrations...`);

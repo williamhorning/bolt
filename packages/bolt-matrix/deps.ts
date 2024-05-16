@@ -1,4 +1,4 @@
-export { existsSync } from 'jsr:@std/fs@0.221.0/exists';
+export { existsSync } from 'jsr:@std/fs@0.224.0/exists';
 export { Buffer } from 'node:buffer';
 export {
 	AppServiceRegistration,
@@ -14,3 +14,4 @@ export {
 	type lightning,
 	type message
 } from '../lightning/mod.ts';
+
