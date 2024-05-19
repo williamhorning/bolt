@@ -1,18 +1,17 @@
 export {
-	type APIEmbed,
 	Client,
-	type EmbedPayload,
-	Message,
-	type RESTPostWebhookBody,
 	WebhookClient,
+	type EmbedPayload,
+	type Message,
+	type RESTPostWebhookBody,
 	type WebhookPayload
-} from 'npm:guilded.js@0.24.0';
+} from 'npm:guilded.js@0.24.2';
 export {
-	type bridge_platform,
-	create_message,
+	plugin,
+	type bridge_channel,
 	type deleted_message,
 	type embed,
-	lightning,
-	type message,
-	plugin
+	type lightning,
+	type message
 } from '../lightning/mod.ts';
+

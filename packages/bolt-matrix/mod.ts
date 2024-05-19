@@ -1,7 +1,7 @@
 import {
 	AppServiceRegistration,
 	Bridge,
-	bridge_platform,
+	bridge_channel,
 	Buffer,
 	existsSync,
 	lightning,
@@ -22,8 +22,7 @@ type MatrixConfig = {
 export class matrix_plugin extends plugin<MatrixConfig> {
 	bot: Bridge;
 	name = 'bolt-matrix';
-	version = '0.6.1';
-	support = ['0.6.1'];
+	version = '0.7.0';
 
 	constructor(l: lightning, config: MatrixConfig) {
 		super(l, config);
@@ -58,12 +57,13 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 	}
 
 	async create_message(
-		msg: message<unknown>,
-		platform: bridge_platform,
-		edit = false
+		msg: message,
+		channel: bridge_channel,
+		edit_id?: string,
+		reply_id?: string,
+		edit?: boolean
 	) {
-		const room = platform.senddata as string;
-		const name = `@${platform.plugin}_${msg.author.id}:${this.config.domain}`;
+		const name = `@${msg.plugin}_${msg.author.id}:${this.config.domain}`;
 		const intent = this.bot.getIntent(name);
 		await intent.ensureProfile(msg.author.username);
 		const store = this.bot.getUserStore();
@@ -82,52 +82,44 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 			await store?.setMatrixUser(storeUser);
 		}
 		// now to our message
-		const message = coreToMessage(msg);
+		const message = coreToMessage({ ...msg, reply_id });
 		let editinfo = {};
 		if (edit) {
 			editinfo = {
 				'm.new_content': message,
 				'm.relates_to': {
 					rel_type: 'm.replace',
-					event_id: msg.id
+					event_id: edit_id!
 				}
 			};
 		}
-		const result = await intent.sendMessage(room, {
+		const result = await intent.sendMessage(channel.id, {
 			...message,
 			...editinfo
 		});
-		return {
-			channel: room,
-			id: result.event_id,
-			plugin: 'bolt-matrix',
-			senddata: room
-		};
+		return result.event_id;
 	}
 
 	async edit_message(
-		msg: message<unknown>,
-		platform: bridge_platform & { id: string }
+		msg: message,
+		channel: bridge_channel,
+		edit_id?: string,
+		reply_id?: string
 	) {
-		return await this.create_message(msg, platform, true);
+		return await this.create_message(msg, channel, edit_id, reply_id, true);
 	}
 
 	async delete_message(
-		_msg: message<unknown>,
-		platform: bridge_platform & { id: string }
+		_msg: message,
+		channel: bridge_channel,
+		delete_id: string
 	) {
-		const room = platform.senddata as string;
 		const intent = this.bot.getIntent();
 		await intent.botSdkIntent.underlyingClient.redactEvent(
-			room,
-			platform.id,
+			channel.id,
+			delete_id,
 			'bridge message deletion'
 		);
-		return {
-			channel: room,
-			id: platform.id,
-			plugin: 'bolt-matrix',
-			senddata: room
-		};
+		return delete_id;
 	}
 }

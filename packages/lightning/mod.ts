@@ -1,10 +1,17 @@
 /**
+ * lightning is a typescript-based chatbot that supports
+ * bridging multiple chat apps via plugins.
  * @module
  */
 
-export { lightning } from './lightning.ts';
-export { bridges } from './src/bridges/mod.ts';
-export { commands } from './src/commands.ts';
-export { plugin } from './src/plugins.ts';
-export * from './src/types.ts';
-export * from './src/utils.ts';
+export * from './src/bridges/types.ts';
+export type {
+    command,
+    command_arguments,
+    command_options
+} from './src/commands.ts';
+export * from './src/errors.ts';
+export * from './src/lightning.ts';
+export * from './src/messages.ts';
+export * from './src/migrations.ts';
+export * from './src/plugins.ts';

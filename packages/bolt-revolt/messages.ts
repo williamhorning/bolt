@@ -1,7 +1,7 @@
-import { API, Message, TextEmbed, message } from './deps.ts';
+import type { API, Message, TextEmbed, message } from './deps.ts';
 
 export async function torevolt(
-	message: message<unknown>,
+	message: message,
 	masquerade = true
 ): Promise<Omit<API.DataMessageSend, 'nonce'>> {
 	const dat: API.DataMessageSend = {
@@ -51,8 +51,8 @@ export async function torevolt(
 					colour: message.author.color
 				}
 			: undefined,
-		replies: message.replytoid
-			? [{ id: message.replytoid, mention: true }]
+		replies: message.reply_id
+			? [{ id: message.reply_id, mention: true }]
 			: undefined
 	};
 
@@ -64,7 +64,7 @@ export async function torevolt(
 	return dat;
 }
 
-export function tocore(message: Message): message<Message> {
+export function tocore(message: Message): message {
 	return {
 		author: {
 			username:
@@ -92,8 +92,8 @@ export function tocore(message: Message): message<Message> {
 				url: i.url ? i.url : undefined
 			};
 		}),
-		platform: { name: 'bolt-revolt', message },
-		reply: async (msg: message<unknown>, masquerade = true) => {
+		plugin: 'bolt-revolt',
+		reply: async (msg: message, masquerade = true) => {
 			message.reply(await torevolt(msg, masquerade as boolean));
 		},
 		attachments: message.attachments?.map(
@@ -107,6 +107,6 @@ export function tocore(message: Message): message<Message> {
 			}
 		),
 		content: message.content,
-		replytoid: message.replyIds ? message.replyIds[0] : undefined
+		reply_id: message.replyIds ? message.replyIds[0] : undefined
 	};
 }

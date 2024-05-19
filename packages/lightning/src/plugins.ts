@@ -1,16 +1,36 @@
 import { EventEmitter } from '../deps.ts';
-import type { lightning } from '../lightning.ts';
-import type {
-	bridge_platform,
-	create_plugin,
-	deleted_message,
-	message,
-	plugin_events
-} from './types.ts';
+import type { bridge_channel } from './bridges/types.ts';
+import type { command_arguments } from './commands.ts';
+import type { lightning } from './lightning.ts';
+import type { deleted_message, message } from './messages.ts';
 
-/**
- * a plugin for lightning
- */
+/** the way to make a plugin */
+export interface create_plugin<
+	plugin_type extends plugin<plugin_type['config']>
+> {
+	/** the actual constructor of the plugin */
+	type: new (l: lightning, config: plugin_type['config']) => plugin_type;
+	/** the configuration options for the plugin */
+	config: plugin_type['config'];
+	/** version(s) the plugin supports */
+	support: string[];
+}
+
+/** the events emitted by a plugin */
+export type plugin_events = {
+	/** when a message is created */
+	create_message: [message];
+	/** when a message isn't already bridged (don't emit outside of core) */
+	create_nonbridged_message: [message];
+	/** when a message is edited */
+	edit_message: [message];
+	/** when a message is deleted */
+	delete_message: [deleted_message];
+	/** when a command is run */
+	run_command: [Omit<command_arguments, 'lightning'>];
+};
+
+/** a plugin for lightning */
 export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** access the instance of lightning you're connected to */
 	lightning: lightning;
@@ -18,18 +38,15 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	config: cfg;
 	/** the name of your plugin */
 	abstract name: string;
-	/** the version of your plugin */
-	abstract version: string;
-	/** a list of major versions supported by your plugin, should include 0.5.5 */
-	abstract support: string[];
 
 	/** create a new plugin instance */
 	static new<T extends plugin<unknown>>(
 		this: new (l: lightning, config: T['config']) => T,
 		config: T['config']
 	): create_plugin<T> {
-		return { type: this, config };
+		return { type: this, config, support: ['0.7.0'] };
 	}
+
 	constructor(l: lightning, config: cfg) {
 		super();
 		this.lightning = l;
@@ -41,19 +58,25 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 
 	/** this is used to bridge a NEW message */
 	abstract create_message(
-		message: message<unknown>,
-		bridge: bridge_platform
-	): Promise<bridge_platform>;
+		message: message,
+		channel: bridge_channel,
+		edit_id?: string,
+		reply_id?: string
+	): Promise<string>;
 
 	/** this is used to bridge an EDITED message */
 	abstract edit_message(
-		new_message: message<unknown>,
-		bridge: bridge_platform & { id: string }
-	): Promise<bridge_platform>;
+		message: message,
+		channel: bridge_channel,
+		edit_id: string,
+		reply_id?: string
+	): Promise<string>;
 
 	/** this is used to bridge a DELETED message */
 	abstract delete_message(
-		message: deleted_message<unknown>,
-		bridge: bridge_platform & { id: string }
-	): Promise<bridge_platform>;
+		message: deleted_message,
+		channel: bridge_channel,
+		delete_id: string,
+		reply_id?: string
+	): Promise<string>;
 }

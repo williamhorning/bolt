@@ -34,7 +34,7 @@ export async function onEvent(
 	if (event.type === 'm.room.redaction') {
 		this.emit('delete_message', {
 			id: event.redacts as string,
-			platform: { name: 'bolt-matrix', message: event },
+			plugin: 'bolt-matrix',
 			channel: event.room_id,
 			timestamp: Temporal.Instant.fromEpochMilliseconds(event.origin_server_ts)
 		});
@@ -45,7 +45,7 @@ export async function messageToCore(
 	event: WeakEvent,
 	intent: Intent,
 	homeserverUrl: string
-): Promise<message<WeakEvent>> {
+): Promise<message> {
 	console.log(event.content.formatted_body);
 	const sender = await intent.getProfileInfo(event.sender);
 	const is_reply = event.content['m.relates_to']
@@ -78,17 +78,17 @@ export async function messageToCore(
 				)
 			: ((event.content['m.new_content']?.body ||
 					event.content.body) as string),
-		reply: async (msg: message<unknown>) => {
+		reply: async (msg: message) => {
 			await intent.sendMessage(event.room_id, coreToMessage(msg));
 		},
-		replytoid: event.content['m.relates_to']
+		reply_id: event.content['m.relates_to']
 			? event.content['m.relates_to']['m.in_reply_to']?.event_id
 			: undefined,
-		platform: { name: 'bolt-matrix', message: event }
+		plugin: 'bolt-matrix'
 	};
 }
 
-export function coreToMessage(msg: message<unknown>) {
+export function coreToMessage(msg: message) {
 	return {
 		body: msg.content
 			? msg.content
