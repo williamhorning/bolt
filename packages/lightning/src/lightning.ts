@@ -1,5 +1,6 @@
 import { EventEmitter, RedisClient } from '../deps.ts';
 import { setup_bridges } from './bridges/setup_bridges.ts';
+import { default_cmds } from "./cmds.ts";
 import { setup_commands, type command } from './commands.ts';
 import type { create_plugin, plugin, plugin_events } from './plugins.ts';
 
@@ -36,7 +37,7 @@ export class lightning extends EventEmitter<plugin_events> {
 		super();
 
 		this.config = config;
-		this.commands = new Map(config.commands);
+		this.commands = new Map(config.commands || default_cmds);
 		this.redis = new RedisClient(redis_conn);
 		this.plugins = new Map<string, plugin<unknown>>();
 
