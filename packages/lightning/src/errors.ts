@@ -1,4 +1,4 @@
-import { create_message, type message } from "./messages.ts";
+import { create_message, type message } from './messages.ts';
 
 /** the error returned from log_error */
 export interface err {
@@ -30,8 +30,8 @@ export async function log_error(
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					embeds: [{ title: e.message, description: uuid }]
-				})
+					embeds: [{ title: e.message, description: uuid }],
+				}),
 			})
 		).text();
 	}
@@ -40,7 +40,7 @@ export async function log_error(
 	console.error(e, extra);
 
 	const message = create_message(
-		`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``
+		`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
 	);
 
 	return { e, uuid, extra, message };

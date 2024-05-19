@@ -1,30 +1,33 @@
 import type {
 	Client,
-	EmbedPayload,
-	RESTPostWebhookBody,
 	embed,
-	message
+	EmbedPayload,
+	message,
+	RESTPostWebhookBody,
 } from './deps.ts';
-import { guilded_plugin } from './mod.ts';
+import type { guilded_plugin } from './mod.ts';
 
 export async function create_webhook(
 	bot: Client,
 	channel: string,
-	token: string
+	token: string,
 ) {
 	const ch = await bot.channels.fetch(channel);
-	const resp = await fetch(`https://www.guilded.gg/api/v1/servers/${ch.serverId}/webhooks`, {
-		body: `{"name":"Lightning Bridges","channelId":"${channel}"}`,
-		headers: {
-			Accept: 'application/json',
-			Authorization: `Bearer ${token}`,
-			'Content-Type': 'application/json'
+	const resp = await fetch(
+		`https://www.guilded.gg/api/v1/servers/${ch.serverId}/webhooks`,
+		{
+			body: `{"name":"Lightning Bridges","channelId":"${channel}"}`,
+			headers: {
+				Accept: 'application/json',
+				Authorization: `Bearer ${token}`,
+				'Content-Type': 'application/json',
+			},
+			method: 'POST',
 		},
-		method: 'POST'
-	});
+	);
 	if (!resp.ok) {
 		throw new Error('Webhook creation failed!', {
-			cause: await resp.text()
+			cause: await resp.text(),
 		});
 	}
 	const wh = await resp.json();
@@ -36,7 +39,7 @@ type guilded_msg = RESTPostWebhookBody & { replyMessageIds?: string[] };
 export async function convert_msg(
 	msg: message,
 	channel?: string,
-	plugin?: guilded_plugin
+	plugin?: guilded_plugin,
 ): Promise<guilded_msg> {
 	const message = {
 		content: msg.content,
@@ -44,8 +47,8 @@ export async function convert_msg(
 		username: get_valid_username(msg),
 		embeds: [
 			...fix_embed(msg.embeds),
-			...(await get_reply_embeds(msg, channel, plugin))
-		]
+			...(await get_reply_embeds(msg, channel, plugin)),
+		],
 	} as guilded_msg;
 
 	if (msg.reply_id) message.replyMessageIds = [msg.reply_id];
@@ -56,14 +59,14 @@ export async function convert_msg(
 			title: 'attachments',
 			description: msg.attachments
 				.slice(0, 5)
-				.map(a => {
+				.map((a) => {
 					return `![${a.alt || a.name}](${a.file})`;
 				})
-				.join('\n')
+				.join('\n'),
 		});
 	}
 
-	if (message.embeds?.length == 0 || !message.embeds) delete message.embeds;
+	if (message.embeds?.length === 0 || !message.embeds) delete message.embeds;
 
 	return message;
 }
@@ -86,30 +89,30 @@ function get_valid_username(msg: message) {
 async function get_reply_embeds(
 	msg: message,
 	channel?: string,
-	plugin?: guilded_plugin
+	plugin?: guilded_plugin,
 ) {
 	if (!msg.reply_id || !channel || !plugin) return [];
 	try {
 		const msg_replied_to = await plugin.bot.messages.fetch(
 			channel,
-			msg.reply_id
+			msg.reply_id,
 		);
 		let author;
 		if (!msg_replied_to.createdByWebhookId) {
 			author = await plugin.bot.members.fetch(
 				msg_replied_to.serverId!,
-				msg_replied_to.authorId
+				msg_replied_to.authorId,
 			);
 		}
 		return [
 			{
 				author: {
 					name: `reply to ${author?.nickname || author?.username || 'a user'}`,
-					icon_url: author?.user?.avatar || undefined
+					icon_url: author?.user?.avatar || undefined,
 				},
-				description: msg_replied_to.content
+				description: msg_replied_to.content,
 			},
-			...(msg_replied_to.embeds || [])
+			...(msg_replied_to.embeds || []),
 		] as EmbedPayload[];
 	} catch {
 		return [];
@@ -117,18 +120,18 @@ async function get_reply_embeds(
 }
 
 function fix_embed(embeds: embed[] = []) {
-	return embeds.flatMap(embed => {
-		Object.keys(embed).forEach(key => {
+	return embeds.flatMap((embed) => {
+		Object.keys(embed).forEach((key) => {
 			embed[key as keyof embed] === null
 				? (embed[key as keyof embed] = undefined)
 				: embed[key as keyof embed];
 		});
-		if (!embed.description || embed.description == '') return [];
+		if (!embed.description || embed.description === '') return [];
 		return [
 			{
 				...embed,
-				timestamp: embed.timestamp ? String(embed.timestamp) : undefined
-			}
+				timestamp: embed.timestamp ? String(embed.timestamp) : undefined,
+			},
 		];
 	}) as (EmbedPayload & { timestamp: string })[];
 }

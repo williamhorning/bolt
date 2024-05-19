@@ -6,12 +6,11 @@ export {
 	Intent,
 	MatrixUser,
 	Request,
-	type WeakEvent
+	type WeakEvent,
 } from 'npm:matrix-appservice-bridge@10.1.0';
 export {
-	plugin,
 	type bridge_channel,
 	type lightning,
-	type message
+	type message,
+	plugin,
 } from '../lightning/mod.ts';
-

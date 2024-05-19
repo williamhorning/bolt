@@ -3,9 +3,9 @@ import type { deleted_message, lightning, message } from './deps.ts';
 import {
 	Client,
 	GatewayDispatchEvents,
+	plugin,
 	REST,
 	WebSocketManager,
-	plugin
 } from './deps.ts';
 import * as to from './to.ts';
 
@@ -32,13 +32,13 @@ export class discord_plugin extends plugin<discord_config> {
 		const rest = new REST({
 			version: '10',
 			/* @ts-ignore this works */
-			makeRequest: fetch
+			makeRequest: fetch,
 		}).setToken(this.config.token);
 
 		const gateway = new WebSocketManager({
 			rest,
 			token: this.config.token,
-			intents: 0 | 33281
+			intents: 0 | 33281,
 		});
 
 		gateway.connect();
@@ -47,21 +47,21 @@ export class discord_plugin extends plugin<discord_config> {
 	}
 
 	private setup_events() {
-		this.bot.on(GatewayDispatchEvents.MessageCreate, async msg => {
+		this.bot.on(GatewayDispatchEvents.MessageCreate, async (msg) => {
 			this.emit('create_message', await conv.to_core(msg.api, msg.data));
 		});
 
-		this.bot.on(GatewayDispatchEvents.MessageUpdate, async msg => {
+		this.bot.on(GatewayDispatchEvents.MessageUpdate, async (msg) => {
 			this.emit('edit_message', await conv.to_core(msg.api, msg.data));
 		});
 
-		this.bot.on(GatewayDispatchEvents.MessageDelete, async msg => {
+		this.bot.on(GatewayDispatchEvents.MessageDelete, async (msg) => {
 			this.emit('delete_message', await conv.to_core(msg.api, msg.data));
 		});
 
-		this.bot.on(GatewayDispatchEvents.InteractionCreate, interaction => {
+		this.bot.on(GatewayDispatchEvents.InteractionCreate, (interaction) => {
 			const cmd = conv.to_command(interaction);
-			if (cmd) this.emit("run_command", cmd);
+			if (cmd) this.emit('run_command', cmd);
 		});
 	}
 
@@ -70,14 +70,14 @@ export class discord_plugin extends plugin<discord_config> {
 
 		this.bot.api.applicationCommands.bulkOverwriteGlobalCommands(
 			this.config.app_id,
-			[...this.lightning.commands.values()].map(command => {
+			[...this.lightning.commands.values()].map((command) => {
 				return {
 					name: command.name,
 					type: 1,
 					description: command.description || 'a command',
-					options: conv.to_intent_opts(command)
+					options: conv.to_intent_opts(command),
 				};
-			})
+			}),
 		);
 	}
 
@@ -89,7 +89,7 @@ export class discord_plugin extends plugin<discord_config> {
 		msg: message,
 		bridge: to.channel,
 		_?: undefined,
-		reply_id?: string
+		reply_id?: string,
 	): Promise<string> {
 		return to.send_to_discord(this.bot.api, msg, bridge, _, reply_id);
 	}
@@ -98,7 +98,7 @@ export class discord_plugin extends plugin<discord_config> {
 		msg: message,
 		bridge: to.channel,
 		edit_id: string,
-		reply_id?: string
+		reply_id?: string,
 	): Promise<string> {
 		return to.send_to_discord(this.bot.api, msg, bridge, edit_id, reply_id);
 	}

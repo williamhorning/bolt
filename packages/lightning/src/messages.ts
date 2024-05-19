@@ -8,14 +8,14 @@ export function create_message(text: string): message {
 			username: 'lightning',
 			profile: 'https://williamhorning.dev/assets/lightning.png',
 			rawname: 'lightning',
-			id: 'lightning'
+			id: 'lightning',
 		},
 		content: text,
 		channel: '',
 		id: '',
 		reply: async () => {},
 		timestamp: Temporal.Now.instant(),
-		plugin: 'lightning'
+		plugin: 'lightning',
 	};
 	return data;
 }

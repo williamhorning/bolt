@@ -6,9 +6,9 @@
 
 export * from './src/bridges/types.ts';
 export type {
-    command,
-    command_arguments,
-    command_options
+	command,
+	command_arguments,
+	command_options,
 } from './src/commands.ts';
 export * from './src/errors.ts';
 export * from './src/lightning.ts';

@@ -7,7 +7,7 @@ export async function exists(l: lightning, key: string) {
 
 export async function get_json<T = unknown>(
 	l: lightning,
-	key: string
+	key: string,
 ): Promise<T | undefined> {
 	const reply = await l.redis.sendCommand(['GET', key]);
 	if (!reply || reply === 'OK') return;
@@ -42,7 +42,7 @@ export async function set_bridge(l: lightning, bridge: bridge_document) {
 		await l.redis.sendCommand([
 			'SET',
 			`lightning-bchannel-${channel.id}`,
-			bridge.id
+			bridge.id,
 		]);
 	}
 }

@@ -3,7 +3,7 @@ import { get_migrations, mongo_to_redis, versions } from '../migrations.ts';
 
 const redis_hostname = prompt(
 	`what hostname is used by your redis instance?`,
-	'localhost'
+	'localhost',
 );
 const redis_port = prompt(`what port is used by your redis instance?`, '6379');
 
@@ -12,8 +12,8 @@ if (!redis_hostname || !redis_port) Deno.exit();
 const redis = new RedisClient(
 	await Deno.connect({
 		hostname: redis_hostname,
-		port: Number(redis_port)
-	})
+		port: Number(redis_port),
+	}),
 );
 
 console.log('connected to redis!');
@@ -40,7 +40,7 @@ if (mongo) {
 
 	const final_data = (
 		await collection.find({ _id: { $regex: '.*' } }).toArray()
-	).map(i => [i._id, i]) as [string, unknown][];
+	).map((i) => [i._id, i]) as [string, unknown][];
 
 	console.log(`downloaded data from mongo!`);
 	console.log(`applying migrations...`);
@@ -73,7 +73,7 @@ if (mongo) {
 		try {
 			redis_data.push([
 				key,
-				JSON.parse((await redis.sendCommand(['GET', key])) as string)
+				JSON.parse((await redis.sendCommand(['GET', key])) as string),
 			]);
 		} catch {
 			console.log(`skipping ${key} due to invalid JSON...`);
@@ -98,7 +98,7 @@ const file = await Deno.makeTempFile();
 await Deno.writeTextFile(file, JSON.stringify(final_data));
 
 const write = confirm(
-	`do you want the data in ${file} to be written to the database?`
+	`do you want the data in ${file} to be written to the database?`,
 );
 
 if (!write) Deno.exit();

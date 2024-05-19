@@ -1,9 +1,9 @@
-import { Intent, message, Request, WeakEvent } from './deps.ts';
-import { matrix_plugin } from './mod.ts';
+import type { Intent, message, Request, WeakEvent } from './deps.ts';
+import type { matrix_plugin } from './mod.ts';
 
 export async function onEvent(
 	this: matrix_plugin,
-	request: Request<WeakEvent>
+	request: Request<WeakEvent>,
 ) {
 	const event = request.getData();
 	const bot = this.bot.getBot();
@@ -22,13 +22,13 @@ export async function onEvent(
 	if (event.type === 'm.room.message' && !event.content['m.new_content']) {
 		this.emit(
 			'create_message',
-			await messageToCore(event, intent, this.config.homeserverUrl)
+			await messageToCore(event, intent, this.config.homeserverUrl),
 		);
 	}
 	if (event.type === 'm.room.message' && event.content['m.new_content']) {
 		this.emit(
 			'edit_message',
-			await messageToCore(event, intent, this.config.homeserverUrl)
+			await messageToCore(event, intent, this.config.homeserverUrl),
 		);
 	}
 	if (event.type === 'm.room.redaction') {
@@ -36,7 +36,7 @@ export async function onEvent(
 			id: event.redacts as string,
 			plugin: 'bolt-matrix',
 			channel: event.room_id,
-			timestamp: Temporal.Instant.fromEpochMilliseconds(event.origin_server_ts)
+			timestamp: Temporal.Instant.fromEpochMilliseconds(event.origin_server_ts),
 		});
 	}
 }
@@ -44,14 +44,12 @@ export async function onEvent(
 export async function messageToCore(
 	event: WeakEvent,
 	intent: Intent,
-	homeserverUrl: string
+	homeserverUrl: string,
 ): Promise<message> {
 	console.log(event.content.formatted_body);
 	const sender = await intent.getProfileInfo(event.sender);
 	const is_reply = event.content['m.relates_to']
-		? event.content['m.relates_to']['m.in_reply_to'] != undefined
-			? true
-			: false
+		? event.content['m.relates_to']['m.in_reply_to'] !== undefined ? true : false
 		: false;
 	return {
 		author: {
@@ -59,32 +57,33 @@ export async function messageToCore(
 			rawname: event.sender,
 			id: event.sender,
 			profile: sender.avatar_url
-				? `${sender.avatar_url?.replace(
+				? `${
+					sender.avatar_url?.replace(
 						'mxc://',
-						`${homeserverUrl}/_matrix/media/v3/thumbnail/`
-					)}?width=96&height=96&method=scale`
-				: undefined
+						`${homeserverUrl}/_matrix/media/v3/thumbnail/`,
+					)
+				}?width=96&height=96&method=scale`
+				: undefined,
 		},
 		channel: event.room_id,
-		id:
-			event.content['m.relates_to']?.rel_type == 'm.replace'
-				? event.content['m.relates_to'].event_id
-				: event.event_id,
+		id: event.content['m.relates_to']?.rel_type === 'm.replace'
+			? event.content['m.relates_to'].event_id
+			: event.event_id,
 		timestamp: Temporal.Instant.fromEpochMilliseconds(event.origin_server_ts),
 		content: is_reply
 			? (event.content.formatted_body as string).replace(
-					/<mx-reply>(.*?)<\/mx-reply>/i,
-					''
-				)
+				/<mx-reply>(.*?)<\/mx-reply>/i,
+				'',
+			)
 			: ((event.content['m.new_content']?.body ||
-					event.content.body) as string),
+				event.content.body) as string),
 		reply: async (msg: message) => {
 			await intent.sendMessage(event.room_id, coreToMessage(msg));
 		},
 		reply_id: event.content['m.relates_to']
 			? event.content['m.relates_to']['m.in_reply_to']?.event_id
 			: undefined,
-		plugin: 'bolt-matrix'
+		plugin: 'bolt-matrix',
 	};
 }
 
@@ -93,6 +92,6 @@ export function coreToMessage(msg: message) {
 		body: msg.content
 			? msg.content
 			: "*this bridge doesn't support anything except text at the moment*",
-		msgtype: 'm.text'
+		msgtype: 'm.text',
 	};
 }

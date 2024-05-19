@@ -6,7 +6,7 @@ import type { deleted_message, message } from './messages.ts';
 
 /** the way to make a plugin */
 export interface create_plugin<
-	plugin_type extends plugin<plugin_type['config']>
+	plugin_type extends plugin<plugin_type['config']>,
 > {
 	/** the actual constructor of the plugin */
 	type: new (l: lightning, config: plugin_type['config']) => plugin_type;
@@ -42,7 +42,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** create a new plugin instance */
 	static new<T extends plugin<unknown>>(
 		this: new (l: lightning, config: T['config']) => T,
-		config: T['config']
+		config: T['config'],
 	): create_plugin<T> {
 		return { type: this, config, support: ['0.7.0'] };
 	}
@@ -61,7 +61,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 		message: message,
 		channel: bridge_channel,
 		edit_id?: string,
-		reply_id?: string
+		reply_id?: string,
 	): Promise<string>;
 
 	/** this is used to bridge an EDITED message */
@@ -69,7 +69,7 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 		message: message,
 		channel: bridge_channel,
 		edit_id: string,
-		reply_id?: string
+		reply_id?: string,
 	): Promise<string>;
 
 	/** this is used to bridge a DELETED message */
@@ -77,6 +77,6 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 		message: deleted_message,
 		channel: bridge_channel,
 		delete_id: string,
-		reply_id?: string
+		reply_id?: string,
 	): Promise<string>;
 }

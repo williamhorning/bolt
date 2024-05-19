@@ -17,7 +17,7 @@ export default {
 	plugins: [
 		discord_plugin.new({
 			// ...
-		})
-	]
+		}),
+	],
 } as config;
 ```

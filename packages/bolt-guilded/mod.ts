@@ -2,9 +2,9 @@ import type {
 	bridge_channel,
 	deleted_message,
 	lightning,
-	message
+	message,
 } from './deps.ts';
-import { Client, WebhookClient, plugin } from './deps.ts';
+import { Client, plugin, WebhookClient } from './deps.ts';
 import { convert_msg, create_webhook } from './guilded.ts';
 import { tocore } from './messages.ts';
 
@@ -17,8 +17,8 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		super(l, c);
 		const h = {
 			headers: {
-				'x-guilded-bot-api-use-official-markdown': 'true'
-			}
+				'x-guilded-bot-api-use-official-markdown': 'true',
+			},
 		};
 		this.bot = new Client({ token: c.token, rest: h, ws: h });
 		this.setup_events();
@@ -26,20 +26,20 @@ export class guilded_plugin extends plugin<{ token: string }> {
 	}
 
 	private setup_events() {
-		this.bot.on('messageCreated', async message => {
+		this.bot.on('messageCreated', async (message) => {
 			const msg = await tocore(message, this);
 			if (msg) this.emit('create_message', msg);
 		});
-		this.bot.on('messageUpdated', async message => {
+		this.bot.on('messageUpdated', async (message) => {
 			const msg = await tocore(message, this);
 			if (msg) this.emit('edit_message', msg);
 		});
-		this.bot.on('messageDeleted', del => {
+		this.bot.on('messageDeleted', (del) => {
 			this.emit('delete_message', {
 				channel: del.channelId,
 				id: del.id,
 				plugin: 'bolt-guilded',
-				timestamp: Temporal.Instant.from(del.deletedAt)
+				timestamp: Temporal.Instant.from(del.deletedAt),
 			});
 		});
 		this.bot.ws.emitter.on('exit', () => {
@@ -55,10 +55,10 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		message: message,
 		channel: bridge_channel,
 		_?: undefined,
-		reply_id?: string
+		reply_id?: string,
 	) {
 		const { id } = await new WebhookClient(
-			channel.data as { token: string; id: string }
+			channel.data as { token: string; id: string },
 		).send(await convert_msg({ ...message, reply_id }, channel.id, this));
 		return id;
 	}
@@ -71,7 +71,7 @@ export class guilded_plugin extends plugin<{ token: string }> {
 	async delete_message(
 		_message: deleted_message,
 		channel: bridge_channel,
-		id: string
+		id: string,
 	) {
 		const msg = await this.bot.messages.fetch(channel.id, id);
 		await msg.delete();

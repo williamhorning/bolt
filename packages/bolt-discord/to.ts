@@ -7,7 +7,7 @@ export type channel = bridge_channel & {
 
 export async function webhook_on_discord(api: API, channel: string) {
 	const { id, token } = await api.channels.createWebhook(channel, {
-		name: 'bolt bridge'
+		name: 'lightning bridge',
 	});
 
 	return { id, token };
@@ -18,7 +18,7 @@ export async function send_to_discord(
 	message: message,
 	channel: channel,
 	edit_id?: string,
-	reply_id?: string
+	reply_id?: string,
 ) {
 	let replied_message;
 
@@ -40,7 +40,7 @@ export async function send_to_discord(
 				channel.data.id,
 				channel.data.token,
 				edit_id,
-				msg
+				msg,
 			);
 		} else {
 			wh = await api.webhooks.execute(channel.data.id, channel.data.token, msg);
@@ -59,7 +59,7 @@ export async function send_to_discord(
 export async function delete_on_discord(
 	api: API,
 	channel: channel,
-	id: string
+	id: string,
 ) {
 	try {
 		await api.webhooks.deleteMessage(channel.data.id, channel.data.token, id);

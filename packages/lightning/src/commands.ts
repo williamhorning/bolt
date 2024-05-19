@@ -6,7 +6,7 @@ import { create_message, type message } from './messages.ts';
 export function setup_commands(l: lightning) {
 	const prefix = l.config.cmd_prefix || 'l!';
 
-	l.on('create_nonbridged_message', m => {
+	l.on('create_nonbridged_message', (m) => {
 		if (!m.content?.startsWith(prefix)) return;
 
 		const {
@@ -19,11 +19,11 @@ export function setup_commands(l: lightning) {
 			cmd: cmd as string,
 			subcmd: subcmd as string,
 			opts,
-			...m
+			...m,
 		});
 	});
 
-	l.on('run_command', i => run_command({ lightning: l, ...i }));
+	l.on('run_command', (i) => run_command({ lightning: l, ...i }));
 }
 
 /** arguments passed to a command */
@@ -72,12 +72,12 @@ async function run_command(args: command_arguments) {
 	let reply;
 
 	try {
-		const cmd =
-			args.lightning.commands.get(args.cmd) ||
+		const cmd = args.lightning.commands.get(args.cmd) ||
 			args.lightning.commands.get('help')!;
 
-		const exec =
-			cmd.options?.subcommands?.find(i => i.name === args.subcmd)?.execute ||
+		const exec = cmd.options?.subcommands?.find((i) =>
+			i.name === args.subcmd
+		)?.execute ||
 			cmd.execute;
 
 		reply = create_message(await exec(args));

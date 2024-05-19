@@ -1,7 +1,7 @@
 import { EventEmitter, RedisClient } from '../deps.ts';
 import { setup_bridges } from './bridges/setup_bridges.ts';
-import { default_cmds } from "./cmds.ts";
-import { setup_commands, type command } from './commands.ts';
+import { default_cmds } from './cmds.ts';
+import { type command, setup_commands } from './commands.ts';
 import type { create_plugin, plugin, plugin_events } from './plugins.ts';
 
 /** configuration options for lightning */

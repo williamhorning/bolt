@@ -1,9 +1,9 @@
 import { parseArgs } from '../../deps.ts';
 import { log_error } from '../errors.ts';
-import { lightning, type config } from '../lightning.ts';
+import { type config, lightning } from '../lightning.ts';
 
 const _ = parseArgs(Deno.args, {
-	string: ['config']
+	string: ['config'],
 });
 
 const cmd = _._[0];
@@ -21,8 +21,8 @@ if (cmd === 'version') {
 			cfg,
 			await Deno.connect({
 				hostname: cfg.redis_host || 'localhost',
-				port: cfg.redis_port || 6379
-			})
+				port: cfg.redis_port || 6379,
+			}),
 		);
 	} catch (e) {
 		await log_error(e);

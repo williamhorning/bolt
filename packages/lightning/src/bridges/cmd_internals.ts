@@ -4,16 +4,16 @@ import {
 	exists,
 	get_bridge,
 	get_channel_bridge,
-	set_bridge
+	set_bridge,
 } from './db_internals.ts';
 
 export async function join(
-	opts: command_arguments
+	opts: command_arguments,
 ): Promise<[boolean, string]> {
 	if (await exists(opts.lightning, `lightning-bchannel-${opts.channel}`)) {
 		return [
 			false,
-			"To do this, you can't be in a bridge. Try leaving your bridge first."
+			"To do this, you can't be in a bridge. Try leaving your bridge first.",
 		];
 	}
 
@@ -22,7 +22,7 @@ export async function join(
 	if (!id) {
 		return [
 			false,
-			'You need to provide a name your bridge. Try `join --name=<something>` instead.'
+			'You need to provide a name your bridge. Try `join --name=<something>` instead.',
 		];
 	}
 
@@ -32,13 +32,13 @@ export async function join(
 		allow_editing: false,
 		channels: [],
 		id,
-		use_rawname: false
+		use_rawname: false,
 	};
 
 	bridge.channels.push({
 		id: opts.channel,
 		plugin: opts.plugin,
-		data: await plugin!.create_bridge(opts.channel)
+		data: await plugin!.create_bridge(opts.channel),
 	});
 
 	await set_bridge(opts.lightning, bridge);
@@ -47,7 +47,7 @@ export async function join(
 }
 
 export async function leave(
-	opts: command_arguments
+	opts: command_arguments,
 ): Promise<[boolean, string]> {
 	const bridge = await get_channel_bridge(opts.lightning, opts.channel);
 
@@ -58,8 +58,8 @@ export async function leave(
 	await set_bridge(opts.lightning, {
 		...bridge,
 		channels: bridge.channels.filter(
-			i => i.id !== opts.channel && i.plugin !== opts.plugin
-		)
+			(i) => i.id !== opts.channel && i.plugin !== opts.plugin,
+		),
 	});
 
 	await del_key(opts.lightning, `lightning-bchannel-${opts.channel}`);
@@ -68,10 +68,11 @@ export async function leave(
 }
 
 export async function reset(opts: command_arguments) {
-	if (!opts.opts.name)
+	if (!opts.opts.name) {
 		opts.opts.name =
 			(await get_channel_bridge(opts.lightning, opts.channel))?.id ||
 			opts.channel;
+	}
 
 	let [ok, text] = await leave(opts);
 	if (!ok) return text;

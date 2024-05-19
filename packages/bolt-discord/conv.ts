@@ -1,13 +1,13 @@
 import type {
 	API,
 	APIInteraction,
-	RawFile,
 	command,
 	command_arguments,
 	message,
+	RawFile,
 	update_data,
 	wh_query,
-	wh_token
+	wh_token,
 } from './deps.ts';
 
 async function async_flat<A, B>(arr: A[], f: (a: A) => Promise<B>) {
@@ -16,7 +16,7 @@ async function async_flat<A, B>(arr: A[], f: (a: A) => Promise<B>) {
 
 function to_instant(id: string) {
 	return Temporal.Instant.fromEpochMilliseconds(
-		Number(BigInt(id) >> 22n) + 1420070400000
+		Number(BigInt(id) >> 22n) + 1420070400000,
 	);
 }
 
@@ -26,7 +26,7 @@ type webhook_message = wh_query & wh_token & { files?: RawFile[]; wait: true };
 
 export async function to_discord(
 	message: message,
-	replied_message?: discord_message
+	replied_message?: discord_message,
 ): Promise<webhook_message> {
 	if (message.reply_id && replied_message) {
 		if (!message.embeds) message.embeds = [];
@@ -39,48 +39,49 @@ export async function to_discord(
 						replied_message.author?.username ||
 						'a user'
 					}`,
-					icon_url: `https://cdn.discordapp.com/avatars/${replied_message.author?.id}/${replied_message.author?.avatar}.png`
+					icon_url:
+						`https://cdn.discordapp.com/avatars/${replied_message.author?.id}/${replied_message.author?.avatar}.png`,
 				},
-				description: replied_message.content
+				description: replied_message.content,
 			},
-			...(replied_message.embeds || []).map(i => {
+			...(replied_message.embeds || []).map((i) => {
 				return {
 					...i,
 					timestamp: i.timestamp ? Number(i.timestamp) : undefined,
-					video: i.video ? { ...i.video, url: i.video.url || '' } : undefined
+					video: i.video ? { ...i.video, url: i.video.url || '' } : undefined,
 				};
-			})
+			}),
 		);
 	}
 	return {
 		avatar_url: message.author.profile,
 		content: message.content,
-		embeds: message.embeds?.map(i => {
+		embeds: message.embeds?.map((i) => {
 			return {
 				...i,
-				timestamp: i.timestamp ? String(i.timestamp) : undefined
+				timestamp: i.timestamp ? String(i.timestamp) : undefined,
 			};
 		}),
 		files: message.attachments
-			? await async_flat(message.attachments, async a => {
-					if (a.size > 25) return [];
-					if (!a.name) a.name = a.file.split('/').pop();
-					return [
-						{
-							name: a.name || 'file',
-							data: new Uint8Array(await (await fetch(a.file)).arrayBuffer())
-						}
-					];
-				})
+			? await async_flat(message.attachments, async (a) => {
+				if (a.size > 25) return [];
+				if (!a.name) a.name = a.file.split('/').pop();
+				return [
+					{
+						name: a.name || 'file',
+						data: new Uint8Array(await (await fetch(a.file)).arrayBuffer()),
+					},
+				];
+			})
 			: undefined,
 		username: message.author.username,
-		wait: true
+		wait: true,
 	};
 }
 
 export async function to_core(
 	api: API,
-	message: discord_message
+	message: discord_message,
 ): Promise<message> {
 	if (message.flags && message.flags & 128) message.content = 'Loading...';
 	if (message.type === 7) message.content = '*joined on discord*';
@@ -101,7 +102,7 @@ export async function to_core(
 					filename: `${sticker.name}.${type}`,
 					size: 0,
 					id: sticker.id,
-					proxy_url: url
+					proxy_url: url,
 				});
 			} else {
 				message.content = '*used sticker*';
@@ -110,48 +111,47 @@ export async function to_core(
 	}
 	const data = {
 		author: {
-			profile: `https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
-			username:
-				message.member?.nick ||
+			profile:
+				`https://cdn.discordapp.com/avatars/${message.author?.id}/${message.author?.avatar}.png`,
+			username: message.member?.nick ||
 				message.author?.global_name ||
 				message.author?.username ||
 				'discord user',
 			rawname: message.author?.username || 'discord user',
 			id: message.author?.id || message.webhook_id || '',
-			color: '#5865F2'
+			color: '#5865F2',
 		},
 		channel: message.channel_id,
-		content:
-			(message.content?.length || 0) > 2000
-				? `${message.content?.substring(0, 1997)}...`
-				: message.content,
+		content: (message.content?.length || 0) > 2000
+			? `${message.content?.substring(0, 1997)}...`
+			: message.content,
 		id: message.id,
 		timestamp: to_instant(message.id),
-		embeds: message.embeds?.map(i => {
+		embeds: message.embeds?.map((i) => {
 			return {
 				...i,
-				timestamp: i.timestamp ? Number(i.timestamp) : undefined
+				timestamp: i.timestamp ? Number(i.timestamp) : undefined,
 			};
 		}),
 		reply: async (msg: message) => {
-			if (!data.author.id || data.author.id == '') return;
+			if (!data.author.id || data.author.id === '') return;
 			await api.channels.createMessage(message.channel_id, {
 				...(await to_discord(msg)),
 				message_reference: {
-					message_id: message.id
-				}
+					message_id: message.id,
+				},
 			});
 		},
 		plugin: 'bolt-discord',
-		attachments: message.attachments?.map(i => {
+		attachments: message.attachments?.map((i) => {
 			return {
 				file: i.url,
 				alt: i.description,
 				name: i.filename,
-				size: i.size / 1000000
+				size: i.size / 1000000,
 			};
 		}),
-		reply_id: message.referenced_message?.id
+		reply_id: message.referenced_message?.id,
 	};
 	return data as message;
 }
@@ -169,17 +169,17 @@ export function to_command(interaction: { api: API; data: APIInteraction }) {
 	return {
 		cmd: interaction.data.data.name,
 		subcmd,
-		reply: async msg => {
+		reply: async (msg) => {
 			await interaction.api.interactions.reply(
 				interaction.data.id,
 				interaction.data.token,
-				await to_discord(msg)
+				await to_discord(msg),
 			);
 		},
 		channel: interaction.data.channel.id,
 		plugin: 'bolt-discord',
 		opts,
-		timestamp: to_instant(interaction.data.id)
+		timestamp: to_instant(interaction.data.id),
 	} as command_arguments;
 }
 
@@ -191,29 +191,29 @@ export function to_intent_opts({ options }: command) {
 			name: options.argument_name,
 			description: 'option to pass to this command',
 			type: 3,
-			required: options.argument_required
+			required: options.argument_required,
 		});
 	}
 
 	if (options?.subcommands) {
 		opts.push(
-			...options.subcommands.map(i => {
+			...options.subcommands.map((i) => {
 				return {
 					name: i.name,
 					description: i.description || i.name,
 					type: 1,
 					options: i.options?.argument_name
 						? [
-								{
-									name: i.options.argument_name,
-									description: i.options.argument_name,
-									type: 3,
-									required: i.options.argument_required || false
-								}
-							]
-						: undefined
+							{
+								name: i.options.argument_name,
+								description: i.options.argument_name,
+								type: 3,
+								required: i.options.argument_required || false,
+							},
+						]
+						: undefined,
 				};
-			})
+			}),
 		);
 	}
 
