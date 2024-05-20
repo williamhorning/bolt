@@ -33,7 +33,9 @@ jobs:
       - name: go to the directory
         run: cd packages/lightning
       - name: publish to jsr
-        run: deno publish
+        run: |
+              cd packages/lightning
+              deno publish
       - name: setup docker metadata
         id: metadata
         uses: docker/metadata-action@v3
@@ -44,6 +46,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          file: ./packages/lightning/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.metadata.outputs.tags }}
