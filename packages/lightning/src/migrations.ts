@@ -14,7 +14,7 @@ export function get_migrations(from: versions, to: versions): migration[] {
  * convert a mognodb document from 0.5 to redis for 0.7
  * @param items the mongodb documents
  */
-export function mongo_to_redis(items: [string, unknown][]) {
+export function mongo_to_redis(items: [string, unknown][]): [string, unknown][] {
 	return items.map(([id, v]) => {
 		const val = v as {
 			_id: string;
