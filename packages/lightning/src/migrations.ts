@@ -14,29 +14,28 @@ export function get_migrations(from: versions, to: versions): migration[] {
  * convert a mognodb document from 0.5 to redis for 0.7
  * @param items the mongodb documents
  */
-export function mongo_to_redis(items: [string, unknown][]): [string, unknown][] {
-	return items.map(([id, v]) => {
+export function mongo_to_redis(
+	items: [string, unknown][],
+): [string, unknown][] {
+	return items.flatMap(([id, v]) => {
 		const val = v as {
 			_id: string;
 			platforms: { plugin: string; channel: string; senddata: unknown }[];
 			settings: { realnames?: boolean; editing_allowed?: boolean };
 		};
-		return [
+		return [[`lightning-bridge-${id}`, {
+			allow_editing: val.settings?.editing_allowed ?? false,
+			channels: val.platforms.map((i) => {
+				return {
+					id: i.channel,
+					data: i.senddata,
+					plugin: i.plugin,
+				};
+			}),
 			id,
-			{
-				allow_editing: val.settings?.editing_allowed ?? false,
-				channels: val.platforms.map((i) => {
-					return {
-						id: i.channel,
-						data: i.senddata,
-						plugin: i.plugin,
-					};
-				}),
-				id,
-				use_rawname: val.settings?.realnames ?? false,
-			},
-		];
-	});
+			use_rawname: val.settings?.realnames ?? false,
+		}], ...val.platforms.map((i) => [`lightning-bchannel-${i.channel}`, id])];
+	}) as [string, unknown][];
 }
 
 /** the type of a migration */

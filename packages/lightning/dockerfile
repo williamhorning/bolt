@@ -9,4 +9,4 @@ RUN deno install -A --unstable-temporal -n lightning /app/src/cli/mod.ts
 
 # set lightning as the entrypoint and use the run command by default
 ENTRYPOINT [ "lightning" ]
-CMD [ "run", "--config", "./data/config.ts"]
+CMD [ "run", "--config", "/app/data/config.ts"]

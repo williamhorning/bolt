@@ -8,7 +8,7 @@ export {
 	type RESTPostAPIWebhookWithTokenQuery as wh_query,
 } from 'npm:@discordjs/core@1.2.0';
 export { type RawFile, REST } from 'npm:@discordjs/rest@2.3.0';
-export { WebSocketManager } from 'npm:@discordjs/ws@1.1.0';
+export { WebSocketManager } from 'npm:@discordjs/ws@1.0.2';
 export {
 	type bridge_channel,
 	type command,

@@ -88,7 +88,7 @@ if (mongo) {
 }
 
 const final_data = data.map(([key, value]) => {
-	return [key, JSON.stringify(value)];
+	return [key, typeof value !== 'string' ? JSON.stringify(value) : value];
 });
 
 console.log(`migrated your data!`);
