@@ -39,7 +39,7 @@ export async function handle_message(
 
 		if (!plugin || !plugin[type]) {
 			await log_error(
-				new Error(`plugin ${channel.plugin} doesn't have ${type}_message`),
+				new Error(`plugin ${channel.plugin} doesn't have ${type}`),
 				{ channel, bridged_id },
 			);
 			continue;
@@ -66,7 +66,7 @@ export async function handle_message(
 			} catch (e) {
 				await log_error(
 					new Error(
-						`Failed to send error for ${type}_message to ${channel.plugin}`,
+						`Failed to send error for ${type} to ${channel.plugin}`,
 						{ cause: e },
 					),
 					{ channel, bridged_id },
