@@ -4,7 +4,6 @@ export {
 	AppServiceRegistration,
 	Bridge,
 	Intent,
-	MatrixUser,
 	Request,
 	type WeakEvent,
 } from 'npm:matrix-appservice-bridge@10.1.0';
@@ -14,3 +13,9 @@ export {
 	type message,
 	plugin,
 } from '../lightning/mod.ts';
+export {
+	DiscordMessageParser,
+	MatrixMessageParser,
+	type IMatrixMessage
+} from "npm:@deurstann/matrix-discord-parser@1.11.4"
+export { to_discord } from "../bolt-discord/conv.ts"

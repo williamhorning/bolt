@@ -2,14 +2,15 @@ import {
 	AppServiceRegistration,
 	Bridge,
 	type bridge_channel,
-	Buffer,
+	DiscordMessageParser,
 	existsSync,
 	type lightning,
-	MatrixUser,
+	MatrixMessageParser,
 	type message,
 	plugin,
 } from './deps.ts';
-import { coreToMessage, onEvent } from './events.ts';
+import { onEvent } from './events.ts';
+import { coreToMessage } from './to_matrix.ts';
 
 type MatrixConfig = {
 	appserviceUrl: string;
@@ -22,6 +23,8 @@ type MatrixConfig = {
 export class matrix_plugin extends plugin<MatrixConfig> {
 	bot: Bridge;
 	name = 'bolt-matrix';
+	todiscord = new DiscordMessageParser();
+	tomatrix = new MatrixMessageParser();
 	version = '0.7.0';
 
 	constructor(l: lightning, config: MatrixConfig) {
@@ -63,44 +66,19 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 	async create_message(
 		msg: message,
 		channel: bridge_channel,
-		edit_id?: string,
-		reply_id?: string,
-		edit?: boolean,
+		edit?: string,
+		reply?: string,
 	) {
-		const name = `@${msg.plugin}_${msg.author.id}:${this.config.domain}`;
-		const intent = this.bot.getIntent(name);
-		await intent.ensureProfile(msg.author.username);
-		const store = this.bot.getUserStore();
-		let storeUser = await store?.getMatrixUser(name);
-		if (!storeUser) {
-			storeUser = new MatrixUser(name);
-		}
-		if (storeUser?.get('avatar') !== msg.author.profile) {
-			storeUser?.set('avatar', msg.author.profile);
-			const r = await fetch(msg.author.profile || '');
-			const newMxc = await intent.uploadContent(
-				Buffer.from(await r.arrayBuffer()),
-				{ type: r.headers.get('content-type') || 'image/png' },
-			);
-			await intent.ensureProfile(msg.author.username, newMxc);
-			await store?.setMatrixUser(storeUser);
-		}
-		// now to our message
-		const message = coreToMessage({ ...msg, reply_id });
-		let editinfo = {};
-		if (edit) {
-			editinfo = {
-				'm.new_content': message,
-				'm.relates_to': {
-					rel_type: 'm.replace',
-					event_id: edit_id!,
-				},
-			};
-		}
-		const result = await intent.sendMessage(channel.id, {
-			...message,
-			...editinfo,
-		});
+		const mxid =
+			`@lightning-${msg.plugin}-${msg.author.id}:${this.config.domain}`;
+		const mxintent = this.bot.getIntent(mxid);
+		await mxintent.ensureProfile(msg.author.username, msg.author.profile);
+
+		const result = await mxintent.sendMessage(
+			channel.id,
+			await coreToMessage(msg, channel.id, mxid, reply, edit),
+		);
+
 		return result.event_id;
 	}
 
@@ -110,7 +88,7 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 		edit_id?: string,
 		reply_id?: string,
 	) {
-		return await this.create_message(msg, channel, edit_id, reply_id, true);
+		return await this.create_message(msg, channel, edit_id, reply_id);
 	}
 
 	async delete_message(
