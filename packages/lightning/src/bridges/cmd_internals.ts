@@ -1,7 +1,6 @@
 import type { command_arguments } from '../commands.ts';
 import {
 	del_key,
-	exists,
 	get_bridge,
 	get_channel_bridge,
 	set_bridge,
@@ -10,7 +9,7 @@ import {
 export async function join(
 	opts: command_arguments,
 ): Promise<[boolean, string]> {
-	if (await exists(opts.lightning, `lightning-bchannel-${opts.channel}`)) {
+	if (await get_channel_bridge(opts.lightning, `lightning-bchannel-${opts.channel}`)) {
 		return [
 			false,
 			"To do this, you can't be in a bridge. Try leaving your bridge first.",

@@ -1,24 +1,17 @@
 import type { lightning } from '../lightning.ts';
 import { join, leave, reset, status, toggle } from './cmd_internals.ts';
-import { exists } from './db_internals.ts';
 import { handle_message } from './handle_message.ts';
 
 export function setup_bridges(l: lightning) {
-	l.on('create_message', async (msg) => {
-		await new Promise((res) => setTimeout(res, 150));
-		if (await exists(l, `lightning-bridged-${msg.id}`)) return;
-		l.emit(`create_nonbridged_message`, msg);
+	l.on('create_message', (msg) => {
 		handle_message(l, msg, 'create_message');
 	});
 
-	l.on('edit_message', async (msg) => {
-		await new Promise((res) => setTimeout(res, 150));
-		if (await exists(l, `lightning-bridged-${msg.id}`)) return;
+	l.on('edit_message', (msg) => {
 		handle_message(l, msg, 'edit_message');
 	});
 
-	l.on('delete_message', async (msg) => {
-		await new Promise((res) => setTimeout(res, 150));
+	l.on('delete_message', (msg) => {
 		handle_message(l, msg, 'delete_message');
 	});
 

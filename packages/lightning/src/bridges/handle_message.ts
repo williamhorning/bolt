@@ -13,6 +13,16 @@ export async function handle_message(
 	msg: message | deleted_message,
 	type: 'create_message' | 'edit_message' | 'delete_message',
 ): Promise<void> {
+	await new Promise((res) => setTimeout(res, 150));
+
+	if (type !== 'delete_message') {
+		if (sessionStorage.getItem(`${msg.plugin}-${msg.id}`)) {
+			return sessionStorage.removeItem(`${msg.plugin}-${msg.id}`)
+		} else if (type === 'create_message') {
+			lightning.emit(`create_nonbridged_message`, msg as message);
+		}
+	}
+
 	const bridge = type === 'create_message'
 		? await get_channel_bridge(lightning, msg.channel)
 		: await get_message_bridge(lightning, msg.id);
@@ -75,7 +85,7 @@ export async function handle_message(
 			}
 		}
 
-		await set_json(lightning, `lightning-isbridged-${dat}`, '1');
+		sessionStorage.setItem(`${channel.plugin}-${dat}`, '1');
 
 		messages.push({ id: dat, channel: channel.id, plugin: channel.plugin });
 	}

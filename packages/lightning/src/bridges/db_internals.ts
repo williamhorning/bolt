@@ -1,10 +1,6 @@
 import type { lightning } from '../lightning.ts';
 import type { bridge_document } from './types.ts';
 
-export async function exists(l: lightning, key: string) {
-	return Boolean(await l.redis.sendCommand(['EXISTS', key]));
-}
-
 export async function get_json<T = unknown>(
 	l: lightning,
 	key: string,
