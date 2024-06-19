@@ -9,7 +9,7 @@ export async function to_lightning(
     const un_mxc = (url: string) =>
         url.replace('mxc://', `${homeserverUrl}/_matrix/media/r0/download/`);
     const sender = await intent.getProfileInfo(event.sender);
-
+    const relates_to = event.content['m.relates_to'] as Record<string, unknown>;
     const message: message = {
         author: {
             id: event.sender,
@@ -24,9 +24,8 @@ export async function to_lightning(
         timestamp: Temporal.Instant.fromEpochMilliseconds(
             event.origin_server_ts,
         ),
-        reply_id: event['m.relates_to']
-            // @ts-ignore: types suck
-            ? event['m.relates_to'].event_id
+        reply_id: relates_to && relates_to['m.in_reply_to']
+            ? (relates_to['m.in_reply_to'] as Record<string, string>).event_id
             : undefined,
         reply: async (msg) => {
             const replies = await coreToMessage(msg, intent, event.event_id);

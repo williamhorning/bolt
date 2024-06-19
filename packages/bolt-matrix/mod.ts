@@ -51,11 +51,10 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 		reply?: string,
 	) {
 		// TODO(jersey): fix replying to messaged bridged by bolt-matrix
-		const mxid =
-			`@lightning-${msg.plugin}_${msg.author.id}:${this.config.domain}`;
-		const mxintent = this.bot.getIntent(mxid);
-		// TODO(jersey): fix profile pictures
-		await mxintent.ensureProfile(msg.author.username, msg.author.profile);
+		const mxid = `lightning-${msg.plugin}_${msg.author.id}`;
+		const mxintent = this.bot.getIntentFromLocalpart(mxid);
+
+		// TODO(jersey): fix the intent stuff
 
 		const messages = await coreToMessage(msg, mxintent, reply, edit);
 
