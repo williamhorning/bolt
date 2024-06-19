@@ -1,18 +1,15 @@
 import {
-	AppServiceRegistration,
 	Bridge,
 	type bridge_channel,
-	DiscordMessageParser,
-	existsSync,
 	type lightning,
-	MatrixMessageParser,
 	type message,
 	plugin,
 } from './deps.ts';
 import { onEvent } from './events.ts';
 import { coreToMessage } from './to_matrix.ts';
+import { setup_registration } from './setup_registration.ts';
 
-type MatrixConfig = {
+export type MatrixConfig = {
 	appserviceUrl: string;
 	homeserverUrl: string;
 	domain: string;
@@ -23,8 +20,6 @@ type MatrixConfig = {
 export class matrix_plugin extends plugin<MatrixConfig> {
 	bot: Bridge;
 	name = 'bolt-matrix';
-	todiscord = new DiscordMessageParser();
-	tomatrix = new MatrixMessageParser();
 	version = '0.7.0';
 
 	constructor(l: lightning, config: MatrixConfig) {
@@ -40,21 +35,7 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 			userStore: './config/userStore.db',
 			userActivityStore: './config/userActivityStore.db',
 		});
-		if (!existsSync(this.config.reg_path)) {
-			const reg = new AppServiceRegistration(this.config.appserviceUrl);
-			reg.setAppServiceToken(AppServiceRegistration.generateToken());
-			reg.setHomeserverToken(AppServiceRegistration.generateToken());
-			reg.setId(AppServiceRegistration.generateToken());
-			reg.setProtocols(['lightning']);
-			reg.setRateLimited(false);
-			reg.setSenderLocalpart('bot.lightning');
-			reg.addRegexPattern(
-				'users',
-				`@lightning-.+_.+:${this.config.domain}`,
-				true,
-			);
-			reg.outputAsYaml(this.config.reg_path);
-		}
+		setup_registration(config);
 		this.bot.run(this.config.port || 8081);
 	}
 
@@ -69,14 +50,19 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 		edit?: string,
 		reply?: string,
 	) {
+		// TODO(jersey): fix replying to messaged bridged by bolt-matrix
 		const mxid =
-			`@lightning-${msg.plugin}-${msg.author.id}:${this.config.domain}`;
+			`@lightning-${msg.plugin}_${msg.author.id}:${this.config.domain}`;
 		const mxintent = this.bot.getIntent(mxid);
+		// TODO(jersey): fix profile pictures
 		await mxintent.ensureProfile(msg.author.username, msg.author.profile);
 
+		const messages = await coreToMessage(msg, mxintent, reply, edit);
+
+		// TODO(jersey): handle multiple messages (for attachments)
 		const result = await mxintent.sendMessage(
 			channel.id,
-			await coreToMessage(msg, channel.id, mxid, reply, edit),
+			messages[0],
 		);
 
 		return result.event_id;

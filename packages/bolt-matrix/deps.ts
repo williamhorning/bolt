@@ -1,4 +1,5 @@
-export { existsSync } from 'jsr:@std/fs@0.224.0/exists';
+export { render } from 'jsr:@deno/gfm@0.8.2';
+export { existsSync } from 'jsr:@std/fs@0.229.3/exists';
 export { Buffer } from 'node:buffer';
 export {
 	AppServiceRegistration,
@@ -13,9 +14,3 @@ export {
 	type message,
 	plugin,
 } from '../lightning/mod.ts';
-export {
-	DiscordMessageParser,
-	MatrixMessageParser,
-	type IMatrixMessage
-} from "npm:@deurstann/matrix-discord-parser@1.11.4"
-export { to_discord } from "../bolt-discord/conv.ts"

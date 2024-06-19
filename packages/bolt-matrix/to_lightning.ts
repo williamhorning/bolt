@@ -1,35 +1,16 @@
-// deno-lint-ignore-file require-await
-import {
-    type IMatrixMessage,
-    type Intent,
-    MatrixMessageParser,
-    type message,
-    type WeakEvent,
-} from './deps.ts';
+import type { Intent, message, WeakEvent } from './deps.ts';
 import { coreToMessage } from './to_matrix.ts';
 
-const matrix_parser = new MatrixMessageParser();
-
-export async function messageToCore(
+export async function to_lightning(
     event: WeakEvent,
     intent: Intent,
     homeserverUrl: string,
 ): Promise<message> {
     const un_mxc = (url: string) =>
-        url.replace('mxc://', `${homeserverUrl}/_matrix/media/v3/thumbnail/`);
-    const evcontent = event.content as unknown as IMatrixMessage;
-    const content = await matrix_parser.FormatMessage({
-        callbacks: {
-            canNotifyRoom: async () => true,
-            getChannelId: async (mxid) => mxid,
-            getEmoji: async () => null,
-            getUserId: async (mxid) => mxid,
-            mxcUrlToHttp: un_mxc,
-        },
-        displayname: '',
-    }, evcontent);
-    const sender = await intent.getProfileInfo(event.sender)
-    return {
+        url.replace('mxc://', `${homeserverUrl}/_matrix/media/r0/download/`);
+    const sender = await intent.getProfileInfo(event.sender);
+
+    const message: message = {
         author: {
             id: event.sender,
             rawname: sender.displayname || event.sender,
@@ -43,22 +24,57 @@ export async function messageToCore(
         timestamp: Temporal.Instant.fromEpochMilliseconds(
             event.origin_server_ts,
         ),
-        content,
         reply_id: event['m.relates_to']
             // @ts-ignore: types suck
             ? event['m.relates_to'].event_id
             : undefined,
-        reply: async (message) => {
-            intent.sendMessage(
-                event.room_id,
-                await coreToMessage(
-                    message,
-                    event.room_id,
-                    intent.botSdkIntent.userId,
-                    event.event_id,
-                ),
-            );
+        reply: async (msg) => {
+            const replies = await coreToMessage(msg, intent, event.event_id);
+
+            for (const reply of replies) {
+                intent.sendMessage(event.room_id as string, reply);
+            }
         },
-        attachments: [],
     };
+
+    switch (event.content.msgtype as string) {
+        case 'm.text':
+        case 'm.emote':
+        case 'm.notice':
+            if (event.content.msgtype === 'm.text') {
+                message.content = event.content.body as string;
+            } else {
+                message.content = `_${event.content.body}_`;
+            }
+            break;
+
+        case 'm.image':
+        case 'm.file':
+        case 'm.audio':
+        case 'm.video':
+        case 'm.voice':
+            message.attachments = [{
+                name: event.content.filename as string ||
+                    event.content.body as string,
+                alt: event.content.body as string,
+                size: (((event.content.info as
+                    | Record<string, unknown>
+                    | undefined)?.size ?? 0) as number) / 1000000,
+                file: un_mxc(event.content.url as string),
+            }];
+            break;
+
+        case 'm.location':
+            message.content =
+                `[${event.content.body}](https://www.google.com/maps/search/?api=1&query=${
+                    (event.content.geo_uri as string).split(':')[1]
+                })`;
+            break;
+
+        default:
+            message.content = String(event.content.body);
+            break;
+    }
+
+    return message;
 }

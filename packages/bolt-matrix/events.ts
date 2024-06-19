@@ -1,6 +1,6 @@
 import type { Request, WeakEvent } from './deps.ts';
 import type { matrix_plugin } from './mod.ts';
-import { messageToCore } from './to_lightning.ts';
+import { to_lightning } from './to_lightning.ts';
 
 export async function onEvent(
 	this: matrix_plugin,
@@ -23,13 +23,13 @@ export async function onEvent(
 	if (event.type === 'm.room.message' && !event.content['m.new_content']) {
 		this.emit(
 			'create_message',
-			await messageToCore(event, intent, this.config.homeserverUrl),
+			await to_lightning(event, intent, this.config.homeserverUrl),
 		);
 	}
 	if (event.type === 'm.room.message' && event.content['m.new_content']) {
 		this.emit(
 			'edit_message',
-			await messageToCore(event, intent, this.config.homeserverUrl),
+			await to_lightning(event, intent, this.config.homeserverUrl),
 		);
 	}
 	if (event.type === 'm.room.redaction') {

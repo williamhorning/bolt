@@ -1,58 +1,45 @@
-import { DiscordMessageParser, to_discord, type message } from './deps.ts';
+import { Buffer, type Intent, type message, render } from './deps.ts';
 
-const discord_parser = new DiscordMessageParser()
+export async function coreToMessage(
+	msg: message,
+	intent: Intent,
+	reply?: string,
+	edit?: string,
+) {
+	const events = [{
+		msgtype: 'm.text',
+		body: msg.content || '',
+		format: 'org.matrix.custom.html',
+		formattedBody: render(msg.content || ''),
+	}] as Record<string, unknown>[];
 
-export async function coreToMessage(msg: message, channel_id: string, mxid: string, reply?: string, edit?: string) {
-	const discord = await to_discord(msg);
-	const matrix = await discord_parser.FormatMessage({
-		callbacks: {
-			// deno-lint-ignore require-await
-			getUser: async () => {
-				return { mxid, name: msg.author.username };
-			},
-			// deno-lint-ignore require-await
-			getChannel: async () => {
-				return { mxid: channel_id, name: '' };
-			},
-			// deno-lint-ignore require-await
-			getEmoji: async () => {
-				return null;
-			},
-		},
-	}, {
-		...discord,
-		id: msg.id,
-		author: {
-			bot: false,
-		},
-		content: msg.content ?? 'no content',
-		embeds: discord.embeds?.map((i) => {
-			return {
-				...i,
-				fields: i.fields?.map((i) => {
-					return { ...i, inline: i.inline ?? false };
-				}) ?? [],
-				timestamp: i.timestamp ? Number(i.timestamp) : null,
-				type: 'rich',
-			};
-		}) ?? [],
-	});
-
-	let related = {};
-	
 	if (reply) {
-		related = {
-			event_id: reply,
+		events[0]['m.relates_to'] = {
+			'm.in_reply_to': {
+				event_id: reply,
+			},
 		};
-	} else if (edit) {
-		related = {
+	}
+
+	if (edit) {
+		events[0]['m.relates_to'] = {
 			rel_type: 'm.replace',
 			event_id: edit,
 		};
 	}
 
-	return {
-		...matrix,
-		'm.related_to': related,
-	};
+	for (const attachment of msg.attachments ?? []) {
+		events.push({
+			msgtype: 'm.file',
+			body: attachment.name ?? attachment.alt ?? 'no name file',
+			alt: attachment.alt ?? attachment.name ?? 'no alt text',
+			file: await intent.uploadContent(Buffer.from(
+				await ((await fetch(attachment.file)).arrayBuffer()),
+			)),
+			info: { size: attachment.size * 1000000 },
+		});
+	}
+
+	return events;
 }
+1000000;
