@@ -47,8 +47,8 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		});
 	}
 
-	async create_bridge(channel: string) {
-		return await create_webhook(this.bot, channel, this.config.token);
+	create_bridge(channel: string) {
+		return create_webhook(this.bot, channel, this.config.token);
 	}
 
 	async create_message(

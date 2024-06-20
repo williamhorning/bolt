@@ -1,5 +1,5 @@
 import type { Intent, message, WeakEvent } from './deps.ts';
-import { coreToMessage } from './to_matrix.ts';
+import { to_matrix } from './to_matrix.ts';
 
 export async function to_lightning(
     event: WeakEvent,
@@ -28,7 +28,7 @@ export async function to_lightning(
             ? (relates_to['m.in_reply_to'] as Record<string, string>).event_id
             : undefined,
         reply: async (msg) => {
-            const replies = await coreToMessage(msg, intent, event.event_id);
+            const replies = await to_matrix(msg, intent, event.event_id);
 
             for (const reply of replies) {
                 intent.sendMessage(event.room_id as string, reply);
@@ -41,7 +41,6 @@ export async function to_lightning(
         case 'm.emote':
         case 'm.notice':
             if (event.content.msgtype === 'm.text') {
-                // TODO(jersey): get rid of reply quote, if any
                 message.content = event.content.body as string;
             } else {
                 message.content = `_${event.content.body}_`;

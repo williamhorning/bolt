@@ -1,6 +1,6 @@
 import { Buffer, type Intent, type message, render } from './deps.ts';
 
-export async function coreToMessage(
+export async function to_matrix(
 	msg: message,
 	intent: Intent,
 	reply?: string,
@@ -48,6 +48,11 @@ export async function coreToMessage(
 		}
 	}
 
+	// TODO(jersey): eventually add nicer fallback
+	if (msg.embeds) {
+		events[0].body = `${events[0].body}\n\n*this message includes embeds*`
+		events[0].formattedBody = render(events[0].body as string);
+	}
+
 	return events;
 }
-1000000;

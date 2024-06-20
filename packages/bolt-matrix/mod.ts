@@ -6,7 +6,7 @@ import {
 	plugin,
 } from './deps.ts';
 import { onEvent } from './events.ts';
-import { coreToMessage } from './to_matrix.ts';
+import { to_matrix } from './to_matrix.ts';
 import { setup_registration } from './setup_registration.ts';
 
 export type MatrixConfig = {
@@ -39,8 +39,7 @@ export class matrix_plugin extends plugin<MatrixConfig, string[]> {
 		this.bot.run(this.config.port || 8081);
 	}
 
-	// deno-lint-ignore require-await
-	async create_bridge(channelId: string) {
+	create_bridge(channelId: string) {
 		return channelId;
 	}
 
@@ -55,9 +54,7 @@ export class matrix_plugin extends plugin<MatrixConfig, string[]> {
 
 		// TODO(jersey): fix the intent stuff
 
-		const messages = await coreToMessage(msg, mxintent, reply, edit);
-
-		// TODO(jersey): handle multiple messages (for attachments)
+		const messages = await to_matrix(msg, mxintent, reply, edit);
 
 		const msg_ids = []
 

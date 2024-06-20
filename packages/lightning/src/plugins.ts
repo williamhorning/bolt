@@ -44,7 +44,7 @@ export abstract class plugin<cfg, idtype extends string | string[] = string> ext
 		this: new (l: lightning, config: T['config']) => T,
 		config: T['config'],
 	): create_plugin<T> {
-		return { type: this, config, support: ['0.7.0'] };
+		return { type: this, config, support: ['0.7.1'] };
 	}
 
 	constructor(l: lightning, config: cfg) {
@@ -54,7 +54,7 @@ export abstract class plugin<cfg, idtype extends string | string[] = string> ext
 	}
 
 	/** this should return the data you need to send to the channel given */
-	abstract create_bridge(channel: string): Promise<unknown>;
+	abstract create_bridge(channel: string): Promise<unknown> | unknown;
 
 	/** this is used to bridge a NEW message */
 	abstract create_message(
