@@ -7,6 +7,7 @@ export {
 	Intent,
 	Request,
 	type WeakEvent,
+	MatrixUser
 } from 'npm:matrix-appservice-bridge@10.1.0';
 export {
 	type bridge_channel,

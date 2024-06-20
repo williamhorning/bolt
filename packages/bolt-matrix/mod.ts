@@ -8,6 +8,7 @@ import {
 import { onEvent } from './events.ts';
 import { to_matrix } from './to_matrix.ts';
 import { setup_registration } from './setup_registration.ts';
+import { ensure_profile } from './matrix_user.ts';
 
 export type MatrixConfig = {
 	appserviceUrl: string;
@@ -49,21 +50,21 @@ export class matrix_plugin extends plugin<MatrixConfig, string[]> {
 		edit?: string[],
 		reply?: string,
 	) {
-		const mxid = `lightning-${msg.plugin}_${msg.author.id}`;
-		const mxintent = this.bot.getIntentFromLocalpart(mxid);
+		const local_part = `lightning-${msg.plugin}_${msg.author.id}`;
+		const mxintent = this.bot.getIntentFromLocalpart(local_part);
 
-		// TODO(jersey): fix the intent stuff
+		await ensure_profile(this.bot, mxintent, channel.id, msg);
 
 		const messages = await to_matrix(msg, mxintent, reply, edit);
-
-		const msg_ids = []
+		const msg_ids = [];
 
 		for (const message of messages) {
-			const result = await mxintent.sendMessage(
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+			const { event_id } = await mxintent.sendMessage(
 				channel.id,
 				message,
 			);
-			msg_ids.push(result.event_id);
+			msg_ids.push(event_id);
 		}
 
 		return msg_ids;

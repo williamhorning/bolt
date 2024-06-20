@@ -49,7 +49,7 @@ export async function to_matrix(
 	}
 
 	// TODO(jersey): eventually add nicer fallback
-	if (msg.embeds) {
+	if (msg.embeds && msg.embeds.length > 0) {
 		events[0].body = `${events[0].body}\n\n*this message includes embeds*`
 		events[0].formattedBody = render(events[0].body as string);
 	}

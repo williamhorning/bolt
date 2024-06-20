@@ -6,7 +6,7 @@ import type { deleted_message, message } from './messages.ts';
 
 /** the way to make a plugin */
 export interface create_plugin<
-	plugin_type extends plugin<plugin_type['config']>,
+	plugin_type extends plugin<plugin_type['config'], string | string[]>,
 > {
 	/** the actual constructor of the plugin */
 	type: new (l: lightning, config: plugin_type['config']) => plugin_type;
@@ -40,7 +40,7 @@ export abstract class plugin<cfg, idtype extends string | string[] = string> ext
 	abstract name: string;
 
 	/** create a new plugin instance */
-	static new<T extends plugin<unknown>>(
+	static new<T extends plugin<T["config"], string | string[]>>(
 		this: new (l: lightning, config: T['config']) => T,
 		config: T['config'],
 	): create_plugin<T> {
