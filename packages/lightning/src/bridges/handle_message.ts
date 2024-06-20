@@ -63,7 +63,7 @@ export async function handle_message(
 			dat = await plugin[type](
 				msg as message,
 				channel,
-				bridged_id?.id!,
+				bridged_id?.id! as string,
 				reply_id,
 			);
 		} catch (e) {
@@ -72,7 +72,7 @@ export async function handle_message(
 			try {
 				const err_msg = (await log_error(e, { channel, bridged_id })).message;
 
-				dat = await plugin[type](err_msg, channel, bridged_id?.id!, reply_id);
+				dat = await plugin[type](err_msg, channel, bridged_id?.id! as string, reply_id);
 			} catch (e) {
 				await log_error(
 					new Error(
@@ -118,7 +118,9 @@ async function get_reply_id(
 				(i) => i.channel === channel.id && i.plugin === channel.plugin,
 			);
 
-			return bridge_channel?.id;
+			if (!bridge_channel) return;
+			if (typeof bridge_channel.id === 'string') return bridge_channel.id;
+			return bridge_channel.id[0];
 		} catch {
 			return;
 		}

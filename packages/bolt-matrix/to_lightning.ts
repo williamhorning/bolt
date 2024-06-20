@@ -41,6 +41,7 @@ export async function to_lightning(
         case 'm.emote':
         case 'm.notice':
             if (event.content.msgtype === 'm.text') {
+                // TODO(jersey): get rid of reply quote, if any
                 message.content = event.content.body as string;
             } else {
                 message.content = `_${event.content.body}_`;

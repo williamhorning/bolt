@@ -17,7 +17,7 @@ export type MatrixConfig = {
 	reg_path: string;
 };
 
-export class matrix_plugin extends plugin<MatrixConfig> {
+export class matrix_plugin extends plugin<MatrixConfig, string[]> {
 	bot: Bridge;
 	name = 'bolt-matrix';
 	version = '0.7.0';
@@ -47,10 +47,9 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 	async create_message(
 		msg: message,
 		channel: bridge_channel,
-		edit?: string,
+		edit?: string[],
 		reply?: string,
 	) {
-		// TODO(jersey): fix replying to messaged bridged by bolt-matrix
 		const mxid = `lightning-${msg.plugin}_${msg.author.id}`;
 		const mxintent = this.bot.getIntentFromLocalpart(mxid);
 
@@ -59,18 +58,24 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 		const messages = await coreToMessage(msg, mxintent, reply, edit);
 
 		// TODO(jersey): handle multiple messages (for attachments)
-		const result = await mxintent.sendMessage(
-			channel.id,
-			messages[0],
-		);
 
-		return result.event_id;
+		const msg_ids = []
+
+		for (const message of messages) {
+			const result = await mxintent.sendMessage(
+				channel.id,
+				message,
+			);
+			msg_ids.push(result.event_id);
+		}
+
+		return msg_ids;
 	}
 
 	async edit_message(
 		msg: message,
 		channel: bridge_channel,
-		edit_id?: string,
+		edit_id?: string[],
 		reply_id?: string,
 	) {
 		return await this.create_message(msg, channel, edit_id, reply_id);
@@ -79,14 +84,16 @@ export class matrix_plugin extends plugin<MatrixConfig> {
 	async delete_message(
 		_msg: message,
 		channel: bridge_channel,
-		delete_id: string,
+		ids: string[],
 	) {
 		const intent = this.bot.getIntent();
-		await intent.botSdkIntent.underlyingClient.redactEvent(
-			channel.id,
-			delete_id,
-			'bridge message deletion',
-		);
-		return delete_id;
+		for (const message of ids) {
+			await intent.botSdkIntent.underlyingClient.redactEvent(
+				channel.id,
+				message,
+				'bridge message deletion',
+			);
+		}
+		return ids;
 	}
 }

@@ -31,7 +31,7 @@ export type plugin_events = {
 };
 
 /** a plugin for lightning */
-export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
+export abstract class plugin<cfg, idtype extends string | string[] = string> extends EventEmitter<plugin_events> {
 	/** access the instance of lightning you're connected to */
 	lightning: lightning;
 	/** access the config passed to you by lightning */
@@ -60,23 +60,23 @@ export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	abstract create_message(
 		message: message,
 		channel: bridge_channel,
-		edit_id?: string,
+		edit_id?: idtype,
 		reply_id?: string,
-	): Promise<string>;
+	): Promise<idtype>;
 
 	/** this is used to bridge an EDITED message */
 	abstract edit_message(
 		message: message,
 		channel: bridge_channel,
-		edit_id: string,
+		edit_id: idtype,
 		reply_id?: string,
-	): Promise<string>;
+	): Promise<idtype>;
 
 	/** this is used to bridge a DELETED message */
 	abstract delete_message(
 		message: deleted_message,
 		channel: bridge_channel,
-		delete_id: string,
+		delete_id: idtype,
 		reply_id?: string,
-	): Promise<string>;
+	): Promise<idtype>;
 }
