@@ -1,70 +1,67 @@
 import {
-	Bolt,
-	bolt_plugin,
-	bridge_platform,
-	message,
-	deleted_message,
 	Bot,
-	parseArgs
-} from './_deps.ts';
+	type bridge_channel,
+	type deleted_message,
+	type lightning,
+	type message,
+	parseArgs,
+	plugin,
+} from './deps.ts';
 import { tgtocore } from './messages.ts';
 
 export type telegram_config = {
 	token: string;
 };
 
-export class telegram_plugin extends bolt_plugin<telegram_config> {
+export class telegram_plugin extends plugin<telegram_config, string[]> {
 	name = 'bolt-telegram';
-	version = '0.5.6';
-	support = ['0.5.5'];
 	bot: Bot;
 
-	constructor(bolt: Bolt, config: telegram_config) {
-		super(bolt, config);
+	constructor(l: lightning, config: telegram_config) {
+		super(l, config);
 		this.bot = new Bot(config.token);
 		this.register_cmds();
-		this.bot.on('message', async ctx => {
+		this.bot.on('message', async (ctx) => {
 			const msg = await tgtocore(ctx, config);
 			if (!msg) return;
 			this.emit('create_message', msg);
 		});
-		this.bot.on('edited_message', async ctx => {
+		this.bot.on('edited_message', async (ctx) => {
 			const msg = await tgtocore(ctx, config);
 			if (!msg) return;
 			this.emit('edit_message', msg);
 		});
 		// turns out it's impossible to deal with messages being deleted due to tdlib/telegram-bot-api#286
-		this.bot.start({
-			onStart: () => {
-				this.emit('ready');
-			}
-		});
+		this.bot.start();
 	}
 
 	private register_cmds() {
-		this.bot.command('start', ctx =>
-			ctx.reply("Hey there! Bolt's up and running. Run /help for more info.")
+		this.bot.command(
+			'start',
+			(ctx) =>
+				ctx.reply(
+					"Hey there! Bolt's up and running. Run /help for more info.",
+				),
 		);
-		const cmds = [...this.bolt.cmds.keys()];
-		this.bot.command(cmds, ctx => {
-			const cmd =
-				ctx
-					.entities()
-					.find(e => e.type === 'bot_command')
-					?.text?.replace('/', '') || 'help';
+		const cmds = [...this.lightning.commands.keys()];
+		this.bot.command(cmds, (ctx) => {
+			const cmd = ctx
+				.entities()
+				.find((e) => e.type === 'bot_command')
+				?.text?.replace('/', '') || 'help';
 			const rest_of_message = ctx.msg.text.replace(`/${cmd}`, '').trim();
 			const args = parseArgs(rest_of_message.split(' '));
-			this.emit('create_command', {
+			this.emit('run_command', {
 				channel: ctx.msg.chat.id.toString(),
 				cmd,
 				subcmd: (args._[0] as string) || undefined,
 				opts: args,
-				platform: 'bolt-telegram',
-				replyfn: async msg => {
-					// TODO: find better way to transform content
+				plugin: 'bolt-telegram',
+				reply: async (msg) => {
+					// TODO(jersey): find better way to transform content
 					await ctx.reply(msg.content || 'no content');
 				},
-				timestamp: Temporal.Instant.fromEpochSeconds(ctx.msg.date)
+				timestamp: Temporal.Instant.fromEpochSeconds(ctx.msg.date),
 			});
 		});
 	}
@@ -78,36 +75,35 @@ export class telegram_plugin extends bolt_plugin<telegram_config> {
 		return false;
 	}
 
-	async create_message(message: message<unknown>, bridge: bridge_platform) {
-		// TODO: find better way to transform content
+	async create_message(message: message, bridge: bridge_channel) {
+		// TODO(jersey): find better way to transform content
 		const result = await this.bot.api.sendMessage(
-			bridge.channel,
-			message.content || 'nocontent'
+			bridge.id,
+			message.content || 'nocontent',
 		);
-		return {
-			id: result.message_id.toString(),
-			...bridge
-		};
+		return [result.message_id.toString()];
 	}
 
 	async edit_message(
-		message: message<unknown>,
-		bridge: bridge_platform & { id: string }
+		message: message,
+		bridge: bridge_channel,
+		edit: string[],
 	) {
-		// TODO: find better way to transform content
+		// TODO(jersey): find better way to transform content
 		await this.bot.api.editMessageText(
-			bridge.channel,
-			Number(bridge.id),
-			message.content || 'nocontent'
+			bridge.id,
+			Number(edit[0]),
+			message.content || 'nocontent',
 		);
-		return bridge;
+		return edit;
 	}
 
 	async delete_message(
-		_message: deleted_message<unknown>,
-		bridge: bridge_platform & { id: string }
+		_: deleted_message,
+		bridge: bridge_channel,
+		message_id: string[],
 	) {
-		await this.bot.api.deleteMessage(bridge.channel, Number(bridge.id));
-		return bridge;
+		await this.bot.api.deleteMessage(bridge.id, Number(message_id[0]));
+		return message_id;
 	}
 }

@@ -1,16 +1,15 @@
-import { message, Context } from './_deps.ts';
-import { telegram_config } from './mod.ts';
+import type { message, Context } from './deps.ts';
+import type { telegram_config } from './mod.ts';
 
 export async function tgtocore(
 	ctx: Context,
 	cfg: telegram_config
-): Promise<message<Context> | undefined> {
+): Promise<message | undefined> {
 	if (!ctx.msg) return;
 	let msg = ctx.msg;
 	if (ctx.editedMessage) msg = ctx.editedMessage;
 	const author = await ctx.getAuthor();
 	const pfps = await ctx.getUserProfilePhotos({ limit: 1 });
-	console.log((await ctx.api.getFile(pfps.photos[0][0].file_id)).file_path);
 	return {
 		author: {
 			username: author.user.last_name
@@ -29,15 +28,12 @@ export async function tgtocore(
 		id: msg.message_id.toString(),
 		content: msg.text || '*empty message*',
 		timestamp: Temporal.Instant.fromEpochSeconds(msg.edit_date || msg.date),
-		platform: {
-			name: 'bolt-telegram',
-			message: ctx
-		},
-		reply: async (msg: message<unknown>) => {
-			// TODO: find better way to transform content
+		plugin: 'bolt-telegram',
+		reply: async (msg: message) => {
+			// TODO(jersey): find better way to transform content
 			await ctx.reply(msg.content || 'no content');
 		},
-		replytoid: msg.reply_to_message
+		reply_id: msg.reply_to_message
 			? msg.reply_to_message.message_id.toString()
 			: undefined
 	};
