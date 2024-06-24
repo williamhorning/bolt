@@ -129,11 +129,13 @@ export class appservice {
         room_id: string,
         msg: TimelineEvents['m.room.message'],
         mxid?: string,
+        display_name?: string,
+        avatar_url?: string,
     ) {
         mxid = mxid ??
             `@${this.cfg.homeserver_localpart}:${this.cfg.homeserver_domain}`;
         const localpart = mxid.split(':')[0].slice(1);
-        await this.ensure_user(localpart);
+        await this.ensure_user(localpart, display_name, avatar_url);
         return (await this.request(
             `v3/rooms/${room_id}/send/m.room.message/${this
                 .request_id++}?user_id=${mxid}`,

@@ -47,6 +47,8 @@ export class matrix_plugin extends plugin<matrix_config, string[]> {
 					channel.id,
 					message,
 					`@${this.config.homeserver_prefix}${msg.author.id}:${this.config.homeserver_domain}`,
+					msg.author.username,
+					msg.author.profile
 				),
 			);
 		}
