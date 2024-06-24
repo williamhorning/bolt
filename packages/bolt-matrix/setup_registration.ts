@@ -1,20 +1,19 @@
-import { existsSync, AppServiceRegistration } from './deps.ts';
-import type { MatrixConfig } from './mod.ts';
+import { existsSync } from './deps.ts';
+import type { matrix_config } from './matrix_types.ts';
 
-export function setup_registration(config: MatrixConfig) {
-    if (!existsSync(config.reg_path)) {
-        const reg = new AppServiceRegistration(config.appserviceUrl);
-        reg.setAppServiceToken(AppServiceRegistration.generateToken());
-        reg.setHomeserverToken(AppServiceRegistration.generateToken());
-        reg.setId(AppServiceRegistration.generateToken());
-        reg.setProtocols(['lightning']);
-        reg.setRateLimited(false);
-        reg.setSenderLocalpart('bot.lightning');
-        reg.addRegexPattern(
-            'users',
-            `@lightning-.+_.+:${config.domain}`,
-            true,
-        );
-        reg.outputAsYaml(config.reg_path);
+export function setup_registration(cfg: matrix_config) {
+    if (!existsSync(cfg.registration_file)) {
+        const registration = `
+as_token: ${cfg.appservice_token}
+hs_token: ${cfg.homeservice_token}
+id: ${cfg.appservice_id}
+namespaces:
+users:
+  - regex: '@${cfg.homeserver_prefix}-.*'
+    exclusive: true
+sender_localpart: ${cfg.homeserver_localpart}
+rate_limited: false
+url: ${cfg.plugin_url}`;
+        Deno.writeTextFileSync(cfg.registration_file, registration);
     }
 }

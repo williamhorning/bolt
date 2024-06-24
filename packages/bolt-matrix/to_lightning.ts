@@ -1,20 +1,22 @@
-import type { Intent, message, WeakEvent } from './deps.ts';
+import type { message } from './deps.ts';
 import { to_matrix } from './to_matrix.ts';
+import type { appservice } from './appservice_api.ts';
+import type { matrix_client_event } from './matrix_types.ts';
 
 export async function to_lightning(
-    event: WeakEvent,
-    intent: Intent,
-    homeserverUrl: string,
+    event: matrix_client_event,
+    bot: appservice,
+    homeserver_url: string,
 ): Promise<message> {
     const un_mxc = (url: string) =>
-        url.replace('mxc://', `${homeserverUrl}/_matrix/media/r0/download/`);
-    const sender = await intent.getProfileInfo(event.sender);
+        url.replace('mxc://', `${homeserver_url}/_matrix/media/r0/download/`);
+    const sender = await bot.get_profile_info(event.sender);
     const relates_to = event.content['m.relates_to'] as Record<string, unknown>;
     const message: message = {
         author: {
             id: event.sender,
-            rawname: sender.displayname || event.sender,
-            username: sender.displayname || event.sender,
+            rawname: sender.display_name || event.sender,
+            username: sender.display_name || event.sender,
             color: '#007A61',
             profile: sender.avatar_url ? un_mxc(sender.avatar_url) : undefined,
         },
@@ -28,10 +30,14 @@ export async function to_lightning(
             ? (relates_to['m.in_reply_to'] as Record<string, string>).event_id
             : undefined,
         reply: async (msg) => {
-            const replies = await to_matrix(msg, intent, event.event_id);
+            const replies = await to_matrix(
+                msg,
+                bot.upload_content,
+                event.event_id,
+            );
 
             for (const reply of replies) {
-                intent.sendMessage(event.room_id as string, reply);
+                await bot.send_message(event.room_id as string, reply);
             }
         },
     };

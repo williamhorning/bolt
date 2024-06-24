@@ -1,43 +1,26 @@
 import {
-	Bridge,
 	type bridge_channel,
 	type lightning,
 	type message,
 	plugin,
 } from './deps.ts';
-import { onEvent } from './events.ts';
+import { on_event } from './events.ts';
 import { to_matrix } from './to_matrix.ts';
 import { setup_registration } from './setup_registration.ts';
-import { ensure_profile } from './matrix_user.ts';
+import { appservice } from './appservice_api.ts';
+import type { matrix_config, matrix_user } from './matrix_types.ts';
+import { start_matrix_server } from './matrix_server.ts';
 
-export type MatrixConfig = {
-	appserviceUrl: string;
-	homeserverUrl: string;
-	domain: string;
-	port?: number;
-	reg_path: string;
-};
-
-export class matrix_plugin extends plugin<MatrixConfig, string[]> {
-	bot: Bridge;
+export class matrix_plugin extends plugin<matrix_config, string[]> {
+	bot: appservice;
 	name = 'bolt-matrix';
-	version = '0.7.0';
+	store = new Map<string, matrix_user>();
 
-	constructor(l: lightning, config: MatrixConfig) {
+	constructor(l: lightning, config: matrix_config) {
 		super(l, config);
-		this.bot = new Bridge({
-			homeserverUrl: this.config.homeserverUrl,
-			domain: this.config.domain,
-			registration: this.config.reg_path,
-			controller: {
-				onEvent: onEvent.bind(this),
-			},
-			roomStore: './config/roomStore.db',
-			userStore: './config/userStore.db',
-			userActivityStore: './config/userActivityStore.db',
-		});
+		this.bot = new appservice(config, this.store);
+		start_matrix_server(config, this.store, on_event.bind(this));
 		setup_registration(config);
-		this.bot.run(this.config.port || 8081);
 	}
 
 	create_bridge(channelId: string) {
@@ -50,21 +33,22 @@ export class matrix_plugin extends plugin<MatrixConfig, string[]> {
 		edit?: string[],
 		reply?: string,
 	) {
-		const local_part = `lightning-${msg.plugin}_${msg.author.id}`;
-		const mxintent = this.bot.getIntentFromLocalpart(local_part);
-
-		await ensure_profile(this.bot, mxintent, channel.id, msg);
-
-		const messages = await to_matrix(msg, mxintent, reply, edit);
+		const messages = await to_matrix(
+			msg,
+			this.bot.upload_content,
+			reply,
+			edit,
+		);
 		const msg_ids = [];
 
 		for (const message of messages) {
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			const { event_id } = await mxintent.sendMessage(
-				channel.id,
-				message,
+			msg_ids.push(
+				await this.bot.send_message(
+					channel.id,
+					message,
+					`@${this.config.homeserver_prefix}${msg.author.id}:${this.config.homeserver_domain}`,
+				),
 			);
-			msg_ids.push(event_id);
 		}
 
 		return msg_ids;
@@ -84,12 +68,10 @@ export class matrix_plugin extends plugin<MatrixConfig, string[]> {
 		channel: bridge_channel,
 		ids: string[],
 	) {
-		const intent = this.bot.getIntent();
 		for (const message of ids) {
-			await intent.botSdkIntent.underlyingClient.redactEvent(
+			await this.bot.redact_event(
 				channel.id,
 				message,
-				'bridge message deletion',
 			);
 		}
 		return ids;

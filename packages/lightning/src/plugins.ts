@@ -40,7 +40,7 @@ export abstract class plugin<cfg, idtype extends string | string[] = string> ext
 	abstract name: string;
 
 	/** create a new plugin instance */
-	static new<T extends plugin<T["config"], string | string[]>>(
+	static new<T extends plugin<T["config"]>>(
 		this: new (l: lightning, config: T['config']) => T,
 		config: T['config'],
 	): create_plugin<T> {
