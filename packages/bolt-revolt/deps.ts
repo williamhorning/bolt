@@ -1,12 +1,20 @@
+// TODO(#64): publish an actual version of rvapi to jsr
 export {
-	type API,
-	Client,
+	createClient,
+	type Channel,
+	type Client,
+	type DataMessageSend,
+	type Embed,
+	type Member,
 	type Message,
-	type TextEmbed,
-} from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
+	type SendableEmbed,
+	type User,
+} from 'jsr:@jersey/test@0.0.1';
+export { decodeTime } from 'jsr:@std/ulid@0.224.1';
 export {
 	type bridge_channel,
 	type deleted_message,
+	type embed,
 	type lightning,
 	type message,
 	plugin,
