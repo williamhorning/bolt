@@ -24,36 +24,34 @@ export async function to_matrix(
 		formatted_body: render(content),
 	}] as (TimelineEvents["m.room.message"])[];
 
-	if (reply) {
+	if (edit) {
+		events[0]['m.relates_to'] = {
+			rel_type: "m.replace",
+			event_id: edit[0],
+		};
+	} else if (reply) {
 		events[0]['m.relates_to'] = {
 			'm.in_reply_to': {
 				event_id: reply,
 			},
 		};
-	} else if (edit) {
-		events[0]['m.relates_to'] = {
-			rel_type: "m.replace",
-			event_id: edit[0],
-		};
 	}
 
 	if (msg.attachments) {
 		for (const attachment of msg.attachments) {
-			const file = {
+			events.push({
 				msgtype: 'm.file',
 				body: attachment.name ?? attachment.alt ?? 'no name file',
 				alt: attachment.alt ?? attachment.name ?? 'no alt text',
-				file: await upload(
+				url: await upload(
 					await ((await fetch(attachment.file)).blob()),
 				),
 				info: { size: attachment.size * 1000000 },
-			} as Record<string, unknown>;
-			if (edit) {
-				file['m.relates_to'] = {
+				'm.relates_to': edit ? {
 					rel_type: 'm.replace',
 					event_id: edit[msg.attachments?.indexOf(attachment) + 1],
-				};
-			}
+				} : undefined
+			});
 		}
 	}
 

@@ -14,7 +14,7 @@ export async function on_event(
 		try {
 			await this.bot.join_room(event.room_id);
 		} catch (e) {
-			console.debug(`Failed to join room ${event.room_id}: ${e}`);
+			console.debug(`failed joining ${event.room_id}`, e);
 		}
 	}
 	if (event.type === 'm.room.message' && !event.content['m.new_content']) {

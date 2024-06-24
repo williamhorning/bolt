@@ -4,7 +4,7 @@ import {
 	type message,
 	plugin,
 } from './deps.ts';
-import { on_event } from './events.ts';
+import { on_event } from './matrix_events.ts';
 import { to_matrix } from './to_matrix.ts';
 import { setup_registration } from './setup_registration.ts';
 import { appservice } from './appservice_api.ts';

@@ -1,5 +1,5 @@
 import type { TimelineEvents } from './deps.ts';
-import type { matrix_user, matrix_config } from './matrix_types.ts';
+import type { matrix_config, matrix_user } from './matrix_types.ts';
 
 export class appservice {
     cfg: matrix_config;
@@ -30,8 +30,18 @@ export class appservice {
         )).json();
     }
 
-    async ensure_user(localpart: string) {
-        if (this.user_store.has(localpart)) return;
+    async ensure_user(
+        localpart: string,
+        display_name?: string,
+        avatar_url?: string,
+    ) {
+        if (this.user_store.has(localpart)) {
+            return await this.ensure_profile(
+                localpart,
+                display_name,
+                avatar_url,
+            );
+        }
 
         if (
             !(await this.request(
@@ -40,7 +50,14 @@ export class appservice {
                 }`,
                 'GET',
             )).available
-        ) return;
+        ) {
+            this.user_store.set(localpart, {});
+            return await this.ensure_profile(
+                localpart,
+                display_name,
+                avatar_url,
+            );
+        }
 
         const register_req = await this.request(
             `v3/register`,
@@ -48,12 +65,45 @@ export class appservice {
             { username: localpart, type: 'm.login.application_service' },
         );
 
-        if (register_req.user_id) return;
+        if (register_req.user_id) {
+            this.user_store.set(localpart, {});
+            return await this.ensure_profile(
+                localpart,
+                display_name,
+                avatar_url,
+            );
+        }
 
         throw new Error(
             `recieved ${register_req.errcode} when registering for ${localpart}`,
             { cause: register_req },
         );
+    }
+
+    async ensure_profile(
+        localpart: string,
+        displayname?: string,
+        avatar_url?: string,
+    ) {
+        const user = this.user_store.get(localpart) ?? {}
+
+        if (displayname && (displayname !== user.display_name)) {
+            await this.request(`v3/profile/${user}/displayname`, "PUT", {
+                displayname
+            })
+            user.display_name = displayname
+        }
+
+        if (avatar_url && (avatar_url !== user.avatar_url)) {
+            const mxc = await this.upload_content(await (await fetch(avatar_url)).blob())
+            await this.request(`v3/profile/${user}/avatar_url`, "PUT", {
+                avatar_url: mxc
+            })
+            user.avatar_mxc = mxc
+            user.avatar_url = avatar_url
+        }
+
+        this.user_store.set(localpart, user)
     }
 
     async redact_event(room_id: string, id: string) {
@@ -77,15 +127,16 @@ export class appservice {
 
     async send_message(
         room_id: string,
-        msg: TimelineEvents["m.room.message"],
-        user_id?: string,
+        msg: TimelineEvents['m.room.message'],
+        mxid?: string,
     ) {
+        mxid = mxid ??
+            `@${this.cfg.homeserver_localpart}:${this.cfg.homeserver_domain}`;
+        const localpart = mxid.split(':')[0].slice(1);
+        await this.ensure_user(localpart);
         return (await this.request(
             `v3/rooms/${room_id}/send/m.room.message/${this
-                .request_id++}?user_id=${
-                user_id ||
-                `@${this.cfg.homeserver_localpart}:${this.cfg.homeserver_domain}`
-            }`,
+                .request_id++}?user_id=${mxid}`,
             'PUT',
             msg as unknown as Record<string, unknown>,
         )).event_id as string;

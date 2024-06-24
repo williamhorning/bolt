@@ -11,7 +11,7 @@ export async function to_lightning(
     const un_mxc = (url: string) =>
         url.replace('mxc://', `${homeserver_url}/_matrix/media/r0/download/`);
     const sender = await bot.get_profile_info(event.sender);
-    const relates_to = event.content['m.relates_to'] as Record<string, unknown>;
+    const relates_to = event.content['m.relates_to'] as Record<string, unknown> | undefined;
     const message: message = {
         author: {
             id: event.sender,
