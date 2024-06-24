@@ -1,17 +1,5 @@
-# bolt 0.5
+# lightning
 
-bolt is a cross-platform chat bot that bridges communities that's written in
-typescript. to learn more, see the [docs](https://williamhorning.dev/bolt).
-
-## feature support matrix
-
-|              | text  | threads | forums |
-| ------------ | ----- | ------- | ------ |
-| bolt         | ✓     | ✓       | X      |
-| bolt-discord | ✓     | ✓       | ✓      |
-| bolt-guilded | ✓\*   | X       | X      |
-| bolt-matrix  | ✓\*\* | X       | X      |
-| bolt-revolt  | ✓     | X       | X      |
-
-\* bolt-guilded's text support is a bit iffy  
-\*\* bolt-matrix is a POC
+lightning is a typescript-based chatbot that supports bridging multiple chat
+apps via plugins. this repo contains lightning and some of the plugins used in
+bolt. to learn more, take a look at the [docs](https://williamhorning.dev/bolt)

@@ -1,0 +1,13 @@
+{
+	"name": "@jersey/lightning",
+	"version": "0.7.0",
+	"exports": "./mod.ts",
+	"publish": {
+		"exclude": ["./src/tests/*"]
+	},
+	"test": {
+		"include": ["./src/tests/*"]
+	},
+	"lock": false,
+	"unstable": ["temporal"]
+}

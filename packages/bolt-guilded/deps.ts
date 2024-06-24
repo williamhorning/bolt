@@ -1,12 +1,15 @@
 export {
-	type API,
 	Client,
+	type EmbedPayload,
 	type Message,
-	type TextEmbed,
-} from 'npm:@williamhorning/revolt.js@7.0.0-beta.10';
+	type RESTPostWebhookBody,
+	WebhookClient,
+	type WebhookPayload,
+} from 'npm:guilded.js@0.24.2';
 export {
 	type bridge_channel,
 	type deleted_message,
+	type embed,
 	type lightning,
 	type message,
 	plugin,

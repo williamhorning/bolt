@@ -1,16 +1,13 @@
+import * as conv from './conv.ts';
+import type { deleted_message, lightning, message } from './deps.ts';
 import {
-	Bolt,
 	Client,
-	bolt_plugin,
-	bridge_platform,
-	deleted_message,
-	message,
-	rest,
-	socket
-} from './_deps.ts';
-import { register_commands } from './commands.ts';
-import { register_events } from './events.ts';
-import { todiscord } from './messages.ts';
+	GatewayDispatchEvents,
+	plugin,
+	REST,
+	WebSocketManager,
+} from './deps.ts';
+import * as to from './to.ts';
 
 export type discord_config = {
 	app_id: string;
@@ -18,107 +15,95 @@ export type discord_config = {
 	slash_cmds?: boolean;
 };
 
-export class discord_plugin extends bolt_plugin<discord_config> {
+export class discord_plugin extends plugin<discord_config> {
 	bot: Client;
 	name = 'bolt-discord';
-	version = '0.5.8';
-	support = ['0.5.5'];
+	version = '0.7.0';
 
-	constructor(bolt: Bolt, config: discord_config) {
-		super(bolt, config);
+	constructor(l: lightning, config: discord_config) {
+		super(l, config);
 		this.config = config;
-		const rest_client = new rest({ version: '10' }).setToken(config.token);
-		const gateway = new socket({
-			rest: rest_client,
-			token: config.token,
-			intents: 0 | 33281
+		this.bot = this.setup_client();
+		this.setup_events();
+		this.setup_commands();
+	}
+
+	private setup_client() {
+		const rest = new REST({
+			version: '10',
+			/* @ts-ignore this works */
+			makeRequest: fetch,
+		}).setToken(this.config.token);
+
+		const gateway = new WebSocketManager({
+			rest,
+			token: this.config.token,
+			intents: 0 | 33281,
 		});
-		this.bot = new Client({ rest: rest_client, gateway });
-		register_events(this);
-		register_commands(this.config, this.bot.api, bolt);
+
 		gateway.connect();
+
+		return new Client({ rest, gateway });
 	}
 
-	async create_bridge(channel: string) {
-		const wh = await this.bot.api.channels.createWebhook(channel, {
-			name: 'bolt bridge'
+	private setup_events() {
+		this.bot.on(GatewayDispatchEvents.MessageCreate, async (msg) => {
+			this.emit('create_message', await conv.to_core(msg.api, msg.data));
 		});
-		return { id: wh.id, token: wh.token };
+
+		this.bot.on(GatewayDispatchEvents.MessageUpdate, async (msg) => {
+			this.emit('edit_message', await conv.to_core(msg.api, msg.data));
+		});
+
+		this.bot.on(GatewayDispatchEvents.MessageDelete, async (msg) => {
+			this.emit('delete_message', await conv.to_core(msg.api, msg.data));
+		});
+
+		this.bot.on(GatewayDispatchEvents.InteractionCreate, (interaction) => {
+			const cmd = conv.to_command(interaction);
+			if (cmd) this.emit('run_command', cmd);
+		});
 	}
 
-	is_bridged() {
-		return 'query' as const;
+	private setup_commands() {
+		if (!this.config.slash_cmds) return;
+
+		this.bot.api.applicationCommands.bulkOverwriteGlobalCommands(
+			this.config.app_id,
+			[...this.lightning.commands.values()].map((command) => {
+				return {
+					name: command.name,
+					type: 1,
+					description: command.description || 'a command',
+					options: conv.to_intent_opts(command),
+				};
+			}),
+		);
 	}
 
-	async create_message(
-		message: message<unknown>,
-		bridge: bridge_platform
-	): Promise<bridge_platform> {
-		const msg = await todiscord(message);
-		const senddata = bridge.senddata as { token: string; id: string };
-		try {
-			const wh = await this.bot.api.webhooks.execute(
-				senddata.id,
-				senddata.token,
-				msg
-			);
-			return {
-				...bridge,
-				id: wh.id
-			};
-		} catch (e) {
-			if (e.status === 404) {
-				return bridge;
-			} else {
-				throw e;
-			}
-		}
+	create_bridge(channel: string) {
+		return to.webhook_on_discord(this.bot.api, channel);
 	}
 
-	async edit_message(
-		message: message<unknown>,
-		bridge: bridge_platform & { id: string }
-	): Promise<bridge_platform> {
-		const msg = await todiscord(message);
-		const senddata = bridge.senddata as { token: string; id: string };
-		try {
-			const wh = await this.bot.api.webhooks.editMessage(
-				senddata.id,
-				senddata.token,
-				bridge.id,
-				msg
-			);
-			return {
-				...bridge,
-				id: wh.id
-			};
-		} catch (e) {
-			if (e.status === 404) {
-				return bridge;
-			} else {
-				throw e;
-			}
-		}
+	create_message(
+		msg: message,
+		bridge: to.channel,
+		_?: undefined,
+		reply_id?: string,
+	): Promise<string> {
+		return to.send_to_discord(this.bot.api, msg, bridge, _, reply_id);
 	}
 
-	async delete_message(
-		_msg: deleted_message<unknown>,
-		bridge: bridge_platform & { id: string }
-	) {
-		const senddata = bridge.senddata as { token: string; id: string };
-		try {
-			await this.bot.api.webhooks.deleteMessage(
-				senddata.id,
-				senddata.token,
-				bridge.id
-			);
-			return bridge;
-		} catch (e) {
-			if (e.status === 404) {
-				return bridge;
-			} else {
-				throw e;
-			}
-		}
+	edit_message(
+		msg: message,
+		bridge: to.channel,
+		edit_id: string,
+		reply_id?: string,
+	): Promise<string> {
+		return to.send_to_discord(this.bot.api, msg, bridge, edit_id, reply_id);
+	}
+
+	delete_message(_msg: deleted_message, bridge: to.channel, id: string) {
+		return to.delete_on_discord(this.bot.api, bridge, id);
 	}
 }

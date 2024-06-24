@@ -1,15 +1,16 @@
-export { existsSync } from 'https://deno.land/std@0.212.0/fs/exists.ts';
+export { existsSync } from 'jsr:@std/fs@0.224.0/exists';
+export { Buffer } from 'node:buffer';
 export {
 	AppServiceRegistration,
 	Bridge,
 	Intent,
+	MatrixUser,
 	Request,
-	type ClientEncryptionSession,
-	type WeakEvent
+	type WeakEvent,
 } from 'npm:matrix-appservice-bridge@10.1.0';
 export {
-	Bolt,
-	BoltPlugin,
-	type BoltBridgeMessageArgs,
-	type BoltMessage
-} from '../bolt/mod.ts';
+	type bridge_channel,
+	type lightning,
+	type message,
+	plugin,
+} from '../lightning/mod.ts';
