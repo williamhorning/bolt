@@ -1,13 +1,13 @@
 import {
 	type message,
 	render,
-	type TimelineEvents,
+	type Intent,
+	Buffer
 } from './deps.ts';
-import type { appservice } from './appservice_api.ts';
 
 export async function to_matrix(
 	msg: message,
-	upload: appservice['upload_content'],
+	upload: Intent["uploadContent"],
 	reply?: string,
 	edit?: string[],
 ) {
@@ -22,7 +22,7 @@ export async function to_matrix(
 		body: content,
 		format: 'org.matrix.custom.html',
 		formatted_body: render(content),
-	}] as (TimelineEvents["m.room.message"])[];
+	}] as Record<string, unknown>[];
 
 	if (edit) {
 		events[0]['m.relates_to'] = {
@@ -44,7 +44,7 @@ export async function to_matrix(
 				body: attachment.name ?? attachment.alt ?? 'no name file',
 				alt: attachment.alt ?? attachment.name ?? 'no alt text',
 				url: await upload(
-					await ((await fetch(attachment.file)).blob()),
+					Buffer.from(await ((await fetch(attachment.file)).arrayBuffer())),
 				),
 				info: { size: attachment.size * 1000000 },
 				'm.relates_to': edit ? {

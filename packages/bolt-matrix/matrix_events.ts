@@ -6,13 +6,14 @@ export async function on_event(
 	this: matrix_plugin,
 	event: matrix_client_event
 ) {
+	const bot_intent = this.br.getIntent()
 	if (
 		event.type === 'm.room.member' &&
 		event.content.membership === 'invite' &&
 		event.state_key === `@${this.config.homeserver_localpart}:${this.config.homeserver_domain}`
 	) {
 		try {
-			await this.bot.join_room(event.room_id);
+			await bot_intent.join(event.room_id);
 		} catch (e) {
 			console.debug(`failed joining ${event.room_id}`, e);
 		}
@@ -20,13 +21,13 @@ export async function on_event(
 	if (event.type === 'm.room.message' && !event.content['m.new_content']) {
 		this.emit(
 			'create_message',
-			await to_lightning(event, this.bot, this.config.homeserver_url),
+			await to_lightning(event, bot_intent, this.config.homeserver_url),
 		);
 	}
 	if (event.type === 'm.room.message' && event.content['m.new_content']) {
 		this.emit(
 			'edit_message',
-			await to_lightning(event, this.bot, this.config.homeserver_url),
+			await to_lightning(event, bot_intent, this.config.homeserver_url),
 		);
 	}
 	if (event.type === 'm.room.redaction') {

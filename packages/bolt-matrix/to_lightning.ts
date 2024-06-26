@@ -1,16 +1,15 @@
-import type { message } from './deps.ts';
+import type { Intent, message } from './deps.ts';
 import { to_matrix } from './to_matrix.ts';
-import type { appservice } from './appservice_api.ts';
 import type { matrix_client_event } from './matrix_types.ts';
 
 export async function to_lightning(
     event: matrix_client_event,
-    bot: appservice,
+    bot: Intent,
     homeserver_url: string,
 ): Promise<message> {
     const un_mxc = (url: string) =>
         url.replace('mxc://', `${homeserver_url}/_matrix/media/r0/download/`);
-    const sender = await bot.get_profile_info(event.sender);
+    const sender = await bot.getProfileInfo(event.sender);
     const relates_to = event.content['m.relates_to'] as Record<string, unknown> | undefined;
     const message: message = {
         author: {
@@ -32,12 +31,12 @@ export async function to_lightning(
         reply: async (msg) => {
             const replies = await to_matrix(
                 msg,
-                bot.upload_content,
+                bot.uploadContent,
                 event.event_id,
             );
 
             for (const reply of replies) {
-                await bot.send_message(event.room_id as string, reply);
+                await bot.sendMessage(event.room_id as string, reply);
             }
         },
     };

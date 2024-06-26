@@ -40,6 +40,8 @@ export interface matrix_config {
 	homeserver_prefix: string;
 	/** the path to store the registration file */
 	registration_file: string;
+	/** the path to store the user store */
+	store_dir: string;
 	/** the url where the homeserver is at */
 	homeserver_url: string;
 	/** the domain users on the homeservers are associated with */

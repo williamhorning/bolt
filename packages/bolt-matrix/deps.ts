@@ -6,5 +6,5 @@ export {
 	type message,
 	plugin,
 } from '../lightning/mod.ts';
-export { Hono } from 'jsr:@hono/hono@4.5.0-rc.1';
-export type { TimelineEvents } from 'npm:matrix-js-sdk@33.1.0';
+export { Bridge, type Intent, MatrixUser, UserBridgeStore } from 'npm:matrix-appservice-bridge@10.1.0';
+export { Buffer } from 'node:buffer';
