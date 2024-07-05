@@ -4,8 +4,8 @@ import type { telegram_config } from './mod.ts';
 export function setup_proxy(cfg: telegram_config) {
     const app = new Hono();
 
-    app.get('/file/*', async (c) => {
-        const file_path = c.req.path.replace('/file/', '');
+    app.get('/*', async (c) => {
+        const file_path = c.req.path.replace('/telegram/', '');
         return await fetch(`https://api.telegram.org/file/bot${cfg.bot_token}/${file_path}`)
     });
 
