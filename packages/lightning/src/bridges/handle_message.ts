@@ -13,6 +13,16 @@ export async function handle_message(
 	msg: message | deleted_message,
 	type: 'create_message' | 'edit_message' | 'delete_message',
 ): Promise<void> {
+	await new Promise((res) => setTimeout(res, 150));
+
+	if (type !== 'delete_message') {
+		if (sessionStorage.getItem(`${msg.plugin}-${msg.id}`)) {
+			return sessionStorage.removeItem(`${msg.plugin}-${msg.id}`)
+		} else if (type === 'create_message') {
+			lightning.emit(`create_nonbridged_message`, msg as message);
+		}
+	}
+
 	const bridge = type === 'create_message'
 		? await get_channel_bridge(lightning, msg.channel)
 		: await get_message_bridge(lightning, msg.id);
@@ -30,8 +40,7 @@ export async function handle_message(
 	const messages = [] as bridge_message[];
 
 	for (const channel of channels) {
-		const index = bridge.channels.indexOf(channel);
-		const bridged_id = bridge.messages?.[index];
+		const bridged_id = bridge.messages?.find(i=>i.channel === channel.id && i.plugin === channel.plugin);
 
 		if (!channel.data || (type !== 'create_message' && !bridged_id)) continue;
 
@@ -53,7 +62,7 @@ export async function handle_message(
 			dat = await plugin[type](
 				msg as message,
 				channel,
-				bridged_id?.id!,
+				bridged_id?.id! as string,
 				reply_id,
 			);
 		} catch (e) {
@@ -62,7 +71,7 @@ export async function handle_message(
 			try {
 				const err_msg = (await log_error(e, { channel, bridged_id })).message;
 
-				dat = await plugin[type](err_msg, channel, bridged_id?.id!, reply_id);
+				dat = await plugin[type](err_msg, channel, bridged_id?.id! as string, reply_id);
 			} catch (e) {
 				await log_error(
 					new Error(
@@ -75,7 +84,7 @@ export async function handle_message(
 			}
 		}
 
-		await set_json(lightning, `lightning-isbridged-${dat}`, '1');
+		sessionStorage.setItem(`${channel.plugin}-${dat}`, '1');
 
 		messages.push({ id: dat, channel: channel.id, plugin: channel.plugin });
 	}
@@ -108,7 +117,9 @@ async function get_reply_id(
 				(i) => i.channel === channel.id && i.plugin === channel.plugin,
 			);
 
-			return bridge_channel?.id;
+			if (!bridge_channel) return;
+			if (typeof bridge_channel.id === 'string') return bridge_channel.id;
+			return bridge_channel.id[0];
 		} catch {
 			return;
 		}

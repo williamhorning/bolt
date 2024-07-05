@@ -11,7 +11,7 @@ export interface bridge_channel {
 /** bridged messages */
 export interface bridge_message {
 	/** the id of the message */
-	id: string;
+	id: string | string[];
 	/** the id of the channel the message was sent in */
 	channel: string;
 	/** the plugin the message was sent using */

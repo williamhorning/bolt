@@ -13,9 +13,8 @@ import { createClient, plugin } from './deps.ts';
 import { fromrvapi, torvapi } from './messages.ts';
 
 export class revolt_plugin extends plugin<{ token: string }> {
-  bot: Client;
-  name = 'bolt-revolt';
-  version = '0.7.0';
+	bot: Client;
+	name = 'bolt-revolt';
 
   constructor(l: lightning, config: { token: string }) {
     super(l, config);

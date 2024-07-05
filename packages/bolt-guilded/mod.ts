@@ -11,7 +11,6 @@ import { tocore } from './messages.ts';
 export class guilded_plugin extends plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.7.0';
 
 	constructor(l: lightning, c: { token: string }) {
 		super(l, c);
@@ -47,8 +46,8 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		});
 	}
 
-	async create_bridge(channel: string) {
-		return await create_webhook(this.bot, channel, this.config.token);
+	create_bridge(channel: string) {
+		return create_webhook(this.bot, channel, this.config.token);
 	}
 
 	async create_message(
