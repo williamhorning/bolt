@@ -1,6 +1,6 @@
 ARG DENO_VERSION=1.44.4
 
-FROM docker.io/denoland/deno:${DENO_VERSION}
+FROM docker.io/denoland/deno:distroless-${DENO_VERSION}
 
 # add lightning to the image
 WORKDIR /app
