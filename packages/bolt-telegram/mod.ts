@@ -19,7 +19,7 @@ export type telegram_config = {
 	plugin_url: string;
 };
 
-export class telegram_plugin extends plugin<telegram_config, string[]> {
+export class telegram_plugin extends plugin<telegram_config> {
 	name = 'bolt-telegram';
 	bot: Bot;
 
