@@ -41,7 +41,7 @@ export async function handle_message(
 
 	for (const channel of channels) {
 		const index = bridge.channels.indexOf(channel);
-		const bridged_id = bridge.messages?.[index];
+		const bridged_id = bridge.messages?.[index - 1];
 
 		if (!channel.data || (type !== 'create_message' && !bridged_id)) continue;
 

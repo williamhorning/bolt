@@ -68,7 +68,7 @@ export class telegram_plugin extends plugin<telegram_config, string[]> {
 				},
 			);
 
-			messages.push(result.message_id.toString());
+			messages.push(String(result.message_id));
 		}
 
 		return messages;
@@ -80,8 +80,6 @@ export class telegram_plugin extends plugin<telegram_config, string[]> {
 		edit: string[],
 	) {
 		const content = from_lightning(message)[0];
-
-		console.log(Number(edit[0]));
 
 		await this.bot.api.editMessageText(
 			bridge.id,

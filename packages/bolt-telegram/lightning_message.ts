@@ -10,6 +10,7 @@ const chars = [
     '}',
     '.',
     '!',
+    '>',
 ];
 
 export function from_lightning(msg: message) {
