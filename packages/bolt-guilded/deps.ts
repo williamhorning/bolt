@@ -1,11 +1,10 @@
+export { Client, type Message } from 'npm:guilded.js@0.25.0';
 export {
-	Client,
 	type EmbedPayload,
-	type Message,
 	type RESTPostWebhookBody,
 	WebhookClient,
 	type WebhookPayload,
-} from 'npm:guilded.js@0.24.2';
+} from 'npm:@guildedjs/api@0.4.0';
 export {
 	type bridge_channel,
 	type deleted_message,

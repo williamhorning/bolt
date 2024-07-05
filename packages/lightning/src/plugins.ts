@@ -31,7 +31,7 @@ export type plugin_events = {
 };
 
 /** a plugin for lightning */
-export abstract class plugin<cfg, idtype extends string | string[] = string> extends EventEmitter<plugin_events> {
+export abstract class plugin<cfg, idtype extends string | string[] = string | string[]> extends EventEmitter<plugin_events> {
 	/** access the instance of lightning you're connected to */
 	lightning: lightning;
 	/** access the config passed to you by lightning */

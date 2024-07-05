@@ -11,7 +11,6 @@ import { tocore } from './messages.ts';
 export class guilded_plugin extends plugin<{ token: string }> {
 	bot: Client;
 	name = 'bolt-guilded';
-	version = '0.7.0';
 
 	constructor(l: lightning, c: { token: string }) {
 		super(l, c);

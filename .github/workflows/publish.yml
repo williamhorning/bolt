@@ -20,7 +20,7 @@ jobs:
       - name: setup deno
         uses: denoland/setup-deno@v1
         with:
-          deno-version: v1.42.0
+          deno-version: v1.44.4
       - name: setup qemu
         uses: docker/setup-qemu-action@v1
       - name: setup buildx
