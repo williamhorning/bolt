@@ -7,7 +7,7 @@ export const default_cmds = [
 			name: 'help',
 			description: 'get help',
 			execute: () =>
-				'check out [the docs](https://williamhorning.dev/bolt/) for help.',
+				'check out [the docs](https://williamhorning.eu.org/bolt/) for help.',
 		},
 	],
 	[

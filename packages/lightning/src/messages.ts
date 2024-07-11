@@ -6,7 +6,7 @@ export function create_message(text: string): message {
 	const data = {
 		author: {
 			username: 'lightning',
-			profile: 'https://williamhorning.dev/assets/lightning.png',
+			profile: 'https://williamhorning.eu.org/assets/lightning.png',
 			rawname: 'lightning',
 			id: 'lightning',
 		},

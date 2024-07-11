@@ -40,7 +40,7 @@ export async function log_error(
 	console.error(e, extra);
 
 	const message = create_message(
-		`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
+		`Something went wrong! [Look here](https://williamhorning.eu.org/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
 	);
 
 	return { e, uuid, extra, message };
