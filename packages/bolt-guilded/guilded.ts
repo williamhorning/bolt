@@ -73,7 +73,7 @@ export async function convert_msg(
 
 function get_valid_username(msg: message) {
 	function valid(e: string) {
-		if (!e || e.length === 0 || e.length > 32) return false;
+		if (!e || e.length === 0 || e.length > 25) return false;
 		return /^[a-zA-Z0-9_ ()-]*$/gms.test(e);
 	}
 

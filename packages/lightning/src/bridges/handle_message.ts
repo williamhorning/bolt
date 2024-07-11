@@ -32,7 +32,7 @@ export async function handle_message(
 	if (type !== 'create_message' && bridge.allow_editing !== true) return;
 
 	const channels = bridge.channels.filter(
-		(i) => i.id !== msg.channel && i.plugin !== msg.plugin,
+		(i) => i.id !== msg.channel || i.plugin !== msg.plugin,
 	);
 
 	if (channels.length < 1) return;
