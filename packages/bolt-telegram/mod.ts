@@ -44,7 +44,9 @@ export class telegram_plugin extends plugin<telegram_config> {
 		Deno.serve({ port: this.config.plugin_port }, (req: Request) => {
 			const { pathname } = new URL(req.url);
 			return fetch(
-				`https://api.telegram.org/file/bot${this.bot.token}/${pathname}`,
+				`https://api.telegram.org/file/bot${this.bot.token}/${
+					pathname.replace('/telegram/', '')
+				}`,
 			);
 		});
 	}
