@@ -8,8 +8,8 @@ apps via plugins
 ## example config
 
 ```ts
-import type { config } from 'jsr:@jersey/lightning@0.7.1';
-import { discord_plugin } from 'https://williamhorning.eu.org/bolt/x/bolt-discord/0.7.1/mod.ts';
+import type { config } from 'jsr:@jersey/lightning@0.7.3';
+import { discord_plugin } from 'https://williamhorning.eu.org/bolt/x/bolt-discord/0.7.3/mod.ts';
 
 export default {
 	redis_host: 'localhost',

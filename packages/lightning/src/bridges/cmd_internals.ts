@@ -9,7 +9,12 @@ import {
 export async function join(
 	opts: command_arguments,
 ): Promise<[boolean, string]> {
-	if (await get_channel_bridge(opts.lightning, `lightning-bchannel-${opts.channel}`)) {
+	if (
+		await get_channel_bridge(
+			opts.lightning,
+			`lightning-bchannel-${opts.channel}`,
+		)
+	) {
 		return [
 			false,
 			"To do this, you can't be in a bridge. Try leaving your bridge first.",

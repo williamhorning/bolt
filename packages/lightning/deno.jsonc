@@ -1,6 +1,6 @@
 {
 	"name": "@jersey/lightning",
-	"version": "0.7.1",
+	"version": "0.7.3",
 	"exports": "./mod.ts",
 	"publish": {
 		"exclude": ["./src/tests/*"]

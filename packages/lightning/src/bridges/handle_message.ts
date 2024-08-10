@@ -17,7 +17,7 @@ export async function handle_message(
 
 	if (type !== 'delete_message') {
 		if (sessionStorage.getItem(`${msg.plugin}-${msg.id}`)) {
-			return sessionStorage.removeItem(`${msg.plugin}-${msg.id}`)
+			return sessionStorage.removeItem(`${msg.plugin}-${msg.id}`);
 		} else if (type === 'create_message') {
 			lightning.emit(`create_nonbridged_message`, msg as message);
 		}
@@ -40,7 +40,9 @@ export async function handle_message(
 	const messages = [] as bridge_message[];
 
 	for (const channel of channels) {
-		const bridged_id = bridge.messages?.find(i=>i.channel === channel.id && i.plugin === channel.plugin);
+		const bridged_id = bridge.messages?.find((i) =>
+			i.channel === channel.id && i.plugin === channel.plugin
+		);
 
 		if (!channel.data || (type !== 'create_message' && !bridged_id)) continue;
 
@@ -71,7 +73,12 @@ export async function handle_message(
 			try {
 				const err_msg = (await log_error(e, { channel, bridged_id })).message;
 
-				dat = await plugin[type](err_msg, channel, bridged_id?.id! as string, reply_id);
+				dat = await plugin[type](
+					err_msg,
+					channel,
+					bridged_id?.id! as string,
+					reply_id,
+				);
 			} catch (e) {
 				await log_error(
 					new Error(

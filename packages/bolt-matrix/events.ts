@@ -49,7 +49,9 @@ export async function messageToCore(
 	console.log(event.content.formatted_body);
 	const sender = await intent.getProfileInfo(event.sender);
 	const is_reply = event.content['m.relates_to']
-		? event.content['m.relates_to']['m.in_reply_to'] !== undefined ? true : false
+		? event.content['m.relates_to']['m.in_reply_to'] !== undefined
+			? true
+			: false
 		: false;
 	return {
 		author: {
