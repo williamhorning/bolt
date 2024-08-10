@@ -5,6 +5,7 @@ export {
 	type message,
 	plugin,
 } from '../lightning/mod.ts';
+export { default as convert_md } from "npm:telegramify-markdown@1.2.2"
 export { Bot, Context, type CommandContext } from 'https://deno.land/x/grammy@v1.26.0/mod.ts';
 export type { Message } from 'https://deno.land/x/grammy@v1.26.0/types.ts';
 export { Hono } from 'jsr:@hono/hono@4.5.0-rc.2';

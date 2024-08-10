@@ -6,8 +6,7 @@ import {
 	type message,
 	plugin,
 } from './deps.ts';
-import { from_telegram } from './telegram_message.ts';
-import { from_lightning } from './lightning_message.ts';
+import { from_lightning, from_telegram } from './messages.ts';
 import { setup_proxy } from './telegram_file_proxy.ts';
 
 export type telegram_config = {
@@ -28,6 +27,7 @@ export class telegram_plugin extends plugin<telegram_config> {
 		this.bot = new Bot(cfg.bot_token);
 		this.bot.on('message', async (ctx) => {
 			const msg = await from_telegram(ctx, cfg);
+			console.log(msg);
 			if (!msg) return;
 			this.emit('create_message', msg);
 		});
