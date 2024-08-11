@@ -19,7 +19,7 @@ export class guilded_plugin extends plugin<guilded_config> {
 	bot: Client;
 	name = 'bolt-guilded';
 
-	constructor(l: lightning, c: { token: string }) {
+	constructor(l: lightning, c: guilded_config) {
 		super(l, c);
 		const h = {
 			headers: {

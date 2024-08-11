@@ -1,22 +1,37 @@
-import { type lightning, type message_options, plugin } from 'lightning';
+import {
+	type lightning,
+	type message_options,
+	plugin,
+	type process_result,
+} from 'lightning';
 import { Client } from 'revolt.js';
 import { tocore, torevolt } from './messages.ts';
 
-export class revolt_plugin extends plugin<{ token: string }> {
+/** options for the revolt plugin */
+export interface revolt_config {
+	/** the token to use */
+	token: string;
+}
+
+/** the plugin to use */
+export class revolt_plugin extends plugin<revolt_config> {
 	bot: Client;
 	name = 'bolt-revolt';
 
-	constructor(l: lightning, config: { token: string }) {
+	constructor(l: lightning, config: revolt_config) {
 		super(l, config);
 		this.bot = new Client();
+		// @ts-ignore deno is being weird
 		this.bot.on('messageCreate', (message) => {
 			if (message.systemMessage) return;
 			this.emit('create_message', tocore(message));
 		});
+		// @ts-ignore deno is being weird
 		this.bot.on('messageUpdate', (message) => {
 			if (message.systemMessage) return;
 			this.emit('edit_message', tocore(message));
 		});
+		// @ts-ignore deno is being weird
 		this.bot.on('messageDelete', (message) => {
 			if (message.systemMessage) return;
 			this.emit('delete_message', {
@@ -33,15 +48,20 @@ export class revolt_plugin extends plugin<{ token: string }> {
 		this.bot.loginBot(this.config.token);
 	}
 
-	async create_bridge(channel: string) {
+	/** create a bridge in the channel */
+	async create_bridge(channel: string): Promise<string> {
 		const ch = await this.bot.channels.fetch(channel);
 		if (!ch.havePermission('Masquerade')) {
 			throw new Error('Please enable masquerade permissions!');
 		}
+		if (!ch.havePermission('ManageMessages')) {
+			throw new Error('Please enable manage messages permissions!');
+		}
 		return ch.id;
 	}
 
-	async process_message(opts: message_options) {
+	/** process a message in a channel */
+	async process_message(opts: message_options): Promise<process_result> {
 		try {
 			if (opts.action !== 'create') {
 				const message = await this.bot.messages.fetch(
@@ -66,22 +86,42 @@ export class revolt_plugin extends plugin<{ token: string }> {
 					plugin: this.name,
 				};
 			} else {
-				const result = await (await this.bot.channels.fetch(opts.channel.id))
-					.sendMessage(
-						await torevolt({
-							...opts.message,
-							reply_id: opts.reply_id,
-						}),
-					);
+				try {
+					const result =
+						await (await this.bot.channels.fetch(opts.channel.id))
+							.sendMessage(
+								await torevolt({
+									...opts.message,
+									reply_id: opts.reply_id,
+								}),
+							);
 
-				return {
-					id: [result.id],
-					channel: opts.channel,
-					plugin: this.name,
-				};
+					return {
+						id: [result.id],
+						channel: opts.channel,
+						plugin: this.name,
+					};
+				} catch (e) {
+					if (e.status === 404) {
+						return {
+							error: new Error('Channel not found!'),
+							channel: opts.channel,
+							disable: true,
+							plugin: this.name,
+						};
+					} else if (e.status === 403) {
+						return {
+							error: new Error('Please fix permissions!'),
+							channel: opts.channel,
+							disable: true,
+							plugin: this.name,
+						};
+					} else {
+						throw e;
+					}
+				}
 			}
 		} catch (e) {
-			// TODO(@williamhorning): handle errors better
 			return {
 				error: e,
 				channel: opts.channel,
