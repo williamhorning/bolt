@@ -4,8 +4,8 @@ import { WebSocketManager } from '@discordjs/ws';
 import {
 	type lightning,
 	type message_options,
-	type process_result,
 	plugin,
+	type process_result,
 } from '@jersey/lightning';
 import { GatewayDispatchEvents } from 'discord-api-types';
 import { to_command, to_intent_opts } from './commands.ts';
@@ -91,7 +91,9 @@ export class discord_plugin extends plugin<discord_config> {
 	}
 
 	/** creates a webhook in the channel for a bridge */
-	async create_bridge(channel: string): Promise<{ id: string; token?: string }> {
+	async create_bridge(
+		channel: string,
+	): Promise<{ id: string; token?: string }> {
 		const { id, token } = await this.bot.api.channels.createWebhook(
 			channel,
 			{

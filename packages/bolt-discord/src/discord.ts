@@ -2,8 +2,8 @@ import type { RawFile } from '@discordjs/rest';
 import type { message } from '@jersey/lightning';
 import type {
 	GatewayMessageUpdateDispatchData as update_data,
-	RESTPostAPIWebhookWithTokenQuery as wh_query,
 	RESTPostAPIWebhookWithTokenJSONBody as wh_token,
+	RESTPostAPIWebhookWithTokenQuery as wh_query,
 } from 'discord-api-types';
 
 async function async_flat<A, B>(arr: A[], f: (a: A) => Promise<B>) {

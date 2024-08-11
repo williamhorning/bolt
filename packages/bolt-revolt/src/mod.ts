@@ -87,14 +87,13 @@ export class revolt_plugin extends plugin<revolt_config> {
 				};
 			} else {
 				try {
-					const result =
-						await (await this.bot.channels.fetch(opts.channel.id))
-							.sendMessage(
-								await torevolt({
-									...opts.message,
-									reply_id: opts.reply_id,
-								}),
-							);
+					const result = await (await this.bot.channels.fetch(opts.channel.id))
+						.sendMessage(
+							await torevolt({
+								...opts.message,
+								reply_id: opts.reply_id,
+							}),
+						);
 
 					return {
 						id: [result.id],

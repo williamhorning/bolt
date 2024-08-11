@@ -1,7 +1,8 @@
 # lightning-plugin-telegram
 
-lightning-plugin-telegram is a plugin for [lightning](https://williamhroning.eu.org/lightning)
-that adds support for telegram
+lightning-plugin-telegram is a plugin for
+[lightning](https://williamhroning.eu.org/lightning) that adds support for
+telegram
 
 ## example config
 
@@ -14,7 +15,7 @@ export default {
 	redis_port: 6379,
 	plugins: [
 		telegram_plugin.new({
-			bot_token: "your_token",
+			bot_token: 'your_token',
 			plugin_port: 8080,
 			plugin_url: 'https://your.domain/telegram/',
 		}),
@@ -24,4 +25,5 @@ export default {
 
 ## notes
 
-this plugin has a telegram file proxy, which should be publically accessible so that you don't leak your bot token when bridging attachments or profile pictures
+this plugin has a telegram file proxy, which should be publically accessible so
+that you don't leak your bot token when bridging attachments or profile pictures

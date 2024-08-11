@@ -1,7 +1,8 @@
 # lightning-plugin-revolt
 
-lightning-plugin-revolt is a plugin for [lightning](https://williamhroning.eu.org/lightning)
-that adds support for telegram
+lightning-plugin-revolt is a plugin for
+[lightning](https://williamhroning.eu.org/lightning) that adds support for
+telegram
 
 ## example config
 
@@ -14,7 +15,7 @@ export default {
 	redis_port: 6379,
 	plugins: [
 		revolt_plugin.new({
-			token: "your_token",
+			token: 'your_token',
 		}),
 	],
 } as config;
