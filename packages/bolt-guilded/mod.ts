@@ -1,10 +1,5 @@
-import type {
-	bridge_channel,
-	deleted_message,
-	lightning,
-	message,
-} from './deps.ts';
-import { Client, plugin, WebhookClient } from './deps.ts';
+import { Client, WebhookClient } from 'guilded.js';
+import { type lightning, type message_options, plugin } from 'lightning';
 import { convert_msg, create_webhook } from './guilded.ts';
 import { tocore } from './messages.ts';
 
@@ -50,30 +45,47 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		return create_webhook(this.bot, channel, this.config.token);
 	}
 
-	async create_message(
-		message: message,
-		channel: bridge_channel,
-		_?: undefined,
-		reply_id?: string,
-	) {
-		const { id } = await new WebhookClient(
-			channel.data as { token: string; id: string },
-		).send(await convert_msg({ ...message, reply_id }, channel.id, this));
-		return id;
-	}
+	async process_message(opts: message_options) {
+		try {
+			if (opts.action === 'create') {
+				const { id } = await new WebhookClient(
+					opts.channel.data as { token: string; id: string },
+				).send(await convert_msg(opts.message, opts.channel.id, this));
 
-	// deno-lint-ignore require-await
-	async edit_message(_: message, __: bridge_channel, edit_id: string) {
-		return edit_id;
-	}
+				return {
+					id: [id],
+					channel: opts.channel,
+					plugin: this.name,
+				};
+			} else if (opts.action === 'delete') {
+				const msg = await this.bot.messages.fetch(
+					opts.channel.id,
+					opts.edit_id[0],
+				);
 
-	async delete_message(
-		_message: deleted_message,
-		channel: bridge_channel,
-		id: string,
-	) {
-		const msg = await this.bot.messages.fetch(channel.id, id);
-		await msg.delete();
-		return id;
+				await msg.delete();
+
+				return {
+					channel: opts.channel,
+					plugin: this.name,
+					id: opts.edit_id,
+				};
+			} else {
+				return {
+					error: new Error('edit not implemented'),
+					channel: opts.channel,
+					disable: false,
+					plugin: this.name,
+				};
+			}
+		} catch (e) {
+			// TODO(@williamhorning): improve error handling
+			return {
+				channel: opts.channel,
+				error: e,
+				disable: false,
+				plugin: this.name,
+			};
+		}
 	}
 }

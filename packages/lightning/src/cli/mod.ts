@@ -1,4 +1,4 @@
-import { parseArgs } from '../../deps.ts';
+import { parseArgs } from '@std/cli/parse-args';
 import { log_error } from '../errors.ts';
 import { type config, lightning } from '../lightning.ts';
 

@@ -1,10 +1,6 @@
-import type {
-	Client,
-	embed,
-	EmbedPayload,
-	message,
-	RESTPostWebhookBody,
-} from './deps.ts';
+import type { Client } from 'guilded.js';
+import type { EmbedPayload, RESTPostWebhookBody } from 'guilded.js/api';
+import type { embed, message } from 'lightning';
 import type { guilded_plugin } from './mod.ts';
 
 export async function create_webhook(

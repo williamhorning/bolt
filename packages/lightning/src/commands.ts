@@ -1,7 +1,7 @@
-import { parseArgs } from '../deps.ts';
+import { parseArgs } from '@std/cli/parse-args';
 import { log_error } from './errors.ts';
 import type { lightning } from './lightning.ts';
-import { create_message, type message } from './messages.ts';
+import { create_message, type message } from './types.ts';
 
 export function setup_commands(l: lightning) {
 	const prefix = l.config.cmd_prefix || 'l!';

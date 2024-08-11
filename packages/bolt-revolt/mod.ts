@@ -1,10 +1,5 @@
-import type {
-	bridge_channel,
-	deleted_message,
-	lightning,
-	message,
-} from './deps.ts';
-import { Client, plugin } from './deps.ts';
+import { type lightning, type message_options, plugin } from 'lightning';
+import { Client } from 'revolt.js';
 import { tocore, torevolt } from './messages.ts';
 
 export class revolt_plugin extends plugin<{ token: string }> {
@@ -46,33 +41,53 @@ export class revolt_plugin extends plugin<{ token: string }> {
 		return ch.id;
 	}
 
-	async create_message(
-		msg: message,
-		bridge: bridge_channel,
-		_: undefined,
-		reply_id?: string,
-	) {
-		const channel = await this.bot.channels.fetch(bridge.id);
-		const result = await channel.sendMessage(
-			await torevolt({ ...msg, reply_id }),
-		);
-		return result.id;
-	}
+	async process_message(opts: message_options) {
+		try {
+			if (opts.action !== 'create') {
+				const message = await this.bot.messages.fetch(
+					opts.channel.id,
+					opts.edit_id[0],
+				);
 
-	async edit_message(
-		msg: message,
-		bridge: bridge_channel,
-		edit_id: string,
-		reply_id?: string,
-	) {
-		const message = await this.bot.messages.fetch(bridge.id, edit_id);
-		await message.edit(await torevolt({ ...msg, reply_id }));
-		return edit_id;
-	}
+				if (opts.action === 'edit') {
+					await message.edit(
+						await torevolt({
+							...opts.message,
+							reply_id: opts.reply_id,
+						}),
+					);
+				} else if (opts.action === 'delete') {
+					await message.delete();
+				}
 
-	async delete_message(_: deleted_message, bridge: bridge_channel, id: string) {
-		const message = await this.bot.messages.fetch(bridge.id, id);
-		await message.delete();
-		return id;
+				return {
+					id: opts.edit_id,
+					channel: opts.channel,
+					plugin: this.name,
+				};
+			} else {
+				const result = await (await this.bot.channels.fetch(opts.channel.id))
+					.sendMessage(
+						await torevolt({
+							...opts.message,
+							reply_id: opts.reply_id,
+						}),
+					);
+
+				return {
+					id: [result.id],
+					channel: opts.channel,
+					plugin: this.name,
+				};
+			}
+		} catch (e) {
+			// TODO(@williamhorning): handle errors better
+			return {
+				error: e,
+				channel: opts.channel,
+				plugin: this.name,
+				disable: false,
+			};
+		}
 	}
 }

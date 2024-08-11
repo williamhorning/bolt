@@ -1,4 +1,5 @@
-import { EventEmitter, RedisClient } from '../deps.ts';
+import { EventEmitter } from '@denosaurs/event';
+import { RedisClient } from '@iuioiua/r2d2';
 import { setup_bridges } from './bridges/setup_bridges.ts';
 import { default_cmds } from './cmds.ts';
 import { type command, setup_commands } from './commands.ts';
@@ -45,7 +46,7 @@ export class lightning extends EventEmitter<plugin_events> {
 		setup_bridges(this);
 
 		for (const p of this.config.plugins || []) {
-			if (p.support.some((v) => ['0.7.0', '0.7.1'].includes(v))) {
+			if (p.support.some((v) => ['0.7.3'].includes(v))) {
 				const plugin = new p.type(this, p.config);
 				this.plugins.set(plugin.name, plugin);
 				(async () => {

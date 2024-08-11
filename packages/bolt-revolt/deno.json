@@ -1,0 +1,9 @@
+{
+	"name": "@jersey/lightning-plugin-revolt",
+	"version": "0.7.3",
+	"exports": "./mod.ts",
+	"imports": {
+		"lightning": "jsr:@jersey/lightning@0.7.3",
+		"revolt.js": "npm:revolt.js@7.0.3/lib/esm/index.js"
+	}
+}

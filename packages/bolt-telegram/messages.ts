@@ -1,9 +1,7 @@
-import {
-	type Context,
-	convert_md,
-	type Message,
-	type message,
-} from './deps.ts';
+import type { Context } from 'grammy';
+import type { Message } from 'grammy/types';
+import type { message } from 'lightning';
+import { default as convert_md } from 'telegramify-markdown';
 import type { telegram_config } from './mod.ts';
 
 export function from_lightning(msg: message) {

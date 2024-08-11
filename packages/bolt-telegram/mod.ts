@@ -1,11 +1,5 @@
-import {
-	Bot,
-	type bridge_channel,
-	type deleted_message,
-	type lightning,
-	type message,
-	plugin,
-} from './deps.ts';
+import { Bot } from 'grammy';
+import { type lightning, type message_options, plugin } from 'lightning';
 import { from_lightning, from_telegram } from './messages.ts';
 
 export type telegram_config = {
@@ -55,62 +49,75 @@ export class telegram_plugin extends plugin<telegram_config> {
 		return channel;
 	}
 
-	async create_message(
-		message: message,
-		bridge: bridge_channel,
-		_: undefined,
-		reply_id?: string,
-	) {
-		const content = from_lightning(message);
-		const messages = [];
+	async process_message(opts: message_options) {
+		try {
+			if (opts.action === 'delete') {
+				for (const id of opts.edit_id) {
+					await this.bot.api.deleteMessage(
+						opts.channel.id,
+						Number(id),
+					);
+				}
 
-		for (const msg of content) {
-			const result = await this.bot.api[msg.function](
-				bridge.id,
-				msg.value,
-				{
-					reply_parameters: reply_id
-						? {
-							message_id: Number(reply_id),
-						}
-						: undefined,
-					parse_mode: 'MarkdownV2',
-				},
-			);
+				return {
+					id: opts.edit_id,
+					channel: opts.channel,
+					plugin: this.name,
+				};
+			} else if (opts.action === 'edit') {
+				const content = from_lightning(opts.message)[0];
 
-			messages.push(String(result.message_id));
+				await this.bot.api.editMessageText(
+					opts.channel.id,
+					Number(opts.edit_id[0]),
+					content.value,
+					{
+						parse_mode: 'MarkdownV2',
+					},
+				);
+
+				return {
+					id: opts.edit_id,
+					channel: opts.channel,
+					plugin: this.name,
+				};
+			} else if (opts.action === 'create') {
+				const content = from_lightning(opts.message);
+				const messages = [];
+
+				for (const msg of content) {
+					const result = await this.bot.api[msg.function](
+						opts.channel.id,
+						msg.value,
+						{
+							reply_parameters: opts.reply_id
+								? {
+									message_id: Number(opts.reply_id),
+								}
+								: undefined,
+							parse_mode: 'MarkdownV2',
+						},
+					);
+
+					messages.push(String(result.message_id));
+				}
+
+				return {
+					id: messages,
+					channel: opts.channel,
+					plugin: this.name,
+				};
+			} else {
+				throw new Error('unknown action');
+			}
+		} catch (e) {
+			// TODO(@williamhorning): improve error handling logic
+			return {
+				error: e,
+				id: [opts.message.id],
+				channel: opts.channel,
+				plugin: this.name,
+			};
 		}
-
-		return messages;
-	}
-
-	async edit_message(
-		message: message,
-		bridge: bridge_channel,
-		edit: string[],
-	) {
-		const content = from_lightning(message)[0];
-
-		await this.bot.api.editMessageText(
-			bridge.id,
-			Number(edit[0]),
-			content.value,
-			{
-				parse_mode: 'MarkdownV2',
-			},
-		);
-		return edit;
-	}
-
-	async delete_message(
-		_: deleted_message,
-		bridge: bridge_channel,
-		messages: string[],
-	) {
-		for (const id of messages) {
-			await this.bot.api.deleteMessage(bridge.id, Number(id));
-		}
-
-		return messages;
 	}
 }

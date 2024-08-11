@@ -1,12 +1,17 @@
 import { log_error } from '../errors.ts';
 import type { lightning } from '../lightning.ts';
-import type { deleted_message, message } from '../messages.ts';
+import type {
+	bridge_channel,
+	bridge_message,
+	deleted_message,
+	message,
+	process_result,
+} from '../types.ts';
 import {
 	get_channel_bridge,
 	get_message_bridge,
 	set_json,
 } from './db_internals.ts';
-import type { bridge_channel, bridge_message } from './types.ts';
 
 export async function handle_message(
 	lightning: lightning,
@@ -40,60 +45,105 @@ export async function handle_message(
 	const messages = [] as bridge_message[];
 
 	for (const channel of channels) {
+		if (!channel.data || channel.disabled) continue;
+
 		const bridged_id = bridge.messages?.find((i) =>
 			i.channel === channel.id && i.plugin === channel.plugin
 		);
 
-		if (!channel.data || (type !== 'create_message' && !bridged_id)) continue;
+		if ((type !== 'create_message' && !bridged_id)) {
+			continue;
+		}
 
 		const plugin = lightning.plugins.get(channel.plugin);
 
-		if (!plugin || !plugin[type]) {
+		if (!plugin) {
 			await log_error(
-				new Error(`plugin ${channel.plugin} doesn't have ${type}`),
+				new Error(`plugin ${channel.plugin} doesn't exist`),
 				{ channel, bridged_id },
 			);
 			continue;
 		}
 
-		let dat;
+		let dat: process_result;
 
 		const reply_id = await get_reply_id(lightning, msg as message, channel);
 
 		try {
-			dat = await plugin[type](
-				msg as message,
+			dat = await plugin.process_message({
+				// maybe find a better way to deal w/types
+				action: type.replace('_message', '') as 'edit',
 				channel,
-				bridged_id?.id! as string,
+				message: msg as message,
+				edit_id: bridged_id?.id as string[],
 				reply_id,
-			);
+			});
 		} catch (e) {
+			dat = {
+				channel,
+				disable: false,
+				error: e,
+				plugin: channel.plugin,
+			};
+
+			if (type === 'delete_message') continue;
+		}
+
+		if (dat.error) {
 			if (type === 'delete_message') continue;
 
-			try {
-				const err_msg = (await log_error(e, { channel, bridged_id })).message;
+			if (dat.disable) {
+				channel.disabled = true;
 
-				dat = await plugin[type](
-					err_msg,
+				bridge.channels = bridge.channels.map((i) => {
+					if (i.id === channel.id && i.plugin === channel.plugin) {
+						i.disabled = true;
+					}
+					return i;
+				});
+
+				await set_json(lightning, `lightning-bridged-${msg.id}`, bridge);
+
+				await log_error(new Error(`disabled channel`), {
 					channel,
-					bridged_id?.id! as string,
+					dat,
+					bridged_id,
+				});
+
+				continue;
+			}
+
+			const logged = await log_error(dat.error, {
+				channel,
+				dat,
+				bridged_id,
+			});
+
+			try {
+				dat = await plugin.process_message({
+					action: type.replace('_message', '') as 'edit',
+					channel,
+					message: logged.message,
+					edit_id: bridged_id?.id as string[],
 					reply_id,
-				);
+				});
+
+				if (dat.error) throw dat.error;
 			} catch (e) {
 				await log_error(
-					new Error(
-						`Failed to send error for ${type} to ${channel.plugin}`,
-						{ cause: e },
-					),
-					{ channel, bridged_id },
+					new Error('failed to log error', { cause: e }),
+					{ channel, dat, bridged_id, logged },
 				);
+
 				continue;
 			}
 		}
 
-		sessionStorage.setItem(`${channel.plugin}-${dat}`, '1');
+		for (const i of dat.id) {
+			sessionStorage.setItem(`${channel.plugin}-${i}`, '1');
+		}
 
-		messages.push({ id: dat, channel: channel.id, plugin: channel.plugin });
+		messages.push({ id: dat.id, channel: channel.id, plugin: channel.plugin });
 	}
 
 	for (const i of messages) {
@@ -125,7 +175,7 @@ async function get_reply_id(
 			);
 
 			if (!bridge_channel) return;
-			if (typeof bridge_channel.id === 'string') return bridge_channel.id;
+
 			return bridge_channel.id[0];
 		} catch {
 			return;

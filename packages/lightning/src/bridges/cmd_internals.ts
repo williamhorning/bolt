@@ -1,4 +1,5 @@
 import type { command_arguments } from '../commands.ts';
+import { log_error } from '../errors.ts';
 import {
 	del_key,
 	get_bridge,
@@ -39,15 +40,23 @@ export async function join(
 		use_rawname: false,
 	};
 
-	bridge.channels.push({
-		id: opts.channel,
-		plugin: opts.plugin,
-		data: await plugin!.create_bridge(opts.channel),
-	});
+	try {
+		const data = await plugin!.create_bridge(opts.channel);
 
-	await set_bridge(opts.lightning, bridge);
+		bridge.channels.push({
+			id: opts.channel,
+			disabled: false,
+			plugin: opts.plugin,
+			data,
+		});
 
-	return [true, 'Joined a bridge!'];
+		await set_bridge(opts.lightning, bridge);
+
+		return [true, 'Joined a bridge!'];
+	} catch (e) {
+		const err = await log_error(e, { opts });
+		return [false, err.message.content!];
+	}
 }
 
 export async function leave(
