@@ -1,9 +1,21 @@
 import { Client, WebhookClient } from 'guilded.js';
-import { type lightning, type message_options, plugin } from 'lightning';
+import {
+	type lightning,
+	type message_options,
+	plugin,
+	type process_result,
+} from 'lightning';
 import { convert_msg, create_webhook } from './guilded.ts';
 import { tocore } from './messages.ts';
 
-export class guilded_plugin extends plugin<{ token: string }> {
+/** options for the guilded plugin */
+export interface guilded_config {
+	/** the token to use */
+	token: string;
+}
+
+/** the plugin to use */
+export class guilded_plugin extends plugin<guilded_config> {
 	bot: Client;
 	name = 'bolt-guilded';
 
@@ -41,11 +53,12 @@ export class guilded_plugin extends plugin<{ token: string }> {
 		});
 	}
 
-	create_bridge(channel: string) {
+	/** create a bridge in this channel */
+	create_bridge(channel: string): Promise<{ id: string; token: string }> {
 		return create_webhook(this.bot, channel, this.config.token);
 	}
 
-	async process_message(opts: message_options) {
+	async process_message(opts: message_options): Promise<process_result> {
 		try {
 			if (opts.action === 'create') {
 				const { id } = await new WebhookClient(

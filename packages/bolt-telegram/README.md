@@ -13,7 +13,7 @@ export default {
 	redis_host: 'localhost',
 	redis_port: 6379,
 	plugins: [
-		discord_plugin.new({
+		telegram_plugin.new({
 			bot_token: "your_token",
 			plugin_port: 8080,
 			plugin_url: 'https://your.domain/telegram/',
