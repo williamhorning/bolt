@@ -3,6 +3,7 @@ import { log_error } from './errors.ts';
 import type { lightning } from './lightning.ts';
 import { create_message, type message } from './types.ts';
 
+/** setup commands on an instance of lightning */
 export function setup_commands(l: lightning) {
 	const prefix = l.config.cmd_prefix || 'l!';
 
