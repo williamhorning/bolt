@@ -1,7 +1,8 @@
 import { Bot } from 'grammy';
-import { type lightning, type message_options, plugin } from 'lightning';
+import { type lightning, type message_options, type process_result, plugin } from 'lightning';
 import { from_lightning, from_telegram } from './messages.ts';
 
+/** options for the telegram plugin */
 export type telegram_config = {
 	/** the token for the bot */
 	bot_token: string;
@@ -11,6 +12,7 @@ export type telegram_config = {
 	plugin_url: string;
 };
 
+/** the plugin to use */
 export class telegram_plugin extends plugin<telegram_config> {
 	name = 'bolt-telegram';
 	bot: Bot;
@@ -45,11 +47,13 @@ export class telegram_plugin extends plugin<telegram_config> {
 		});
 	}
 
-	create_bridge(channel: string) {
+	/** create a bridge */
+	create_bridge(channel: string): string {
 		return channel;
 	}
 
-	async process_message(opts: message_options) {
+	/** process a message event */
+	async process_message(opts: message_options): Promise<process_result> {
 		try {
 			if (opts.action === 'delete') {
 				for (const id of opts.edit_id) {

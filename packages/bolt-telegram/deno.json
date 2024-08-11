@@ -1,11 +1,11 @@
 {
 	"name": "@jersey/lightning-plugin-telegram",
 	"version": "0.7.3",
-	"exports": "./mod.ts",
+	"exports": "./src/mod.ts",
 	"imports": {
 		"lightning": "jsr:@jersey/lightning@0.7.3",
 		"telegramify-markdown": "npm:telegramify-markdown@1.2.2",
-		"grammy": "https://deno.land/x/grammy@v1.28.0/mod.ts",
-		"grammy/types": "https://deno.land/x/grammy@v1.28.0/types.ts"
+		"grammy": "npm:grammy@1.28.0",
+		"grammy/types": "npm:grammy@1.28.0/types"
 	}
 }
