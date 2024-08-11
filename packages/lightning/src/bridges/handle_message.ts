@@ -34,6 +34,12 @@ export async function handle_message(
 
 	if (!bridge) return;
 
+	if (
+		bridge.channels.find((i) =>
+			i.id === msg.channel && i.plugin === msg.plugin && i.disabled
+		)
+	) return;
+
 	if (type !== 'create_message' && bridge.allow_editing !== true) return;
 
 	const channels = bridge.channels.filter(
@@ -102,7 +108,11 @@ export async function handle_message(
 					return i;
 				});
 
-				await set_json(lightning, `lightning-bridged-${msg.id}`, bridge);
+				await set_json(
+					lightning,
+					`lightning-bridge-${bridge.id}`,
+					bridge,
+				);
 
 				await log_error(new Error(`disabled channel`), {
 					channel,
@@ -143,7 +153,11 @@ export async function handle_message(
 			sessionStorage.setItem(`${channel.plugin}-${i}`, '1');
 		}
 
-		messages.push({ id: dat.id, channel: channel.id, plugin: channel.plugin });
+		messages.push({
+			id: dat.id,
+			channel: channel.id,
+			plugin: channel.plugin,
+		});
 	}
 
 	for (const i of messages) {

@@ -61,15 +61,37 @@ export class guilded_plugin extends plugin<guilded_config> {
 	async process_message(opts: message_options): Promise<process_result> {
 		try {
 			if (opts.action === 'create') {
-				const { id } = await new WebhookClient(
-					opts.channel.data as { token: string; id: string },
-				).send(await convert_msg(opts.message, opts.channel.id, this));
+				try {
+					const { id } = await new WebhookClient(
+						opts.channel.data as { token: string; id: string },
+					).send(
+						await convert_msg(opts.message, opts.channel.id, this),
+					);
 
-				return {
-					id: [id],
-					channel: opts.channel,
-					plugin: this.name,
-				};
+					return {
+						id: [id],
+						channel: opts.channel,
+						plugin: this.name,
+					};
+				} catch (e) {
+					if (e.response.status === 404) {
+						return {
+							channel: opts.channel,
+							disable: true,
+							error: new Error('webhook not found!'),
+							plugin: this.name,
+						};
+					} else if (e.response.status === 403) {
+						return {
+							channel: opts.channel,
+							disable: true,
+							error: new Error('no permission to send messages!'),
+							plugin: this.name,
+						};
+					} else {
+						throw e;
+					}
+				}
 			} else if (opts.action === 'delete') {
 				const msg = await this.bot.messages.fetch(
 					opts.channel.id,
@@ -85,10 +107,9 @@ export class guilded_plugin extends plugin<guilded_config> {
 				};
 			} else {
 				return {
-					error: new Error('edit not implemented'),
 					channel: opts.channel,
-					disable: false,
 					plugin: this.name,
+					id: opts.edit_id,
 				};
 			}
 		} catch (e) {

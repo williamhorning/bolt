@@ -41,13 +41,17 @@ const redis_data = [] as [string, unknown][];
 // sorry database :(
 
 for (const key of keys) {
+	const val = await redis.sendCommand(['GET', key]);
 	try {
 		redis_data.push([
 			key,
-			JSON.parse((await redis.sendCommand(['GET', key])) as string),
+			JSON.parse(val as string),
 		]);
 	} catch {
-		console.log(`skipping ${key} due to invalid JSON...`);
+		redis_data.push([
+			key,
+			val as string,
+		]);
 		continue;
 	}
 }
@@ -65,7 +69,7 @@ console.log(`migrated your data!`);
 
 const file = await Deno.makeTempFile();
 
-await Deno.writeTextFile(file, JSON.stringify(final_data));
+await Deno.writeTextFile(file, JSON.stringify(final_data, null, 2));
 
 const write = confirm(
 	`do you want the data in ${file} to be written to the database?`,

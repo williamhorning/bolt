@@ -52,7 +52,6 @@ export async function from_telegram(
 			const file_obj = type === 'photo' ? msg.photo!.slice(-1)[0] : msg[type]!;
 			const file = await ctx.api.getFile(file_obj.file_id);
 			if (!file.file_path) return;
-			console.log(file);
 			return {
 				...base,
 				attachments: [{

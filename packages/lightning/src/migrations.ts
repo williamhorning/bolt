@@ -37,11 +37,12 @@ const migrations = [
 		to: versions.SevenDotThree,
 		translate: (items) =>
 			items.map(([key, val]) => {
-				if (!key.startsWith('lightning-bridge-')) return [key, val];
+				if (!key.startsWith('lightning-bridge')) return [key, val];
 
 				return [
 					key,
 					{
+						...(val as Record<string, unknown>),
 						channels: (val as {
 							channels: {
 								id: string;
@@ -57,25 +58,20 @@ const migrations = [
 							};
 						}),
 						messages: (val as {
-								messages?: {
-									id: string | string[];
-									channel: string;
-									plugin: string;
-								}[];
-							})
-							? (val as {
-								messages: {
-									id: string | string[];
-									channel: string;
-									plugin: string;
-								}[];
-							}).messages.map((i) => {
-								if (Array.isArray(i.id)) return i;
-								i.id = [i.id];
-								return i;
-							})
-							: undefined,
-						...(val as Record<string, unknown>),
+							messages: {
+								id: string | string[];
+								channel: string;
+								plugin: string;
+							}[];
+						}).messages?.map((i) => {
+							if (typeof i.id === 'string') {
+								return {
+									...i,
+									id: [i.id],
+								};
+							}
+							return i;
+						}),
 					},
 				];
 			}),

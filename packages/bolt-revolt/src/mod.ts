@@ -102,14 +102,14 @@ export class revolt_plugin extends plugin<revolt_config> {
 						plugin: this.name,
 					};
 				} catch (e) {
-					if (e.status === 404) {
+					if (e.response.status === 404) {
 						return {
 							error: new Error('Channel not found!'),
 							channel: opts.channel,
 							disable: true,
 							plugin: this.name,
 						};
-					} else if (e.status === 403) {
+					} else if (e.response.status === 403) {
 						return {
 							error: new Error('Please fix permissions!'),
 							channel: opts.channel,
