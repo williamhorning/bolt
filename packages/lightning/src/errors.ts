@@ -24,16 +24,40 @@ export async function log_error(
 	const uuid = crypto.randomUUID();
 	const error_hook = Deno.env.get('LIGHTNING_ERROR_HOOK');
 
+	delete extra.lightning;
+
 	if (error_hook && error_hook.length > 0) {
-		await (
+		const resp = 
 			await fetch(error_hook, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					embeds: [{ title: e.message, description: uuid }],
+					content: `# ${e.message}\n*${uuid}*`,
+					embeds: [
+						{
+							title: 'extra',
+							description:
+								`\`\`\`json\n${JSON.stringify(extra, null, 2)}\n\`\`\``,
+						},
+					],
 				}),
 			})
-		).text();
+		
+		if (!resp.ok) {
+			await fetch(error_hook, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					content: `# ${e.message}\n*${uuid}*`,
+					embeds: [
+						{
+							title: 'extra',
+							description: '*see console*'
+						}
+					]
+				}),
+			})
+		}
 	}
 
 	console.error(`%clightning error ${uuid}`, 'color: red');

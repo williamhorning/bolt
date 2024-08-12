@@ -114,7 +114,7 @@ export async function handle_message(
 					bridge,
 				);
 
-				await log_error(new Error(`disabled channel`), {
+				await log_error(new Error(`disabled channel ${channel.id} on ${channel.plugin}`), {
 					channel,
 					dat,
 					bridged_id,
@@ -141,8 +141,8 @@ export async function handle_message(
 				if (dat.error) throw dat.error;
 			} catch (e) {
 				await log_error(
-					new Error('failed to log error', { cause: e }),
-					{ channel, dat, bridged_id, logged },
+					new Error('failed to send error', { cause: e }),
+					{ channel, dat, bridged_id, logged: logged.uuid },
 				);
 
 				continue;
