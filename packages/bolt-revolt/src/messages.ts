@@ -1,4 +1,3 @@
-import type { message } from 'lightning';
 import type {
 	Channel,
 	Client,
@@ -7,6 +6,7 @@ import type {
 	embed,
 	Member,
 	Message,
+	message,
 	SendableEmbed,
 	User,
 } from '../deps.ts';
