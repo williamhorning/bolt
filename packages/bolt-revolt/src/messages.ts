@@ -1,16 +1,15 @@
+import type { embed, message } from "@jersey/lightning";
 import type {
 	Channel,
 	Client,
 	DataMessageSend,
 	Embed,
-	embed,
 	Member,
 	Message,
-	message,
 	SendableEmbed,
 	User,
-} from '../deps.ts';
-import { decodeTime } from '../deps.ts';
+} from '@jersey/rvapi';
+import { decodeTime } from '@std/ulid';
 
 export async function torvapi(
 	api: Client,
@@ -64,20 +63,20 @@ export async function fromrvapi(
 	api: Client,
 	message: Message,
 ): Promise<message> {
-	const channel = await api.api.request(
+	const channel = await api.request(
 		'get',
 		`/channels/${message.channel}`,
 		undefined,
 	) as Channel & {
 		type: 'TextChannel' | 'GroupChannel';
 	};
-	const user = await api.api.request(
+	const user = await api.request(
 		'get',
 		`/users/${message.author}`,
 		undefined,
 	) as User;
 	const member = channel.server
-		? await api.api.request(
+		? await api.request(
 			'get',
 			`/servers/${channel.server}/members/${message.author}`,
 			undefined,
@@ -116,7 +115,7 @@ export async function fromrvapi(
 			? message.replies[0]
 			: undefined,
 		reply: async (msg: message, masquerade = true) => {
-			await api.api.request(
+			await api.request(
 				'post',
 				`/channels/${message.channel}/messages`,
 				{

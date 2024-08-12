@@ -1,115 +1,166 @@
-import type {
-	bridge_channel,
-	Channel,
-	Client,
-	deleted_message,
-	lightning,
-	Member,
-	Message,
-	message,
-	User,
-  } from '../deps.ts';
-  import { createClient, plugin } from '../deps.ts';
-  import { fromrvapi, torvapi } from './messages.ts';
-  
-  export class revolt_plugin extends plugin<{ token: string }> {
-	  bot: Client;
-	  name = 'bolt-revolt';
-  
-	constructor(l: lightning, config: { token: string }) {
-	  super(l, config);
-	  this.bot = createClient(config);
-	  this.bot.bonfire.on('Message', async (message) => {
-		if (message.system) return;
-		this.emit('create_message', await fromrvapi(this.bot, message));
-	  });
-	  this.bot.bonfire.on('MessageUpdate', async (message) => {
-		if (message.data.system) return;
-		this.emit(
-		  'edit_message',
-		  await fromrvapi(this.bot, message.data as Message),
-		);
-	  });
-	  this.bot.bonfire.on('MessageDelete', (message) => {
-		this.emit('delete_message', {
-		  channel: message.channel,
-		  id: message.id,
-		  plugin: 'bolt-revolt',
-		  timestamp: Temporal.Now.instant(),
+import {
+	type lightning,
+	type message_options,
+	plugin,
+	type process_result,
+} from '@jersey/lightning';
+import {
+	type Channel,
+	type Client,
+	createClient,
+	type Member,
+	type Message,
+	type User,
+} from '@jersey/rvapi';
+import { fromrvapi, torvapi } from './messages.ts';
+
+/** the config for the revolt plugin */
+export interface revolt_config {
+	/** the token for the revolt bot */
+	token: string;
+}
+
+/** the plugin to use */
+export class revolt_plugin extends plugin<revolt_config> {
+	bot: Client;
+	name = 'bolt-revolt';
+
+	constructor(l: lightning, config: revolt_config) {
+		super(l, config);
+		this.bot = createClient(config);
+		this.bot.bonfire.on('Message', async (message) => {
+			if (message.system) return;
+			this.emit('create_message', await fromrvapi(this.bot, message));
 		});
-	  });
-	}
-  
-	async create_bridge(channel: string) {
-	  const ch = await this.bot.api.request(
-		'get',
-		`/channels/${channel}`,
-		undefined,
-	  ) as Channel;
-	  let perms_ok = false;
-	  if (ch.permissions) { if (ch.permissions & (1 << 28)) perms_ok = true; }
-	  if (ch.default_permissions) {
-		if (ch.default_permissions.a & (1 << 28)) perms_ok = true;
-	  }
-	  if (ch.server && ch.role_permissions) {
-		const { _id } = await this.bot.api.request(
-		  'get',
-		  `/users/@me`,
-		  undefined,
-		) as User;
-		const me = await this.bot.api.request(
-		  'get',
-		  `/servers/${ch.server}/members/${_id}`,
-		  undefined,
-		) as Member;
-		me.roles?.forEach((role) => {
-		  if (ch.role_permissions![role].a & (1 << 28)) perms_ok = true;
+		this.bot.bonfire.on('MessageUpdate', async (message) => {
+			if (message.data.system) return;
+			this.emit(
+				'edit_message',
+				await fromrvapi(this.bot, message.data as Message),
+			);
 		});
-	  }
-	  if (!perms_ok) {
-		throw new Error(
-		  "Can't bridge this channel! Enable masquerade permissions",
-		);
-	  }
-	  return channel;
+		this.bot.bonfire.on('MessageDelete', (message) => {
+			this.emit('delete_message', {
+				channel: message.channel,
+				id: message.id,
+				plugin: 'bolt-revolt',
+				timestamp: Temporal.Now.instant(),
+			});
+		});
 	}
-  
-	async create_message(
-	  msg: message,
-	  bridge: bridge_channel,
-	  _: undefined,
-	  reply_id?: string,
-	) {
-	  return (
-		(await this.bot.api.request('post', `/channels/${bridge.id}/messages`, {
-		  ...(await torvapi(this.bot, { ...msg, reply_id })),
-		})) as Message
-	  )._id;
+
+	/** create a bridge */
+	async create_bridge(channel: string): Promise<string> {
+		const ch = await this.bot.request(
+			'get',
+			`/channels/${channel}`,
+			undefined,
+		) as Channel;
+		let perms_ok = false;
+		if (ch.permissions) { if (ch.permissions & (1 << 28)) perms_ok = true; }
+		if (ch.default_permissions) {
+			if (ch.default_permissions.a & (1 << 28)) perms_ok = true;
+		}
+		if (ch.server && ch.role_permissions) {
+			const { _id } = await this.bot.request(
+				'get',
+				`/users/@me`,
+				undefined,
+			) as User;
+			const me = await this.bot.request(
+				'get',
+				`/servers/${ch.server}/members/${_id}`,
+				undefined,
+			) as Member;
+			me.roles?.forEach((role) => {
+				if (ch.role_permissions![role].a & (1 << 28)) perms_ok = true;
+			});
+		}
+		if (!perms_ok) {
+			throw new Error(
+				"Can't bridge this channel! Enable masquerade permissions",
+			);
+		}
+		return channel;
 	}
-  
-	async edit_message(
-	  msg: message,
-	  bridge: bridge_channel,
-	  edit_id: string,
-	  reply_id?: string,
-	) {
-	  await this.bot.api.request(
-		'patch',
-		`/channels/${bridge.id}/messages/${edit_id}`,
-		{
-		  ...(await torvapi(this.bot, { ...msg, reply_id })),
-		},
-	  );
-	  return edit_id;
+
+	/** process a message */
+	async process_message(opts: message_options): Promise<process_result> {
+		try {
+			if (opts.action === 'create') {
+				try {
+					const msg = (await this.bot.request(
+						'post',
+						`/channels/${opts.channel.id}/messages`,
+						{
+							...(await torvapi(this.bot, {
+								...opts.message,
+								reply_id: opts.reply_id,
+							})),
+						},
+					)) as Message;
+
+					return {
+						channel: opts.channel,
+						id: [msg._id],
+						plugin: this.name,
+					};
+				} catch (e) {
+					if (e.cause.status === 403) {
+						return {
+							channel: opts.channel,
+							disable: true,
+							error: e,
+							plugin: this.name,
+						};
+					} else if (e.cause.status === 404) {
+						return {
+							channel: opts.channel,
+							disable: true,
+							error: e,
+							plugin: this.name,
+						};
+					} else {
+						throw e;
+					}
+				}
+			} else if (opts.action === 'edit') {
+				await this.bot.request(
+					'patch',
+					`/channels/${opts.channel.id}/messages/${opts.edit_id[0]}`,
+					{
+						...(await torvapi(this.bot, {
+							...opts.message,
+							reply_id: opts.reply_id,
+						})),
+					},
+				);
+
+				return {
+					channel: opts.channel,
+					id: opts.edit_id,
+					plugin: this.name,
+				};
+			} else {
+				await this.bot.request(
+					'delete',
+					`/channels/${opts.channel.id}/messages/${opts.edit_id[0]}`,
+					undefined,
+				);
+
+				return {
+					channel: opts.channel,
+					id: opts.edit_id,
+					plugin: this.name,
+				};
+			}
+		} catch (e) {
+			return {
+				channel: opts.channel,
+				disable: false,
+				error: e,
+				plugin: this.name,
+			};
+		}
 	}
-  
-	async delete_message(_: deleted_message, bridge: bridge_channel, id: string) {
-	  await this.bot.api.request(
-		'delete',
-		`/channels/${bridge.id}/messages/${id}`,
-		undefined,
-	  );
-	  return id;
-	}
-  }
-  
+}
