@@ -1,10 +1,10 @@
-import { Bot } from 'grammy';
 import {
 	type lightning,
 	type message_options,
 	plugin,
 	type process_result,
-} from 'lightning';
+} from '@jersey/lightning';
+import { Bot } from 'grammy';
 import { from_lightning, from_telegram } from './messages.ts';
 
 /** options for the telegram plugin */

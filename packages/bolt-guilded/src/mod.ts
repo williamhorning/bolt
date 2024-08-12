@@ -1,10 +1,10 @@
-import { Client, WebhookClient } from 'guilded.js';
 import {
 	type lightning,
 	type message_options,
 	plugin,
 	type process_result,
-} from 'lightning';
+} from '@jersey/lightning';
+import { Client, WebhookClient } from 'guilded.js';
 import { convert_msg, create_webhook } from './guilded.ts';
 import { tocore } from './messages.ts';
 
