@@ -1,13 +1,11 @@
-import {
-	type message,
-	render,
-	type Intent,
-	Buffer
-} from './deps.ts';
+import { render } from '@deno/gfm';
+import type { message } from '@jersey/lightning';
+import { Buffer } from '@nodejs/buffer';
+import type { Intent } from 'matrix-appservice-bridge';
 
 export async function to_matrix(
 	msg: message,
-	upload: Intent["uploadContent"],
+	upload: Intent['uploadContent'],
 	reply?: string,
 	edit?: string[],
 ) {
@@ -26,7 +24,7 @@ export async function to_matrix(
 
 	if (edit) {
 		events[0]['m.relates_to'] = {
-			rel_type: "m.replace",
+			rel_type: 'm.replace',
 			event_id: edit[0],
 		};
 	} else if (reply) {
@@ -44,13 +42,18 @@ export async function to_matrix(
 				body: attachment.name ?? attachment.alt ?? 'no name file',
 				alt: attachment.alt ?? attachment.name ?? 'no alt text',
 				url: await upload(
-					Buffer.from(await ((await fetch(attachment.file)).arrayBuffer())),
+					Buffer.from(
+						await ((await fetch(attachment.file)).arrayBuffer()),
+					),
 				),
 				info: { size: attachment.size * 1000000 },
-				'm.relates_to': edit ? {
-					rel_type: 'm.replace',
-					event_id: edit[msg.attachments?.indexOf(attachment) + 1],
-				} : undefined
+				'm.relates_to': edit
+					? {
+						rel_type: 'm.replace',
+						event_id:
+							edit[msg.attachments?.indexOf(attachment) + 1],
+					}
+					: undefined,
 			});
 		}
 	}

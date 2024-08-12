@@ -1,4 +1,4 @@
-import { existsSync } from './deps.ts';
+import { existsSync } from '@std/fs';
 import type { matrix_config } from './matrix_types.ts';
 
 export function setup_registration(cfg: matrix_config) {

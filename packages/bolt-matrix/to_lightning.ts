@@ -1,6 +1,7 @@
-import type { Intent, message } from './deps.ts';
-import { to_matrix } from './to_matrix.ts';
+import type { message } from '@jersey/lightning';
+import type { Intent } from 'matrix-appservice-bridge';
 import type { matrix_client_event } from './matrix_types.ts';
+import { to_matrix } from './to_matrix.ts';
 
 export async function to_lightning(
     event: matrix_client_event,
@@ -10,12 +11,14 @@ export async function to_lightning(
     const un_mxc = (url: string) =>
         url.replace('mxc://', `${homeserver_url}/_matrix/media/r0/download/`);
     const sender = await bot.getProfileInfo(event.sender);
-    const relates_to = event.content['m.relates_to'] as Record<string, unknown> | undefined;
+    const relates_to = event.content['m.relates_to'] as
+        | Record<string, unknown>
+        | undefined;
     const message: message = {
         author: {
             id: event.sender,
-            rawname: sender.display_name || event.sender,
-            username: sender.display_name || event.sender,
+            rawname: sender.displayname || event.sender,
+            username: sender.displayname || event.sender,
             color: '#007A61',
             profile: sender.avatar_url ? un_mxc(sender.avatar_url) : undefined,
         },

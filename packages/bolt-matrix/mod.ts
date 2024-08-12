@@ -1,19 +1,21 @@
 import {
-	Bridge,
-	type bridge_channel,
 	type lightning,
-	MatrixUser,
-	type message,
+	type message_options,
 	plugin,
+	type process_result,
+} from '@jersey/lightning';
+import { Buffer } from '@nodejs/buffer';
+import {
+	Bridge,
+	MatrixUser,
 	type UserBridgeStore,
-} from './deps.ts';
+} from 'matrix-appservice-bridge';
 import { on_event } from './matrix_events.ts';
-import { to_matrix } from './to_matrix.ts';
-import { setup_registration } from './setup_registration.ts';
 import type { matrix_config, matrix_user } from './matrix_types.ts';
-import { Buffer } from './deps.ts';
+import { setup_registration } from './setup_registration.ts';
+import { to_matrix } from './to_matrix.ts';
 
-export class matrix_plugin extends plugin<matrix_config, string[]> {
+export class matrix_plugin extends plugin<matrix_config> {
 	name = 'bolt-matrix';
 	store = new Map<string, matrix_user>();
 	br: Bridge;
@@ -25,7 +27,7 @@ export class matrix_plugin extends plugin<matrix_config, string[]> {
 		this.br = new Bridge({
 			controller: {
 				onEvent: (request) => {
-					console.log(request.getData())
+					console.log(request.getData());
 					on_event.bind(this)(request.getData());
 				},
 			},
@@ -37,94 +39,100 @@ export class matrix_plugin extends plugin<matrix_config, string[]> {
 			userActivityStore: `${config.store_dir}/activity.db`,
 		});
 		this.st = this.br.getUserStore()!;
-		this.br.run(this.config.plugin_port, undefined, "0.0.0.0")
+		this.br.run(this.config.plugin_port, undefined, '0.0.0.0');
 	}
 
-	create_bridge(channelId: string) {
+	create_bridge(channelId: string): string {
 		return channelId;
 	}
 
-	async create_message(
-		msg: message,
-		channel: bridge_channel,
-		edit?: string[],
-		reply?: string,
-	) {
-		const bot_intent = this.br.getIntent();
+	async process_message(opts: message_options): Promise<process_result> {
+		try {
+			const bot_intent = this.br.getIntent();
 
-		const messages = await to_matrix(
-			msg,
-			bot_intent.uploadContent,
-			reply,
-			edit,
-		);
+			if (opts.action === 'delete') {
+				for (const message of opts.edit_id) {
+					await bot_intent.botSdkIntent.underlyingClient.redactEvent(
+						opts.channel.id,
+						message,
+					);
+				}
 
-		const msg_ids = [];
+				return {
+					channel: opts.channel,
+					id: opts.edit_id,
+					plugin: 'bolt-matrix',
+				};
+			} else {
+				const messages = await to_matrix(
+					opts.message,
+					bot_intent.uploadContent,
+					opts.reply_id,
+					'edit_id' in opts ? opts.edit_id : undefined,
+				);
 
-		const mxid =
-			`@${this.config.homeserver_prefix}${msg.author.id}:${this.config.homeserver_domain}`;
+				const msg_ids = [];
 
-		let matrix_user = await this.st.getMatrixUser(mxid);
+				const mxid =
+					`@${this.config.homeserver_prefix}${opts.message.author.id}:${this.config.homeserver_domain}`;
 
-		if (!matrix_user) {
-			matrix_user = new MatrixUser(mxid);
-			await this.br.provisionUser(matrix_user);
+				let matrix_user = await this.st.getMatrixUser(mxid);
+
+				if (!matrix_user) {
+					matrix_user = new MatrixUser(mxid);
+					await this.br.provisionUser(matrix_user);
+				}
+
+				const intent = this.br.getIntent(mxid);
+
+				if (
+					opts.message.author.profile &&
+					matrix_user.get('avatar_url') !==
+						opts.message.author.profile
+				) {
+					const mxc = await bot_intent.uploadContent(
+						Buffer.from(
+							await (await fetch(opts.message.author.profile))
+								.arrayBuffer(),
+						),
+					);
+
+					await intent.setAvatarUrl(mxc);
+
+					matrix_user.set('avatar_url', opts.message.author.profile);
+				}
+
+				if (
+					matrix_user.getDisplayName() !==
+						opts.message.author.username
+				) {
+					await intent.setDisplayName(opts.message.author.username);
+
+					matrix_user.setDisplayName(opts.message.author.username);
+				}
+
+				await this.st.setMatrixUser(matrix_user);
+
+				for (const message of messages) {
+					msg_ids.push(
+						(await intent.sendMessage(opts.channel.id, message))
+							.event_id,
+					);
+				}
+
+				return {
+					channel: opts.channel,
+					id: msg_ids,
+					plugin: 'bolt-matrix',
+				};
+			}
+		} catch (e) {
+			return {
+				error: e,
+				channel: opts.channel,
+				disable: false,
+				plugin: 'bolt-matrix',
+			};
 		}
-
-		const intent = this.br.getIntent(mxid);
-
-		if (
-			msg.author.profile &&
-			matrix_user.get('avatar_url') !== msg.author.profile
-		) {
-			const mxc = await bot_intent.uploadContent(
-				Buffer.from(
-					await (await fetch(msg.author.profile)).arrayBuffer(),
-				),
-			);
-
-			await intent.setAvatarUrl(mxc);
-
-			matrix_user.set('avatar_url', msg.author.profile);
-		}
-
-		if (matrix_user.getDisplayName() !== msg.author.username) {
-			await intent.setDisplayName(msg.author.username);
-
-			matrix_user.setDisplayName(msg.author.username);
-		}
-
-		await this.st.setMatrixUser(matrix_user);
-
-		for (const message of messages) {
-			msg_ids.push(
-				(await intent.sendMessage(channel.id, message)).event_id,
-			);
-		}
-
-		return msg_ids;
-	}
-
-	async edit_message(
-		msg: message,
-		channel: bridge_channel,
-		edit_id?: string[],
-		reply_id?: string,
-	) {
-		return await this.create_message(msg, channel, edit_id, reply_id);
-	}
-
-	async delete_message(
-		_msg: message,
-		channel: bridge_channel,
-		ids: string[],
-	) {
-		for (const message of ids) {
-			await this.br.getIntent().botSdkIntent.underlyinClient.redactEvent(
-				channel.id,
-				message,
-			);
-		}
-		return ids;
 	}
 }

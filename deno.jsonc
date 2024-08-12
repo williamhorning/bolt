@@ -23,6 +23,7 @@
 		"./packages/lightning",
 		"./packages/bolt-telegram",
 		"./packages/bolt-revolt",
+		"./packages/bolt-matrix",
 		"./packages/bolt-guilded",
 		"./packages/bolt-discord"
 	],

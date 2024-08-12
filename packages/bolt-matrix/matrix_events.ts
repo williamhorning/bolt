@@ -1,6 +1,6 @@
+import type { matrix_client_event } from './matrix_types.ts';
 import type { matrix_plugin } from './mod.ts';
 import { to_lightning } from './to_lightning.ts';
-import type { matrix_client_event } from './matrix_types.ts';
 
 export async function on_event(
 	this: matrix_plugin,
