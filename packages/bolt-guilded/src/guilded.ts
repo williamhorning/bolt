@@ -1,6 +1,6 @@
 import type { EmbedPayload, RESTPostWebhookBody } from '@guildedjs/api';
+import type { embed, message } from '@jersey/lightning';
 import type { Client } from 'guilded.js';
-import type { embed, message } from 'lightning';
 import type { guilded_plugin } from './mod.ts';
 
 export async function create_webhook(
