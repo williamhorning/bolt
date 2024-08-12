@@ -15,9 +15,12 @@ import type { matrix_config, matrix_user } from './matrix_types.ts';
 import { setup_registration } from './setup_registration.ts';
 import { to_matrix } from './to_matrix.ts';
 
+export type { matrix_config }
+
+/** the plugin to use */
 export class matrix_plugin extends plugin<matrix_config> {
 	name = 'bolt-matrix';
-	store = new Map<string, matrix_user>();
+	store: Map<string, matrix_user> = new Map();
 	br: Bridge;
 	st: UserBridgeStore;
 
@@ -42,10 +45,12 @@ export class matrix_plugin extends plugin<matrix_config> {
 		this.br.run(this.config.plugin_port, undefined, '0.0.0.0');
 	}
 
+	/** create a bridge */
 	create_bridge(channelId: string): string {
 		return channelId;
 	}
 
+	/** processes a message */
 	async process_message(opts: message_options): Promise<process_result> {
 		try {
 			const bot_intent = this.br.getIntent();

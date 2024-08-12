@@ -23,6 +23,7 @@ export interface matrix_user {
 	avatar_mxc?: string;
 }
 
+/** config for the matrix plugin */
 export interface matrix_config {
 	/** token used to authenticate to the homeserver */
 	appservice_token: string;
