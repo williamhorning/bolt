@@ -1,6 +1,6 @@
 {
 	"name": "@jersey/lightning",
-	"version": "0.7.1",
+	"version": "0.7.3",
 	"exports": "./mod.ts",
 	"publish": {
 		"exclude": ["./src/tests/*"]
@@ -8,6 +8,9 @@
 	"test": {
 		"include": ["./src/tests/*"]
 	},
-	"lock": false,
-	"unstable": ["temporal"]
+	"imports": {
+		"@denosaurs/event": "jsr:@denosaurs/event@2.0.2",
+		"@iuioiua/r2d2": "jsr:@iuioiua/r2d2@2.1.1",
+		"@std/cli/parse-args": "jsr:@std/cli@1.0.3/parse-args"
+	}
 }

@@ -1,4 +1,5 @@
-import type { Message, message } from './deps.ts';
+import type { Message } from 'guilded.js';
+import type { message } from 'lightning';
 import { convert_msg } from './guilded.ts';
 import type { guilded_plugin } from './mod.ts';
 
@@ -9,7 +10,10 @@ export async function tocore(
 	if (!message.serverId) return;
 	let author;
 	if (!message.createdByWebhookId && message.authorId !== 'Ann6LewA') {
-		author = await plugin.bot.members.fetch(message.serverId, message.authorId);
+		author = await plugin.bot.members.fetch(
+			message.serverId,
+			message.authorId,
+		);
 	}
 	const update_content = message.content.replaceAll('\n```\n```\n', '\n');
 	return {

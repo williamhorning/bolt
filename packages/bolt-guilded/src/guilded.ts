@@ -1,10 +1,6 @@
-import type {
-	Client,
-	embed,
-	EmbedPayload,
-	message,
-	RESTPostWebhookBody,
-} from './deps.ts';
+import type { EmbedPayload, RESTPostWebhookBody } from '@guildedjs/api';
+import type { Client } from 'guilded.js';
+import type { embed, message } from 'lightning';
 import type { guilded_plugin } from './mod.ts';
 
 export async function create_webhook(
@@ -73,7 +69,7 @@ export async function convert_msg(
 
 function get_valid_username(msg: message) {
 	function valid(e: string) {
-		if (!e || e.length === 0 || e.length > 32) return false;
+		if (!e || e.length === 0 || e.length > 25) return false;
 		return /^[a-zA-Z0-9_ ()-]*$/gms.test(e);
 	}
 

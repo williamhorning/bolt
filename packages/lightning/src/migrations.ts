@@ -10,34 +10,6 @@ export function get_migrations(from: versions, to: versions): migration[] {
 	);
 }
 
-/**
- * convert a mognodb document from 0.5 to redis for 0.7
- * @param items the mongodb documents
- */
-export function mongo_to_redis(
-	items: [string, unknown][],
-): [string, unknown][] {
-	return items.flatMap(([id, v]) => {
-		const val = v as {
-			_id: string;
-			platforms: { plugin: string; channel: string; senddata: unknown }[];
-			settings: { realnames?: boolean; editing_allowed?: boolean };
-		};
-		return [[`lightning-bridge-${id}`, {
-			allow_editing: val.settings?.editing_allowed ?? false,
-			channels: val.platforms.map((i) => {
-				return {
-					id: i.channel,
-					data: i.senddata,
-					plugin: i.plugin,
-				};
-			}),
-			id,
-			use_rawname: val.settings?.realnames ?? false,
-		}], ...val.platforms.map((i) => [`lightning-bchannel-${i.channel}`, id])];
-	}) as [string, unknown][];
-}
-
 /** the type of a migration */
 export interface migration {
 	/** the version to translate from */
@@ -52,40 +24,56 @@ export interface migration {
 export enum versions {
 	/** versions 0.5 through 0.6 */
 	Five = '0.5',
-	/** versions 0.7 and above*/
+	/** versions 0.7 through 0.7.2 */
 	Seven = '0.7',
+	/** versions 0.7.3 and higher */
+	SevenDotThree = '0.7.3',
 }
 
 /** the internal list of migrations */
 const migrations = [
 	{
-		from: versions.Five,
-		to: versions.Seven,
+		from: versions.Seven,
+		to: versions.SevenDotThree,
 		translate: (items) =>
-			items.flatMap(([key, val]) => {
-				if (!key.startsWith('lightning-bridge-')) return [];
+			items.map(([key, val]) => {
+				if (!key.startsWith('lightning-bridge')) return [key, val];
 
-				const [_, _2, ...ids] = key.split('-');
-				const id = `lightning-bridged-${ids.join('-')}`;
-				const channels = (
-					val as {
-						plugin: string;
-						channel: string;
-						senddata: unknown;
-						id: string;
-					}[]
-				).map((i) => {
-					return { id: i.channel, data: i.senddata, plugin: i.plugin };
-				});
-				const value = {
-					allow_editing: true,
-					channels,
-					id,
-					messages: val,
-					use_rawname: false,
-				};
-
-				return [[id, value]];
+				return [
+					key,
+					{
+						...(val as Record<string, unknown>),
+						channels: (val as {
+							channels: {
+								id: string;
+								data: unknown;
+								plugin: string;
+							}[];
+						}).channels.map((i) => {
+							return {
+								data: i.data,
+								disabled: false,
+								id: i.id,
+								plugin: i.plugin,
+							};
+						}),
+						messages: (val as {
+							messages: {
+								id: string | string[];
+								channel: string;
+								plugin: string;
+							}[];
+						}).messages?.map((i) => {
+							if (typeof i.id === 'string') {
+								return {
+									...i,
+									id: [i.id],
+								};
+							}
+							return i;
+						}),
+					},
+				];
 			}),
 	},
 ] as migration[];

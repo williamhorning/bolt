@@ -1,12 +1,16 @@
-import { EventEmitter } from '../deps.ts';
-import type { bridge_channel } from './bridges/types.ts';
+import { EventEmitter } from '@denosaurs/event';
 import type { command_arguments } from './commands.ts';
 import type { lightning } from './lightning.ts';
-import type { deleted_message, message } from './messages.ts';
+import type {
+	deleted_message,
+	message,
+	message_options,
+	process_result,
+} from './types.ts';
 
 /** the way to make a plugin */
 export interface create_plugin<
-	plugin_type extends plugin<plugin_type['config'], string | string[]>,
+	plugin_type extends plugin<plugin_type['config']>,
 > {
 	/** the actual constructor of the plugin */
 	type: new (l: lightning, config: plugin_type['config']) => plugin_type;
@@ -31,7 +35,7 @@ export type plugin_events = {
 };
 
 /** a plugin for lightning */
-export abstract class plugin<cfg, idtype extends string | string[] = string | string[]> extends EventEmitter<plugin_events> {
+export abstract class plugin<cfg> extends EventEmitter<plugin_events> {
 	/** access the instance of lightning you're connected to */
 	lightning: lightning;
 	/** access the config passed to you by lightning */
@@ -40,11 +44,11 @@ export abstract class plugin<cfg, idtype extends string | string[] = string | st
 	abstract name: string;
 
 	/** create a new plugin instance */
-	static new<T extends plugin<T["config"]>>(
+	static new<T extends plugin<T['config']>>(
 		this: new (l: lightning, config: T['config']) => T,
 		config: T['config'],
 	): create_plugin<T> {
-		return { type: this, config, support: ['0.7.1'] };
+		return { type: this, config, support: ['0.7.3'] };
 	}
 
 	constructor(l: lightning, config: cfg) {
@@ -56,27 +60,6 @@ export abstract class plugin<cfg, idtype extends string | string[] = string | st
 	/** this should return the data you need to send to the channel given */
 	abstract create_bridge(channel: string): Promise<unknown> | unknown;
 
-	/** this is used to bridge a NEW message */
-	abstract create_message(
-		message: message,
-		channel: bridge_channel,
-		edit_id?: idtype,
-		reply_id?: string,
-	): Promise<idtype>;
-
-	/** this is used to bridge an EDITED message */
-	abstract edit_message(
-		message: message,
-		channel: bridge_channel,
-		edit_id: idtype,
-		reply_id?: string,
-	): Promise<idtype>;
-
-	/** this is used to bridge a DELETED message */
-	abstract delete_message(
-		message: deleted_message,
-		channel: bridge_channel,
-		delete_id: idtype,
-		reply_id?: string,
-	): Promise<idtype>;
+	/** processes a message and returns information */
+	abstract process_message(opts: message_options): Promise<process_result>;
 }

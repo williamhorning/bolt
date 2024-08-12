@@ -1,6 +1,30 @@
-import type { Context, Message, message } from './deps.ts';
-import { from_lightning } from './lightning_message.ts';
+import type { Context } from 'grammy';
+import type { Message } from 'grammy/types';
+import type { message } from 'lightning';
+import { default as convert_md } from 'telegramify-markdown';
 import type { telegram_config } from './mod.ts';
+
+export function from_lightning(msg: message) {
+	let content = `${msg.author.username} » ${msg.content || '_no content_'}`;
+
+	if ((msg.embeds?.length ?? 0) > 0) {
+		content = `${content}\n_this message has embeds_`;
+	}
+
+	const messages = [{
+		function: 'sendMessage',
+		value: convert_md(content, 'escape'),
+	}] as { function: 'sendMessage' | 'sendDocument'; value: string }[];
+
+	for (const attachment of (msg.attachments ?? [])) {
+		messages.push({
+			function: 'sendDocument',
+			value: attachment.file,
+		});
+	}
+
+	return messages;
+}
 
 export async function from_telegram(
 	ctx: Context,
@@ -25,13 +49,13 @@ export async function from_telegram(
 		case 'video':
 		case 'video_note':
 		case 'voice': {
-			const file_obj = msg ? msg.photo!.slice(-1)[0] : msg[type]!;
+			const file_obj = type === 'photo' ? msg.photo!.slice(-1)[0] : msg[type]!;
 			const file = await ctx.api.getFile(file_obj.file_id);
 			if (!file.file_path) return;
 			return {
 				...base,
 				attachments: [{
-					file: `${cfg.plugin_url}/file/${file.file_path}`,
+					file: `${cfg.plugin_url}/${file.file_path}`,
 					size: (file.file_size ?? 0) / 1000000,
 				}],
 			};
@@ -83,7 +107,7 @@ async function get_base_msg(
 			rawname: author.user.username || author.user.first_name,
 			color: '#24A1DE',
 			profile: pfps.total_count
-				? `${cfg.plugin_url}/file/${
+				? `${cfg.plugin_url}/${
 					(await ctx.api.getFile(pfps.photos[0][0].file_id)).file_path
 				}`
 				: undefined,

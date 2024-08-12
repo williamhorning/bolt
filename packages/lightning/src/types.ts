@@ -6,7 +6,7 @@ export function create_message(text: string): message {
 	const data = {
 		author: {
 			username: 'lightning',
-			profile: 'https://williamhorning.dev/assets/lightning.png',
+			profile: 'https://williamhorning.eu.org/assets/lightning.png',
 			rawname: 'lightning',
 			id: 'lightning',
 		},
@@ -32,6 +32,42 @@ export interface attachment {
 	spoiler?: boolean;
 	/** file size */
 	size: number;
+}
+
+/** channel within a bridge */
+export interface bridge_channel {
+	/** the id of this channel */
+	id: string;
+	/** the data needed to bridge this channel */
+	data: unknown;
+	/** whether the channel is disabled */
+	disabled: boolean;
+	/** the plugin used to bridge this channel */
+	plugin: string;
+}
+
+/** the representation of a bridge */
+export interface bridge_document {
+	/** whether or not to allow editing */
+	allow_editing: boolean;
+	/** the channels to be bridged */
+	channels: bridge_channel[];
+	/** the id of the bridge */
+	id: string;
+	/** messages bridged using these channels */
+	messages?: bridge_message[];
+	/** whether or not to use nicknames */
+	use_rawname: boolean;
+}
+
+/** bridged messages */
+export interface bridge_message {
+	/** the id of the message */
+	id: string[];
+	/** the id of the channel the message was sent in */
+	channel: string;
+	/** the plugin the message was sent using */
+	plugin: string;
 }
 
 /** a representation of a message that has been deleted */
@@ -129,3 +165,76 @@ export interface message extends deleted_message {
 	/** the id of the message replied to */
 	reply_id?: string;
 }
+
+/** the options given to plugins when a message needs to be sent */
+export interface create_message_opts {
+	/** the action to take */
+	action: 'create';
+	/** the channel to send the message to */
+	channel: bridge_channel;
+	/** the message to send */
+	message: message;
+	/** the id of the message to reply to */
+	reply_id?: string;
+}
+
+/** the options given to plugins when a message needs to be edited */
+export interface edit_message_opts {
+	/** the action to take */
+	action: 'edit';
+	/** the channel to send the message to */
+	channel: bridge_channel;
+	/** the message to send */
+	message: message;
+	/** the id of the message to edit */
+	edit_id: string[];
+	/** the id of the message to reply to */
+	reply_id?: string;
+}
+
+/** the options given to plugins when a message needs to be deleted */
+export interface delete_message_opts {
+	/** the action to take */
+	action: 'delete';
+	/** the channel to send the message to */
+	channel: bridge_channel;
+	/** the message to send */
+	message: deleted_message;
+	/** the id of the message to delete */
+	edit_id: string[];
+	/** the id of the message to reply to */
+	reply_id?: string;
+}
+
+/** the options given to plugins when a message needs to be processed */
+export type message_options =
+	| create_message_opts
+	| edit_message_opts
+	| delete_message_opts;
+
+/** successfully processed message */
+export interface processed_message {
+	/** whether there was an error */
+	error?: undefined;
+	/** the message that was processed */
+	id: string[];
+	/** the channel the message was sent to */
+	channel: bridge_channel;
+	/** the plugin the message was sent using */
+	plugin: string;
+}
+
+/** messages not processed */
+export interface unprocessed_message {
+	/** the channel the message was to be sent to */
+	channel: bridge_channel;
+	/** whether the channel should be disabled */
+	disable: boolean;
+	/** the error causing this */
+	error: Error;
+	/** the plugin the message was sent using */
+	plugin: string;
+}
+
+/** process result */
+export type process_result = processed_message | unprocessed_message;

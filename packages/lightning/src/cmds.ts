@@ -7,7 +7,7 @@ export const default_cmds = [
 			name: 'help',
 			description: 'get help',
 			execute: () =>
-				'check out [the docs](https://williamhorning.dev/bolt/) for help.',
+				'check out [the docs](https://williamhorning.eu.org/bolt/) for help.',
 		},
 	],
 	[
@@ -15,7 +15,7 @@ export const default_cmds = [
 		{
 			name: 'version',
 			description: 'get the bots version',
-			execute: () => 'hello from v0.7.1!',
+			execute: () => 'hello from v0.7.3!',
 		},
 	],
 	[

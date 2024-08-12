@@ -19,5 +19,13 @@
 			]
 		}
 	},
-	"lock": false
+	"workspace": [
+		"./packages/lightning",
+		"./packages/bolt-telegram",
+		"./packages/bolt-revolt",
+		"./packages/bolt-guilded",
+		"./packages/bolt-discord"
+	],
+	"lock": false,
+	"unstable": ["temporal"]
 }

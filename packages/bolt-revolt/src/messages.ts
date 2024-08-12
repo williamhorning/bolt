@@ -1,4 +1,5 @@
-import type { API, Message, message, TextEmbed } from './deps.ts';
+import type { message } from 'lightning';
+import type { API, Message, TextEmbed } from 'revolt.js';
 
 export async function torevolt(
 	message: message,

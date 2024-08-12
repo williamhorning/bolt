@@ -3,13 +3,13 @@
 lightning is a typescript-based chatbot that supports bridging multiple chat
 apps via plugins
 
-## [docs](https://williamhorning.dev/bolt)
+## [docs](https://williamhorning.eu.org/bolt)
 
 ## example config
 
 ```ts
-import type { config } from 'jsr:@jersey/lightning@0.7.1';
-import { discord_plugin } from 'https://williamhorning.dev/bolt/x/bolt-discord/0.7.1/mod.ts';
+import type { config } from 'jsr:@jersey/lightning@0.7.3';
+import { discord_plugin } from 'https://williamhorning.eu.org/bolt/x/bolt-discord/0.7.3/mod.ts';
 
 export default {
 	redis_host: 'localhost',

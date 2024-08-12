@@ -1,4 +1,4 @@
-import { create_message, type message } from './messages.ts';
+import { create_message, type message } from './types.ts';
 
 /** the error returned from log_error */
 export interface err {
@@ -24,23 +24,47 @@ export async function log_error(
 	const uuid = crypto.randomUUID();
 	const error_hook = Deno.env.get('LIGHTNING_ERROR_HOOK');
 
+	delete extra.lightning;
+
 	if (error_hook && error_hook.length > 0) {
-		await (
+		const resp = 
 			await fetch(error_hook, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					embeds: [{ title: e.message, description: uuid }],
+					content: `# ${e.message}\n*${uuid}*`,
+					embeds: [
+						{
+							title: 'extra',
+							description:
+								`\`\`\`json\n${JSON.stringify(extra, null, 2)}\n\`\`\``,
+						},
+					],
 				}),
 			})
-		).text();
+		
+		if (!resp.ok) {
+			await fetch(error_hook, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					content: `# ${e.message}\n*${uuid}*`,
+					embeds: [
+						{
+							title: 'extra',
+							description: '*see console*'
+						}
+					]
+				}),
+			})
+		}
 	}
 
 	console.error(`%clightning error ${uuid}`, 'color: red');
 	console.error(e, extra);
 
 	const message = create_message(
-		`Something went wrong! [Look here](https://williamhorning.dev/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
+		`Something went wrong! [Look here](https://williamhorning.eu.org/bolt) for help.\n\`\`\`\n${e.message}\n${uuid}\n\`\`\``,
 	);
 
 	return { e, uuid, extra, message };

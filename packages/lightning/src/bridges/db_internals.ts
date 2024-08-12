@@ -1,5 +1,5 @@
 import type { lightning } from '../lightning.ts';
-import type { bridge_document } from './types.ts';
+import type { bridge_document } from '../types.ts';
 
 export async function get_json<T = unknown>(
 	l: lightning,
