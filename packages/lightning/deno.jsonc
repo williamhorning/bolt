@@ -9,8 +9,8 @@
 		"include": ["./src/tests/*"]
 	},
 	"imports": {
-		"@denosaurs/event": "jsr:@denosaurs/event@2.0.2",
-		"@iuioiua/r2d2": "jsr:@iuioiua/r2d2@2.1.1",
-		"@std/cli/parse-args": "jsr:@std/cli@1.0.3/parse-args"
+		"@denosaurs/event": "jsr:@denosaurs/event@^2.0.2",
+		"@iuioiua/r2d2": "jsr:@iuioiua/r2d2@^2.1.1",
+		"@std/cli/parse-args": "jsr:@std/cli@^1.0.3/parse-args"
 	}
 }
