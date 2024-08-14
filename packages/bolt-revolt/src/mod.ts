@@ -3,13 +3,15 @@ import {
 	type message_options,
 	plugin,
 	type process_result,
-} from 'lightning';
-import { Client } from 'revolt.js';
-import { tocore, torevolt } from './messages.ts';
+} from '@jersey/lightning';
+import type { Message } from '@jersey/revolt-api-types';
+import { type Client, createClient } from '@jersey/rvapi';
+import { fromrvapi, torvapi } from './messages.ts';
+import { revolt_perms } from './permissions.ts';
 
-/** options for the revolt plugin */
+/** the config for the revolt plugin */
 export interface revolt_config {
-	/** the token to use */
+	/** the token for the revolt bot */
 	token: string;
 }
 
@@ -20,112 +22,102 @@ export class revolt_plugin extends plugin<revolt_config> {
 
 	constructor(l: lightning, config: revolt_config) {
 		super(l, config);
-		this.bot = new Client();
-		// @ts-ignore deno is being weird
-		this.bot.on('messageCreate', (message) => {
-			if (message.systemMessage) return;
-			this.emit('create_message', tocore(message));
+		this.bot = createClient(config);
+		this.bot.bonfire.on('Message', async (message) => {
+			if (message.system) return;
+			this.emit('create_message', await fromrvapi(this.bot, message));
 		});
-		// @ts-ignore deno is being weird
-		this.bot.on('messageUpdate', (message) => {
-			if (message.systemMessage) return;
-			this.emit('edit_message', tocore(message));
+		this.bot.bonfire.on('MessageUpdate', async (message) => {
+			if (message.data.system) return;
+			this.emit(
+				'edit_message',
+				await fromrvapi(this.bot, message.data as Message),
+			);
 		});
-		// @ts-ignore deno is being weird
-		this.bot.on('messageDelete', (message) => {
-			if (message.systemMessage) return;
+		this.bot.bonfire.on('MessageDelete', (message) => {
 			this.emit('delete_message', {
-				channel: message.channelId,
+				channel: message.channel,
 				id: message.id,
 				plugin: 'bolt-revolt',
-				timestamp: message.editedAt
-					? Temporal.Instant.fromEpochMilliseconds(
-						message.editedAt?.getUTCMilliseconds(),
-					)
-					: Temporal.Now.instant(),
+				timestamp: Temporal.Now.instant(),
 			});
 		});
-		this.bot.loginBot(this.config.token);
 	}
 
-	/** create a bridge in the channel */
+	/** create a bridge */
 	async create_bridge(channel: string): Promise<string> {
-		const ch = await this.bot.channels.fetch(channel);
-		if (!ch.havePermission('Masquerade')) {
-			throw new Error('Please enable masquerade permissions!');
-		}
-		if (!ch.havePermission('ManageMessages')) {
-			throw new Error('Please enable manage messages permissions!');
-		}
-		return ch.id;
+		return await revolt_perms(this.bot, channel);
 	}
 
-	/** process a message in a channel */
+	/** process a message */
 	async process_message(opts: message_options): Promise<process_result> {
 		try {
-			if (opts.action !== 'create') {
-				const message = await this.bot.messages.fetch(
-					opts.channel.id,
-					opts.edit_id[0],
-				);
-
-				if (opts.action === 'edit') {
-					await message.edit(
-						await torevolt({
-							...opts.message,
-							reply_id: opts.reply_id,
-						}),
-					);
-				} else if (opts.action === 'delete') {
-					await message.delete();
-				}
-
-				return {
-					id: opts.edit_id,
-					channel: opts.channel,
-					plugin: this.name,
-				};
-			} else {
+			if (opts.action === 'create') {
 				try {
-					const result = await (await this.bot.channels.fetch(opts.channel.id))
-						.sendMessage(
-							await torevolt({
+					const msg = (await this.bot.request(
+						'post',
+						`/channels/${opts.channel.id}/messages`,
+						{
+							...(await torvapi(this.bot, {
 								...opts.message,
 								reply_id: opts.reply_id,
-							}),
-						);
+							})),
+						},
+					)) as Message;
 
 					return {
-						id: [result.id],
 						channel: opts.channel,
+						id: [msg._id],
 						plugin: this.name,
 					};
 				} catch (e) {
-					if (e.response.status === 404) {
+					if (e.cause.status === 403 || e.cause.status === 404) {
 						return {
-							error: new Error('Channel not found!'),
 							channel: opts.channel,
 							disable: true,
-							plugin: this.name,
-						};
-					} else if (e.response.status === 403) {
-						return {
-							error: new Error('Please fix permissions!'),
-							channel: opts.channel,
-							disable: true,
+							error: e,
 							plugin: this.name,
 						};
 					} else {
 						throw e;
 					}
 				}
+			} else if (opts.action === 'edit') {
+				await this.bot.request(
+					'patch',
+					`/channels/${opts.channel.id}/messages/${opts.edit_id[0]}`,
+					{
+						...(await torvapi(this.bot, {
+							...opts.message,
+							reply_id: opts.reply_id,
+						})),
+					},
+				);
+
+				return {
+					channel: opts.channel,
+					id: opts.edit_id,
+					plugin: this.name,
+				};
+			} else {
+				await this.bot.request(
+					'delete',
+					`/channels/${opts.channel.id}/messages/${opts.edit_id[0]}`,
+					undefined,
+				);
+
+				return {
+					channel: opts.channel,
+					id: opts.edit_id,
+					plugin: this.name,
+				};
 			}
 		} catch (e) {
 			return {
-				error: e,
 				channel: opts.channel,
-				plugin: this.name,
 				disable: false,
+				error: e,
+				plugin: this.name,
 			};
 		}
 	}
