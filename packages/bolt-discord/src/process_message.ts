@@ -44,7 +44,6 @@ export async function process_message(api: API, opts: message_options) {
 				return {
 					id: [wh.id],
 					channel: opts.channel,
-					plugin: 'bolt-discord',
 				};
 			} catch (e) {
 				if (e.status === 404 && opts.action !== 'edit') {
@@ -52,7 +51,6 @@ export async function process_message(api: API, opts: message_options) {
 						channel: opts.channel,
 						error: e,
 						disable: true,
-						plugin: 'bolt-discord',
 					};
 				} else {
 					throw e;
@@ -68,7 +66,6 @@ export async function process_message(api: API, opts: message_options) {
 			return {
 				id: opts.edit_id,
 				channel: opts.channel,
-				plugin: 'bolt-discord',
 			};
 		}
 	} catch (e) {
@@ -76,7 +73,6 @@ export async function process_message(api: API, opts: message_options) {
 			channel: opts.channel,
 			error: e,
 			disable: false,
-			plugin: 'bolt-discord',
 		};
 	}
 }

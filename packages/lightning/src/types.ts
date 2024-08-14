@@ -220,8 +220,6 @@ export interface processed_message {
 	id: string[];
 	/** the channel the message was sent to */
 	channel: bridge_channel;
-	/** the plugin the message was sent using */
-	plugin: string;
 }
 
 /** messages not processed */
@@ -232,8 +230,6 @@ export interface unprocessed_message {
 	disable: boolean;
 	/** the error causing this */
 	error: Error;
-	/** the plugin the message was sent using */
-	plugin: string;
 }
 
 /** process result */

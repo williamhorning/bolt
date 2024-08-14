@@ -33,8 +33,7 @@ export async function torvapi(
 		embeds: message.embeds?.map<SendableEmbed>((embed) => {
 			if (embed.fields) {
 				for (const field of embed.fields) {
-					embed.description +=
-						`\n\n**${field.name}**\n${field.value}`;
+					embed.description += `\n\n**${field.name}**\n${field.value}`;
 				}
 			}
 			return {
@@ -84,7 +83,7 @@ export async function fromrvapi(
 			undefined,
 		) as Member
 		: undefined;
-	
+
 	return {
 		author: {
 			id: message.author,
@@ -107,8 +106,7 @@ export async function fromrvapi(
 		plugin: 'bolt-revolt',
 		attachments: message.attachments?.map((i) => {
 			return {
-				file:
-					`https://autumn.revolt.chat/attachments/${i._id}/${i.filename}`,
+				file: `https://autumn.revolt.chat/attachments/${i._id}/${i.filename}`,
 				name: i.filename,
 				size: i.size,
 			};

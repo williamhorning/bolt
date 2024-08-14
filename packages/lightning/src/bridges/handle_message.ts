@@ -89,7 +89,6 @@ export async function handle_message(
 				channel,
 				disable: false,
 				error: e,
-				plugin: channel.plugin,
 			};
 
 			if (type === 'delete_message') continue;
@@ -114,11 +113,14 @@ export async function handle_message(
 					bridge,
 				);
 
-				await log_error(new Error(`disabled channel ${channel.id} on ${channel.plugin}`), {
-					channel,
-					dat,
-					bridged_id,
-				});
+				await log_error(
+					new Error(`disabled channel ${channel.id} on ${channel.plugin}`),
+					{
+						channel,
+						dat,
+						bridged_id,
+					},
+				);
 
 				continue;
 			}

@@ -70,7 +70,6 @@ export class telegram_plugin extends plugin<telegram_config> {
 				return {
 					id: opts.edit_id,
 					channel: opts.channel,
-					plugin: this.name,
 				};
 			} else if (opts.action === 'edit') {
 				const content = from_lightning(opts.message)[0];
@@ -87,7 +86,6 @@ export class telegram_plugin extends plugin<telegram_config> {
 				return {
 					id: opts.edit_id,
 					channel: opts.channel,
-					plugin: this.name,
 				};
 			} else if (opts.action === 'create') {
 				const content = from_lightning(opts.message);
@@ -113,7 +111,6 @@ export class telegram_plugin extends plugin<telegram_config> {
 				return {
 					id: messages,
 					channel: opts.channel,
-					plugin: this.name,
 				};
 			} else {
 				throw new Error('unknown action');
@@ -124,7 +121,6 @@ export class telegram_plugin extends plugin<telegram_config> {
 				error: e,
 				id: [opts.message.id],
 				channel: opts.channel,
-				plugin: this.name,
 			};
 		}
 	}

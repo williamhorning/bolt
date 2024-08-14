@@ -71,7 +71,6 @@ export class guilded_plugin extends plugin<guilded_config> {
 					return {
 						id: [id],
 						channel: opts.channel,
-						plugin: this.name,
 					};
 				} catch (e) {
 					if (e.response.status === 404) {
@@ -79,14 +78,12 @@ export class guilded_plugin extends plugin<guilded_config> {
 							channel: opts.channel,
 							disable: true,
 							error: new Error('webhook not found!'),
-							plugin: this.name,
 						};
 					} else if (e.response.status === 403) {
 						return {
 							channel: opts.channel,
 							disable: true,
 							error: new Error('no permission to send messages!'),
-							plugin: this.name,
 						};
 					} else {
 						throw e;
@@ -102,13 +99,11 @@ export class guilded_plugin extends plugin<guilded_config> {
 
 				return {
 					channel: opts.channel,
-					plugin: this.name,
 					id: opts.edit_id,
 				};
 			} else {
 				return {
 					channel: opts.channel,
-					plugin: this.name,
 					id: opts.edit_id,
 				};
 			}
@@ -118,7 +113,6 @@ export class guilded_plugin extends plugin<guilded_config> {
 				channel: opts.channel,
 				error: e,
 				disable: false,
-				plugin: this.name,
 			};
 		}
 	}

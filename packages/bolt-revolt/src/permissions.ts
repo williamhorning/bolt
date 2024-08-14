@@ -1,82 +1,89 @@
 import type { Client } from '@jersey/rvapi';
-import type { Channel, User, Server, Member, Role } from '@jersey/revolt-api-types';
+import type {
+	Channel,
+	Member,
+	Role,
+	Server,
+	User,
+} from '@jersey/revolt-api-types';
 
 export async function revolt_perms(
-    client: Client,
-    channel: string,
+	client: Client,
+	channel: string,
 ) {
-    const ch = await client.request(
-        'get',
-        `/channels/${channel}`,
-        undefined,
-    ) as Channel;
+	const ch = await client.request(
+		'get',
+		`/channels/${channel}`,
+		undefined,
+	) as Channel;
 
-    const self_user = await client.request(
-        'get',
-        '/users/@me',
-        undefined,
-    ) as User;
+	const self_user = await client.request(
+		'get',
+		'/users/@me',
+		undefined,
+	) as User;
 
-    const permissions_to_check = [
-        1 << 23, // ManageMessages
-        1 << 28, // Masquerade
-    ];
+	const permissions_to_check = [
+		1 << 23, // ManageMessages
+		1 << 28, // Masquerade
+	];
 
-    // see https://developers.revolt.chat/assets/api/Permission%20Hierarchy.svg
-    const permissions = permissions_to_check.reduce((a, b) => a | b, 0);
+	// see https://developers.revolt.chat/assets/api/Permission%20Hierarchy.svg
+	const permissions = permissions_to_check.reduce((a, b) => a | b, 0);
 
-    if (ch.channel_type === 'Group') {
-        if (ch.owner === self_user._id) return channel;
-        if (ch.permissions && ch.permissions & permissions) return channel;
-    } else if (ch.channel_type === 'TextChannel') {
-        const srvr = await client.request(
-            'get',
-            `/servers/${ch.server}`,
-            undefined,
-        ) as Server;
+	if (ch.channel_type === 'Group') {
+		if (ch.owner === self_user._id) return channel;
+		if (ch.permissions && ch.permissions & permissions) return channel;
+	} else if (ch.channel_type === 'TextChannel') {
+		const srvr = await client.request(
+			'get',
+			`/servers/${ch.server}`,
+			undefined,
+		) as Server;
 
-        const member = await client.request(
-            'get',
-            `/servers/${ch.server}/members/${self_user._id}`,
-            undefined,
-        ) as Member;
+		const member = await client.request(
+			'get',
+			`/servers/${ch.server}/members/${self_user._id}`,
+			undefined,
+		) as Member;
 
-        // check server permissions
-        if (srvr.owner === self_user._id) return channel;
+		// check server permissions
+		if (srvr.owner === self_user._id) return channel;
 
-        let perms = srvr.default_permissions;
+		let perms = srvr.default_permissions;
 
-        for (const role of (member.roles || [])) {
-            const { permissions: role_perms } = await client.request(
-                'get',
-                `/servers/${ch.server}/roles/${role}`,
-                undefined,
-            ) as Role;
+		for (const role of (member.roles || [])) {
+			const { permissions: role_perms } = await client.request(
+				'get',
+				`/servers/${ch.server}/roles/${role}`,
+				undefined,
+			) as Role;
 
-            perms |= role_perms.a || 0;
-            perms &= ~role_perms.d || 0;
-        }
+			perms |= role_perms.a || 0;
+			perms &= ~role_perms.d || 0;
+		}
 
-        // apply default allow/denies
-        if (ch.default_permissions) {
-            perms |= ch.default_permissions.a;
-            perms &= ~ch.default_permissions.d;
-        }
+		// apply default allow/denies
+		if (ch.default_permissions) {
+			perms |= ch.default_permissions.a;
+			perms &= ~ch.default_permissions.d;
+		}
 
-        // apply role permissions
-        if (ch.role_permissions) {
-            for (const role of (member.roles || [])) {
-                perms |= ch.role_permissions[role]?.a || 0;
-                perms &= ~ch.role_permissions[role]?.d || 0;
-            }
-        }
+		// apply role permissions
+		if (ch.role_permissions) {
+			for (const role of (member.roles || [])) {
+				perms |= ch.role_permissions[role]?.a || 0;
+				perms &= ~ch.role_permissions[role]?.d || 0;
+			}
+		}
 
-        // check permissions
-        if (perms & permissions) return channel;
-    } else {
-        throw new Error(`Unsupported channel type: ${ch.channel_type}`);
-    }
+		// check permissions
+		if (perms & permissions) return channel;
+	} else {
+		throw new Error(`Unsupported channel type: ${ch.channel_type}`);
+	}
 
-    throw new Error('Insufficient permissions! Please enable ManageMessages and Masquerade permissions.');
-
+	throw new Error(
+		'Insufficient permissions! Please enable ManageMessages and Masquerade permissions.',
+	);
 }

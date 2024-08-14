@@ -68,7 +68,6 @@ export class revolt_plugin extends plugin<revolt_config> {
 					return {
 						channel: opts.channel,
 						id: [msg._id],
-						plugin: this.name,
 					};
 				} catch (e) {
 					if (e.cause.status === 403 || e.cause.status === 404) {
@@ -76,7 +75,6 @@ export class revolt_plugin extends plugin<revolt_config> {
 							channel: opts.channel,
 							disable: true,
 							error: e,
-							plugin: this.name,
 						};
 					} else {
 						throw e;
@@ -97,7 +95,6 @@ export class revolt_plugin extends plugin<revolt_config> {
 				return {
 					channel: opts.channel,
 					id: opts.edit_id,
-					plugin: this.name,
 				};
 			} else {
 				await this.bot.request(
@@ -109,7 +106,6 @@ export class revolt_plugin extends plugin<revolt_config> {
 				return {
 					channel: opts.channel,
 					id: opts.edit_id,
-					plugin: this.name,
 				};
 			}
 		} catch (e) {
@@ -117,7 +113,6 @@ export class revolt_plugin extends plugin<revolt_config> {
 				channel: opts.channel,
 				disable: false,
 				error: e,
-				plugin: this.name,
 			};
 		}
 	}
