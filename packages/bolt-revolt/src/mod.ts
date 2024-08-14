@@ -4,15 +4,10 @@ import {
 	plugin,
 	type process_result,
 } from '@jersey/lightning';
-import {
-	type Channel,
-	type Client,
-	createClient,
-	type Member,
-	type Message,
-	type User,
-} from '@jersey/rvapi';
+import type { Message } from '@jersey/revolt-api-types';
+import { type Client, createClient } from '@jersey/rvapi';
 import { fromrvapi, torvapi } from './messages.ts';
+import { revolt_perms } from './permissions.ts';
 
 /** the config for the revolt plugin */
 export interface revolt_config {
@@ -51,37 +46,7 @@ export class revolt_plugin extends plugin<revolt_config> {
 
 	/** create a bridge */
 	async create_bridge(channel: string): Promise<string> {
-		const ch = await this.bot.request(
-			'get',
-			`/channels/${channel}`,
-			undefined,
-		) as Channel;
-		let perms_ok = false;
-		if (ch.permissions) { if (ch.permissions & (1 << 28)) perms_ok = true; }
-		if (ch.default_permissions) {
-			if (ch.default_permissions.a & (1 << 28)) perms_ok = true;
-		}
-		if (ch.server && ch.role_permissions) {
-			const { _id } = await this.bot.request(
-				'get',
-				`/users/@me`,
-				undefined,
-			) as User;
-			const me = await this.bot.request(
-				'get',
-				`/servers/${ch.server}/members/${_id}`,
-				undefined,
-			) as Member;
-			me.roles?.forEach((role) => {
-				if (ch.role_permissions![role].a & (1 << 28)) perms_ok = true;
-			});
-		}
-		if (!perms_ok) {
-			throw new Error(
-				"Can't bridge this channel! Enable masquerade permissions",
-			);
-		}
-		return channel;
+		return await revolt_perms(this.bot, channel);
 	}
 
 	/** process a message */
@@ -106,14 +71,7 @@ export class revolt_plugin extends plugin<revolt_config> {
 						plugin: this.name,
 					};
 				} catch (e) {
-					if (e.cause.status === 403) {
-						return {
-							channel: opts.channel,
-							disable: true,
-							error: e,
-							plugin: this.name,
-						};
-					} else if (e.cause.status === 404) {
+					if (e.cause.status === 403 || e.cause.status === 404) {
 						return {
 							channel: opts.channel,
 							disable: true,

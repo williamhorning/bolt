@@ -4,7 +4,8 @@
 	"exports": "./src/mod.ts",
 	"imports": {
 		"@jersey/lightning": "jsr:@jersey/lightning@0.7.3",
-		"@jersey/rvapi": "../../../rvapi/src/mod.ts",
+		"@jersey/rvapi": "jsr:@jersey/test@0.0.5",
+		"@jersey/revolt-api-types": "jsr:@jersey/test@0.0.4",
 		"@std/ulid": "jsr:@std/ulid@1.0.0"
 	}
 }

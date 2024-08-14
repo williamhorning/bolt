@@ -1,14 +1,14 @@
-import type { embed, message } from "@jersey/lightning";
+import type { embed, message } from '@jersey/lightning';
 import type {
 	Channel,
-	Client,
 	DataMessageSend,
 	Embed,
 	Member,
 	Message,
 	SendableEmbed,
 	User,
-} from '@jersey/rvapi';
+} from '@jersey/revolt-api-types';
+import type { Client } from '@jersey/rvapi';
 import { decodeTime } from '@std/ulid';
 
 export async function torvapi(
@@ -70,11 +70,13 @@ export async function fromrvapi(
 	) as Channel & {
 		type: 'TextChannel' | 'GroupChannel';
 	};
+
 	const user = await api.request(
 		'get',
 		`/users/${message.author}`,
 		undefined,
 	) as User;
+
 	const member = channel.server
 		? await api.request(
 			'get',
@@ -82,6 +84,7 @@ export async function fromrvapi(
 			undefined,
 		) as Member
 		: undefined;
+	
 	return {
 		author: {
 			id: message.author,
@@ -90,7 +93,7 @@ export async function fromrvapi(
 				user.username,
 			color: '#FF4654',
 			profile: message.webhook?.avatar || user.avatar
-				? `https://autumn.revolt.chat/avatars/${user.avatar}`
+				? `https://autumn.revolt.chat/avatars/${user.avatar._id}`
 				: undefined,
 		},
 		channel: message.channel,
