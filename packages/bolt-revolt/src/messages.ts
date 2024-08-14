@@ -93,7 +93,7 @@ export async function fromrvapi(
 				user.username,
 			color: '#FF4654',
 			profile: message.webhook?.avatar || user.avatar
-				? `https://autumn.revolt.chat/avatars/${user.avatar._id}`
+				? `https://autumn.revolt.chat/avatars/${user.avatar?._id}`
 				: undefined,
 		},
 		channel: message.channel,
