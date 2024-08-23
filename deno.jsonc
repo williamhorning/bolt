@@ -21,10 +21,10 @@
 	},
 	"workspace": [
 		"./packages/lightning",
-		"./packages/bolt-telegram",
-		"./packages/bolt-revolt",
-		"./packages/bolt-guilded",
-		"./packages/bolt-discord"
+		"./packages/lightning-plugin-telegram",
+		"./packages/lightning-plugin-revolt",
+		"./packages/lightning-plugin-guilded",
+		"./packages/lightning-plugin-discord"
 	],
 	"lock": false,
 	"unstable": ["temporal"]
