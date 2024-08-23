@@ -15,7 +15,7 @@ export const default_cmds = [
 		{
 			name: 'version',
 			description: 'get the bots version',
-			execute: () => 'hello from v0.7.3!',
+			execute: () => 'hello from v0.7.4!',
 		},
 	],
 	[

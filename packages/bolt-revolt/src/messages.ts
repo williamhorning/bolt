@@ -16,6 +16,13 @@ export async function torvapi(
 	message: message,
 	masquerade = true,
 ): Promise<DataMessageSend> {
+	if (
+		!message.content && (!message.embeds || message.embeds.length < 1) &&
+		(!message.attachments || message.attachments.length < 1)
+	) {
+		message.content = '*empty message*';
+	}
+
 	return {
 		attachments: message.attachments && message.attachments.length > 0
 			? await Promise.all(

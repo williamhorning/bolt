@@ -23,12 +23,23 @@ export class revolt_plugin extends plugin<revolt_config> {
 	constructor(l: lightning, config: revolt_config) {
 		super(l, config);
 		this.bot = createClient(config);
+		this.setup_events();
+	}
+
+	/** handle revolt events */
+	private setup_events() {
 		this.bot.bonfire.on('Message', async (message) => {
-			if (message.system) return;
+			if (
+				message.system || !message.channel ||
+				message.channel === 'undefined'
+			) return;
 			this.emit('create_message', await fromrvapi(this.bot, message));
 		});
 		this.bot.bonfire.on('MessageUpdate', async (message) => {
-			if (message.data.system) return;
+			if (
+				message.data.system || !message.channel ||
+				message.channel === 'undefined'
+			) return;
 			this.emit(
 				'edit_message',
 				await fromrvapi(this.bot, message.data as Message),
@@ -41,6 +52,11 @@ export class revolt_plugin extends plugin<revolt_config> {
 				plugin: 'bolt-revolt',
 				timestamp: Temporal.Now.instant(),
 			});
+		});
+		this.bot.bonfire.on('socket_close', (info) => {
+			console.warn('Revolt socket closed', info);
+			this.bot = createClient(this.config);
+			this.setup_events();
 		});
 	}
 

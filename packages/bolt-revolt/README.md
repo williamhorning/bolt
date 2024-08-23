@@ -7,8 +7,8 @@ telegram
 ## example config
 
 ```ts
-import type { config } from 'jsr:@jersey/lightning@0.7.3';
-import { revolt_plugin } from 'jsr:@jersey/lightning-plugin-revolt@0.7.3';
+import type { config } from 'jsr:@jersey/lightning@0.7.4';
+import { revolt_plugin } from 'jsr:@jersey/lightning-plugin-revolt@0.7.4';
 
 export default {
 	redis_host: 'localhost',

@@ -3,9 +3,8 @@ ARG DENO_VERSION=1.45.5
 FROM docker.io/denoland/deno:${DENO_VERSION}
 
 # add lightning to the image
-WORKDIR /app
-ADD ./packages/lightning /app
-RUN deno install -A --unstable-temporal -n lightning /app/src/cli/mod.ts
+RUN deno install -A --unstable-temporal jsr:@jersey/lightning@0.7.4/cli
+RUN mkdir -p /app/data
 
 # set lightning as the entrypoint and use the run command by default
 ENTRYPOINT [ "lightning" ]

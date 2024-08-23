@@ -1,4 +1,5 @@
-import { create_message, type message } from './types.ts';
+import { create_message } from './messages.ts';
+import type { message } from './types.ts';
 
 /** the error returned from log_error */
 export interface err {
