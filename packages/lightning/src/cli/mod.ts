@@ -16,6 +16,28 @@ if (cmd === 'version') {
 
 	Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
 
+	addEventListener('unhandledrejection', async (e) => {
+		if (e.reason instanceof Error) {
+			await log_error(e.reason);
+		} else {
+			await log_error(new Error('global rejection'), {
+				extra: e.reason,
+			});
+		}
+
+		Deno.exit(1);
+	});
+
+	addEventListener('error', async (e) => {
+		if (e.error instanceof Error) {
+			await log_error(e.error);
+		} else {
+			await log_error(new Error('global error'), { extra: e.error });
+		}
+
+		Deno.exit(1);
+	});
+
 	try {
 		new lightning(
 			cfg,
