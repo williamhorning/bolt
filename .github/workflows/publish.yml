@@ -34,8 +34,8 @@ jobs:
         run: cd packages/lightning
       - name: publish to jsr
         run: |
-              cd packages/lightning
               deno publish
+              cd packages/lightning
       - name: setup docker metadata
         id: metadata
         uses: docker/metadata-action@v5

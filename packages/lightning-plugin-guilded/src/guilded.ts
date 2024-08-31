@@ -1,6 +1,6 @@
 import type { EmbedPayload, RESTPostWebhookBody } from '@guildedjs/api';
+import type { embed, message } from '@jersey/lightning';
 import type { Client } from 'guilded.js';
-import type { embed, message } from 'lightning';
 import type { guilded_plugin } from './mod.ts';
 
 export async function create_webhook(
@@ -63,6 +63,8 @@ export async function convert_msg(
 	}
 
 	if (message.embeds?.length === 0 || !message.embeds) delete message.embeds;
+
+	if (!message.content && !message.embeds) message.content = '*empty message*';
 
 	return message;
 }

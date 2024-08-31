@@ -1,5 +1,5 @@
+import type { message } from '@jersey/lightning';
 import type { Message } from 'guilded.js';
-import type { message } from 'lightning';
 import { convert_msg } from './guilded.ts';
 import type { guilded_plugin } from './mod.ts';
 

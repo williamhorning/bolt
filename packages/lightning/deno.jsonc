@@ -1,7 +1,10 @@
 {
 	"name": "@jersey/lightning",
-	"version": "0.7.3",
-	"exports": "./mod.ts",
+	"version": "0.7.4",
+	"exports": {
+		".": "./src/mod.ts",
+		"./cli": "./src/cli/mod.ts"
+	},
 	"publish": {
 		"exclude": ["./src/tests/*"]
 	},
@@ -9,8 +12,8 @@
 		"include": ["./src/tests/*"]
 	},
 	"imports": {
-		"@denosaurs/event": "jsr:@denosaurs/event@2.0.2",
-		"@iuioiua/r2d2": "jsr:@iuioiua/r2d2@2.1.1",
-		"@std/cli/parse-args": "jsr:@std/cli@1.0.3/parse-args"
+		"@denosaurs/event": "jsr:@denosaurs/event@^2.0.2",
+		"@iuioiua/r2d2": "jsr:@iuioiua/r2d2@^2.1.1",
+		"@std/cli/parse-args": "jsr:@std/cli@^1.0.3/parse-args"
 	}
 }

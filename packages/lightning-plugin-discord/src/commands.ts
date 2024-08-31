@@ -1,5 +1,6 @@
-import type { API, APIInteraction } from '@discordjs/core';
+import type { API } from '@discordjs/core';
 import type { command, command_arguments } from '@jersey/lightning';
+import type { APIInteraction } from 'discord-api-types';
 import { to_discord } from './discord.ts';
 import { instant } from './lightning.ts';
 

@@ -7,8 +7,8 @@ telegram
 ## example config
 
 ```ts
-import type { config } from 'jsr:@jersey/lightning@0.7.3';
-import { guilded_plugin } from 'jsr:@jersey/lightning-plugin-guilded@0.7.3';
+import type { config } from 'jsr:@jersey/lightning@0.7.4';
+import { guilded_plugin } from 'jsr:@jersey/lightning-plugin-guilded@0.7.4';
 
 export default {
 	redis_host: 'localhost',

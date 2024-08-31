@@ -45,6 +45,15 @@ export async function to_discord(
 			),
 		);
 	}
+
+	if ((!message.content || message.content.length < 1) && !message.embeds) {
+		message.content = '*empty message*';
+	}
+
+	if (!message.author.username || message.author.username.length < 1) {
+		message.author.username = message.author.id;
+	}
+
 	return {
 		avatar_url: message.author.profile,
 		content: message.content,

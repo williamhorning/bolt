@@ -2,6 +2,7 @@ import { log_error } from '../errors.ts';
 import type { lightning } from '../lightning.ts';
 import type {
 	bridge_channel,
+	bridge_document,
 	bridge_message,
 	deleted_message,
 	message,
@@ -64,10 +65,13 @@ export async function handle_message(
 		const plugin = lightning.plugins.get(channel.plugin);
 
 		if (!plugin) {
-			await log_error(
+			const err = await log_error(
 				new Error(`plugin ${channel.plugin} doesn't exist`),
 				{ channel, bridged_id },
 			);
+
+			await disable_channel(channel, bridge, lightning, err.e);
+
 			continue;
 		}
 
@@ -89,7 +93,6 @@ export async function handle_message(
 				channel,
 				disable: false,
 				error: e,
-				plugin: channel.plugin,
 			};
 
 			if (type === 'delete_message') continue;
@@ -99,26 +102,7 @@ export async function handle_message(
 			if (type === 'delete_message') continue;
 
 			if (dat.disable) {
-				channel.disabled = true;
-
-				bridge.channels = bridge.channels.map((i) => {
-					if (i.id === channel.id && i.plugin === channel.plugin) {
-						i.disabled = true;
-					}
-					return i;
-				});
-
-				await set_json(
-					lightning,
-					`lightning-bridge-${bridge.id}`,
-					bridge,
-				);
-
-				await log_error(new Error(`disabled channel ${channel.id} on ${channel.plugin}`), {
-					channel,
-					dat,
-					bridged_id,
-				});
+				await disable_channel(channel, bridge, lightning, dat.error);
 
 				continue;
 			}
@@ -171,6 +155,35 @@ export async function handle_message(
 		...bridge,
 		messages,
 	});
+}
+
+async function disable_channel(
+	channel: bridge_channel,
+	bridge: bridge_document,
+	lightning: lightning,
+	e: Error,
+) {
+	channel.disabled = true;
+
+	bridge.channels = bridge.channels.map((i) => {
+		if (i.id === channel.id && i.plugin === channel.plugin) {
+			i.disabled = true;
+		}
+		return i;
+	});
+
+	await set_json(
+		lightning,
+		`lightning-bridge-${bridge.id}`,
+		bridge,
+	);
+
+	const err = new Error(
+		`disabled channel ${channel.id} on ${channel.plugin}`,
+		{ cause: e },
+	);
+
+	await log_error(err, { channel });
 }
 
 async function get_reply_id(

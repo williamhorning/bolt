@@ -35,13 +35,18 @@ if (migrations.length < 1) Deno.exit();
 
 console.log(`downloading data from redis...`);
 
-const keys = (await redis.sendCommand(['KEYS', '*'])) as string[];
+const keys = (await redis.sendCommand(['KEYS', 'lightning-*'])) as string[];
 const redis_data = [] as [string, unknown][];
 
 // sorry database :(
 
 for (const key of keys) {
-	const val = await redis.sendCommand(['GET', key]);
+	const type = await redis.sendCommand(['TYPE', key]);
+	const val = await redis.sendCommand([
+		type === 'string' ? 'GET' : 'JSON.GET',
+		key,
+	]);
+
 	try {
 		redis_data.push([
 			key,
@@ -77,9 +82,9 @@ const write = confirm(
 
 if (!write) Deno.exit();
 
-const cmd = ['MSET', ...final_data.flat()];
+await redis.sendCommand(['DEL', ...keys]);
 
-const reply = await redis.sendCommand(cmd);
+const reply = await redis.sendCommand(['MSET', ...final_data.flat()]);
 
 if (reply === 'OK') {
 	console.log('data written to database');

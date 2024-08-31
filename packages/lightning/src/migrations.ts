@@ -22,8 +22,6 @@ export interface migration {
 
 /** all of the versions with migrations to/from them */
 export enum versions {
-	/** versions 0.5 through 0.6 */
-	Five = '0.5',
 	/** versions 0.7 through 0.7.2 */
 	Seven = '0.7',
 	/** versions 0.7.3 and higher */
@@ -49,7 +47,7 @@ const migrations = [
 								data: unknown;
 								plugin: string;
 							}[];
-						}).channels.map((i) => {
+						}).channels?.map((i) => {
 							return {
 								data: i.data,
 								disabled: false,

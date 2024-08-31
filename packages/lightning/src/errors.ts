@@ -1,4 +1,5 @@
-import { create_message, type message } from './types.ts';
+import { create_message } from './messages.ts';
+import type { message } from './types.ts';
 
 /** the error returned from log_error */
 export interface err {
@@ -24,25 +25,30 @@ export async function log_error(
 	const uuid = crypto.randomUUID();
 	const error_hook = Deno.env.get('LIGHTNING_ERROR_HOOK');
 
-	delete extra.lightning;
+	if ('lightning' in extra) delete extra.lightning;
+
+	if (
+		'opts' in extra &&
+		'lightning' in (extra.opts as Record<string, unknown>)
+	) delete (extra.opts as Record<string, unknown>).lightning;
 
 	if (error_hook && error_hook.length > 0) {
-		const resp = 
-			await fetch(error_hook, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					content: `# ${e.message}\n*${uuid}*`,
-					embeds: [
-						{
-							title: 'extra',
-							description:
-								`\`\`\`json\n${JSON.stringify(extra, null, 2)}\n\`\`\``,
-						},
-					],
-				}),
-			})
-		
+		const resp = await fetch(error_hook, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				content: `# ${e.message}\n*${uuid}*`,
+				embeds: [
+					{
+						title: 'extra',
+						description: `\`\`\`json\n${
+							JSON.stringify(extra, null, 2)
+						}\n\`\`\``,
+					},
+				],
+			}),
+		});
+
 		if (!resp.ok) {
 			await fetch(error_hook, {
 				method: 'POST',
@@ -52,11 +58,11 @@ export async function log_error(
 					embeds: [
 						{
 							title: 'extra',
-							description: '*see console*'
-						}
-					]
+							description: '*see console*',
+						},
+					],
 				}),
-			})
+			});
 		}
 	}
 

@@ -9,12 +9,34 @@ const _ = parseArgs(Deno.args, {
 const cmd = _._[0];
 
 if (cmd === 'version') {
-	console.log('0.7.3');
+	console.log('0.7.4');
 } else if (cmd === 'run') {
 	const cfg = (await import(_.config || `${Deno.cwd()}/config.ts`))
 		?.default as config;
 
 	Deno.env.set('LIGHTNING_ERROR_HOOK', cfg.errorURL || '');
+
+	addEventListener('unhandledrejection', async (e) => {
+		if (e.reason instanceof Error) {
+			await log_error(e.reason);
+		} else {
+			await log_error(new Error('global rejection'), {
+				extra: e.reason,
+			});
+		}
+
+		Deno.exit(1);
+	});
+
+	addEventListener('error', async (e) => {
+		if (e.error instanceof Error) {
+			await log_error(e.error);
+		} else {
+			await log_error(new Error('global error'), { extra: e.error });
+		}
+
+		Deno.exit(1);
+	});
 
 	try {
 		new lightning(
@@ -31,7 +53,7 @@ if (cmd === 'version') {
 } else if (cmd === 'migrations') {
 	import('./migrations.ts');
 } else {
-	console.log('lightning v0.7.3 - extensible chatbot connecting communities');
+	console.log('lightning v0.7.4 - extensible chatbot connecting communities');
 	console.log('  Usage: lightning [subcommand] <options>');
 	console.log('  Subcommands:');
 	console.log('    run: run an of lightning using the settings in config.ts');
