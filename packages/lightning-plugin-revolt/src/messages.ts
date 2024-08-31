@@ -1,4 +1,4 @@
-import type { embed, message } from '@jersey/lightning';
+import { log_error, type embed, type message } from '@jersey/lightning';
 import type {
 	Channel,
 	DataMessageSend,
@@ -70,27 +70,38 @@ export async function fromrvapi(
 	api: Client,
 	message: Message,
 ): Promise<message> {
-	const channel = await api.request(
-		'get',
-		`/channels/${message.channel}`,
-		undefined,
-	) as Channel & {
-		type: 'TextChannel' | 'GroupChannel';
-	};
+	let channel: Channel & { type: 'TextChannel' | 'GroupChannel' };
+	let user: User;
+	let member: Member | undefined;
 
-	const user = await api.request(
-		'get',
-		`/users/${message.author}`,
-		undefined,
-	) as User;
-
-	const member = channel.server
-		? await api.request(
+	try {
+		channel = await api.request(
 			'get',
-			`/servers/${channel.server}/members/${message.author}`,
+			`/channels/${message.channel}`,
 			undefined,
-		) as Member
-		: undefined;
+		)
+
+		user = await api.request(
+			'get',
+			`/users/${message.author}`,
+			undefined,
+		);
+
+		member = channel.server
+			? await api.request(
+				'get',
+				`/servers/${channel.server}/members/${message.author}`,
+				undefined,
+			)
+			: undefined;
+	} catch (e) {
+		const err = await log_error(e, {
+			message: 'Failed to fetch user or channel data',
+			message_id: message._id,
+		})
+
+		return err.message;
+	}
 
 	return {
 		author: {
