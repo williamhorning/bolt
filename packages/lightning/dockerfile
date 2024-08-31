@@ -8,4 +8,4 @@ RUN mkdir -p /app/data
 
 # set lightning as the entrypoint and use the run command by default
 ENTRYPOINT [ "lightning" ]
-CMD [ "run", "--config", "/app/data/config.ts"]
+CMD [ "run", "--config", "file:///app/data/config.ts"]
