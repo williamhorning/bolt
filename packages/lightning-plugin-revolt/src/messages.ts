@@ -79,20 +79,20 @@ export async function fromrvapi(
 			'get',
 			`/channels/${message.channel}`,
 			undefined,
-		)
+		) as typeof channel;
 
 		user = await api.request(
 			'get',
 			`/users/${message.author}`,
 			undefined,
-		);
+		) as typeof user;
 
 		member = channel.server
 			? await api.request(
 				'get',
 				`/servers/${channel.server}/members/${message.author}`,
 				undefined,
-			)
+			) as typeof member
 			: undefined;
 	} catch (e) {
 		const err = await log_error(e, {
@@ -122,7 +122,7 @@ export async function fromrvapi(
 		embeds: (message.embeds as Embed[] | undefined)?.map<embed>((i) => {
 			return {
 				color: i.colour
-					? parseInt(i.color.replace('#', ''), 16)
+					? parseInt(i.colour.replace('#', ''), 16)
 					: undefined,
 				...i,
 			} as embed;
