@@ -4,24 +4,18 @@ import type {
 	Member,
 	Role,
 	Server,
-	User,
 } from '@jersey/revolt-api-types';
 
 export async function revolt_perms(
 	client: Client,
 	channel: string,
+	self_id: string,
 ) {
 	const ch = await client.request(
 		'get',
 		`/channels/${channel}`,
 		undefined,
 	) as Channel;
-
-	const self_user = await client.request(
-		'get',
-		'/users/@me',
-		undefined,
-	) as User;
 
 	const permissions_to_check = [
 		1 << 23, // ManageMessages
@@ -32,7 +26,6 @@ export async function revolt_perms(
 	const permissions = permissions_to_check.reduce((a, b) => a | b, 0);
 
 	if (ch.channel_type === 'Group') {
-		if (ch.owner === self_user._id) return channel;
 		if (ch.permissions && ch.permissions & permissions) return channel;
 	} else if (ch.channel_type === 'TextChannel') {
 		const srvr = await client.request(
@@ -43,13 +36,11 @@ export async function revolt_perms(
 
 		const member = await client.request(
 			'get',
-			`/servers/${ch.server}/members/${self_user._id}`,
+			`/servers/${ch.server}/members/${self_id}`,
 			undefined,
 		) as Member;
 
 		// check server permissions
-		if (srvr.owner === self_user._id) return channel;
-
 		let perms = srvr.default_permissions;
 
 		for (const role of (member.roles || [])) {
