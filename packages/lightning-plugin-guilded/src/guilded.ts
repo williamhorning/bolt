@@ -64,6 +64,8 @@ export async function convert_msg(
 
 	if (message.embeds?.length === 0 || !message.embeds) delete message.embeds;
 
+	if (!message.content && !message.embeds) message.content = '*empty message*';
+
 	return message;
 }
 
