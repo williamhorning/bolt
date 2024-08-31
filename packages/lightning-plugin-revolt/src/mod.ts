@@ -72,20 +72,20 @@ export class revolt_plugin extends plugin<revolt_config> {
 		try {
 			if (opts.action === 'create') {
 				try {
-					const msg = (await this.bot.request(
+					const msg = await torvapi(this.bot, {
+						...opts.message,
+						reply_id: opts.reply_id,
+					});
+
+					const resp = (await this.bot.request(
 						'post',
 						`/channels/${opts.channel.id}/messages`,
-						{
-							...(await torvapi(this.bot, {
-								...opts.message,
-								reply_id: opts.reply_id,
-							})),
-						},
+						msg,
 					)) as Message;
 
 					return {
 						channel: opts.channel,
-						id: [msg._id],
+						id: [resp._id],
 					};
 				} catch (e) {
 					if (e.cause.status === 403 || e.cause.status === 404) {
@@ -102,12 +102,10 @@ export class revolt_plugin extends plugin<revolt_config> {
 				await this.bot.request(
 					'patch',
 					`/channels/${opts.channel.id}/messages/${opts.edit_id[0]}`,
-					{
-						...(await torvapi(this.bot, {
-							...opts.message,
-							reply_id: opts.reply_id,
-						})),
-					},
+					await torvapi(this.bot, {
+						...opts.message,
+						reply_id: opts.reply_id,
+					}),
 				);
 
 				return {
