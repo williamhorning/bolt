@@ -13,6 +13,8 @@ import { revolt_perms } from './permissions.ts';
 export interface revolt_config {
 	/** the token for the revolt bot */
 	token: string;
+	/** the user id for the bot */
+	user_id: string;
 }
 
 /** the plugin to use */
@@ -62,7 +64,7 @@ export class revolt_plugin extends plugin<revolt_config> {
 
 	/** create a bridge */
 	async create_bridge(channel: string): Promise<string> {
-		return await revolt_perms(this.bot, channel);
+		return await revolt_perms(this.bot, channel, this.config.user_id);
 	}
 
 	/** process a message */
