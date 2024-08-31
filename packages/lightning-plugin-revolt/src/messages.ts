@@ -1,4 +1,4 @@
-import { log_error, type embed, type message } from '@jersey/lightning';
+import { type embed, log_error, type message } from '@jersey/lightning';
 import type {
 	Channel,
 	DataMessageSend,
@@ -25,12 +25,19 @@ export async function torvapi(
 
 	return {
 		attachments: message.attachments && message.attachments.length > 0
-			? await Promise.all(
+			? (await Promise.all(
 				message.attachments.slice(0, 5).map(async ({ file }) => {
 					const blob = await (await fetch(file)).blob();
-					return await api.media.upload_file('attachments', blob);
+					try {
+						return [
+							await api.media.upload_file('attachments', blob),
+						];
+					} catch (e) {
+						await log_error(e, { file });
+						return [];
+					}
 				}),
-			)
+			)).flat()
 			: undefined,
 		content: message.content
 			? message.content
@@ -98,7 +105,7 @@ export async function fromrvapi(
 		const err = await log_error(e, {
 			message: 'Failed to fetch user or channel data',
 			message_id: message._id,
-		})
+		});
 
 		return err.message;
 	}
