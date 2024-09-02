@@ -1,24 +1,80 @@
 import type { message } from '@jersey/lightning';
-import type { Intent } from 'matrix-appservice-bridge';
 import type { matrix_client_event } from './matrix_types.ts';
-import { to_matrix } from './to_matrix.ts';
+import type { go_functions } from './go_bridge.ts';
+import { render } from '@deno/gfm';
+
+export async function to_matrix(
+	msg: message,
+	upload: go_functions['upload_content'],
+	reply?: string,
+	edit?: string[],
+) {
+	let content = msg.content || '';
+
+	if (msg.embeds && msg.embeds.length > 0) {
+		content += '\n*this message includes embeds*';
+	}
+
+	const events = [{
+		msgtype: 'm.text',
+		body: content,
+		format: 'org.matrix.custom.html',
+		formatted_body: render(content),
+	}] as Record<string, unknown>[];
+
+	if (edit) {
+		events[0]['m.relates_to'] = {
+			rel_type: 'm.replace',
+			event_id: edit[0],
+		};
+	} else if (reply) {
+		events[0]['m.relates_to'] = {
+			'm.in_reply_to': {
+				event_id: reply,
+			},
+		};
+	}
+
+	if (msg.attachments) {
+		for (const attachment of msg.attachments) {
+			events.push({
+				msgtype: 'm.file',
+				body: attachment.name ?? attachment.alt ?? 'no name file',
+				alt: attachment.alt ?? attachment.name ?? 'no alt text',
+				url: await upload(
+					await ((await fetch(attachment.file)).blob()),
+				),
+				info: { size: attachment.size * 1000000 },
+				'm.relates_to': edit
+					? {
+						rel_type: 'm.replace',
+						event_id:
+							edit[msg.attachments?.indexOf(attachment) + 1],
+					}
+					: undefined,
+			});
+		}
+	}
+
+	return events;
+}
 
 export async function to_lightning(
+    matrix: go_functions,
     event: matrix_client_event,
-    bot: Intent,
     homeserver_url: string,
 ): Promise<message> {
     const un_mxc = (url: string) =>
         url.replace('mxc://', `${homeserver_url}/_matrix/media/r0/download/`);
-    const sender = await bot.getProfileInfo(event.sender);
+    const sender = await matrix.get_profile_info(event.sender);
     const relates_to = event.content['m.relates_to'] as
         | Record<string, unknown>
         | undefined;
     const message: message = {
         author: {
             id: event.sender,
-            rawname: sender.displayname || event.sender,
-            username: sender.displayname || event.sender,
+            rawname: sender.display_name || event.sender,
+            username: sender.display_name || event.sender,
             color: '#007A61',
             profile: sender.avatar_url ? un_mxc(sender.avatar_url) : undefined,
         },
@@ -32,15 +88,11 @@ export async function to_lightning(
             ? (relates_to['m.in_reply_to'] as Record<string, string>).event_id
             : undefined,
         reply: async (msg) => {
-            const replies = await to_matrix(
+            await matrix.send({intent: `@bot.lightning:${homeserver_url}`, messages: await to_matrix(
                 msg,
-                bot.uploadContent,
+                matrix.upload_content,
                 event.event_id,
-            );
-
-            for (const reply of replies) {
-                await bot.sendMessage(event.room_id as string, reply);
-            }
+            ), room_id: event.room_id});
         },
     };
 

@@ -21,7 +21,7 @@
 	},
 	"workspace": [
 		"./packages/lightning",
-    "./packages/bolt-matrix",
+		"./packages/bolt-matrix",
 		"./packages/lightning-plugin-telegram",
 		"./packages/lightning-plugin-revolt",
 		"./packages/lightning-plugin-guilded",
