@@ -1,10 +1,5 @@
 import type { Client } from '@jersey/rvapi';
-import type {
-	Channel,
-	Member,
-	Role,
-	Server,
-} from '@jersey/revolt-api-types';
+import type { Channel, Member, Role, Server } from '@jersey/revolt-api-types';
 
 export async function revolt_perms(
 	client: Client,

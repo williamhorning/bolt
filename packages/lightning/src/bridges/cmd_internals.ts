@@ -82,8 +82,8 @@ export async function leave(
 
 export async function reset(opts: command_arguments) {
 	if (typeof opts.opts.name !== 'string') {
-		opts.opts.name =
-			(await get_channel_bridge(opts.lightning, opts.channel))?.id!;
+		opts.opts.name = (await get_channel_bridge(opts.lightning, opts.channel))
+			?.id!;
 	}
 
 	let [ok, text] = await leave(opts);
