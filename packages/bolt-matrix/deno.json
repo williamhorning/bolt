@@ -1,0 +1,12 @@
+{
+	"name": "@jersey/lightning-plugin-matrix",
+	"version": "0.7.3",
+	"exports": "./src/mod.ts",
+	"imports": {
+        "@nodejs/buffer": "node:buffer",
+		"@jersey/lightning": "jsr:@jersey/lightning@0.7.3",
+		"@deno/gfm": "jsr:@deno/gfm@0.8.2",
+        "@std/fs": "jsr:@std/fs@1.0.1",
+        "matrix-appservice-bridge": "npm:matrix-appservice-bridge@10.1.0"
+	}
+}
